@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Climbing the Cosmic Ladder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<script>
+window.MathJax={tex:{inlineMath:[],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},
+  startup:{typeset:false,ready(){MathJax.startup.defaultReady();MathJax.startup.promise.then(()=>{const q=window._mjq||[];window._mjq=[];q.forEach(el=>typeset(el))})}}};
+function typeset(el){if(!el)return;if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetPromise([el]).catch(()=>{})}else (window._mjq=window._mjq||[]).push(el)}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js" async></script>
+<style>
+/* Layout: observatory control room. Slim top bar; sky on the left; one panel for the current level on the right. Black dome, off-white text. */
+:root{
+  --night:#000;--panel:#0e0e0f;--panel-2:#1b1b1d;--rule:#3a3a3e;
+  --ink:#f5f1e8;--muted:#ddd6c8;
+  --redlight:#ff6a55;--amber:#f6bd5f;--ice:#86c9f2;--good:#86dcae;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+html,body{background:var(--night);color:var(--ink)}
+body{margin:0;font-family:var(--body);font-size:16px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 32px}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+h1,h2,h3{font-family:var(--display);font-weight:800;letter-spacing:.01em;line-height:1.05;margin:0;text-wrap:balance}
+p{margin:0}
+button{font:inherit;cursor:pointer;color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.eyebrow{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.note{font-size:14px;color:var(--muted)}
+input[type=text],input[type=password],textarea,select{background:var(--panel-2);border:1px solid var(--rule);color:var(--ink);border-radius:4px;padding:8px 10px;font-family:var(--mono);font-size:14px;max-width:100%}
+textarea{width:100%;resize:vertical}
+
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;max-width:1440px;margin:0 auto 12px}
+.bar h1{font-size:clamp(26px,3.2vw,34px);text-transform:uppercase;margin-right:auto}
+.bar h1 span{color:var(--redlight)}
+.levels{display:flex;gap:6px;flex-wrap:wrap}
+.lvl{display:flex;align-items:baseline;gap:8px;background:none;border:1px solid var(--rule);border-radius:6px;padding:6px 12px}
+.lvl b{font-family:var(--display);font-size:20px;color:var(--amber)}
+.lvl small{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.lvl[aria-current="true"]{border-color:var(--redlight);background:rgba(255,106,85,.1)}
+.lvl:disabled{opacity:.45;cursor:not-allowed}
+.tools{display:flex;gap:6px}
+.iconbtn{background:none;border:1px solid var(--rule);border-radius:6px;padding:6px 12px;font-size:15px;min-height:38px}
+.iconbtn.gear{font-size:20px;line-height:1;padding:4px 10px}
+
+.app{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;max-width:1440px;margin:0 auto}
+@media (max-width:980px){.app{grid-template-columns:minmax(0,1fr)}}
+
+.skywrap{position:relative;height:clamp(460px,80vh,780px);border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:#000}
+#sky{display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
+#sky.grabbing{cursor:grabbing}
+.skyhint{position:absolute;left:12px;top:12px;font-size:14px;padding:6px 12px;background:rgba(0,0,0,.8);border:1px solid var(--rule);border-radius:999px;pointer-events:none;max-width:calc(100% - 24px)}
+
+.lp{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0;align-self:start}
+.lp h2{font-size:30px;text-transform:uppercase}
+.prog{height:8px;background:var(--panel-2);border-radius:999px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--amber)}
+.chart{width:100%;height:300px;display:block;background:#050505;border:1px solid var(--rule);border-radius:4px}
+.lp .chart{height:320px}
+
+.eq{overflow-x:auto;overflow-y:hidden;padding:4px 10px;background:var(--panel-2);border-radius:6px;font-size:17px;min-height:48px;display:flex;align-items:center}
+.eq mjx-container{margin:.5em 0!important}
+.eq>*{margin-inline:auto}
+
+.obs{position:absolute;top:10px;right:10px;bottom:10px;width:min(620px,calc(100% - 20px));background:var(--panel);border:1px solid var(--rule);border-radius:6px;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.7);display:flex;flex-direction:column}
+@media (max-width:760px){.obs{position:fixed;z-index:50;top:calc(env(safe-area-inset-top,0px) + 8px);bottom:calc(env(safe-area-inset-bottom,0px) + 8px);left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));width:auto}}
+.obs-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:14px 18px 10px;border-bottom:1px solid var(--rule);position:sticky;top:0;background:var(--panel);z-index:2}
+.obs-head h2{font-size:30px}
+.x{background:none;border:1px solid var(--rule);border-radius:4px;width:38px;height:38px;font-size:20px;flex:none}
+.dots{display:flex;gap:5px;margin-top:10px}
+.dots i{height:4px;flex:1;max-width:44px;background:var(--panel-2);border-radius:2px}
+.dots i.on{background:var(--redlight)}
+.dots i.done{background:var(--amber)}
+.obs-body{padding:14px 18px;display:flex;flex-direction:column;gap:12px;flex:1}
+.obs-body h3{font-size:24px;text-transform:uppercase}
+.obs-foot{display:flex;gap:8px;align-items:center;padding:12px 18px 16px;border-top:1px solid var(--rule);position:sticky;bottom:0;background:var(--panel)}
+.obs-foot .sp{flex:1}
+.plot{width:100%;height:240px;display:block;background:#050505;border:1px solid var(--rule);border-radius:4px;cursor:pointer;touch-action:manipulation}
+.plot.static{cursor:default}
+.plot.par{height:300px;cursor:crosshair}
+.task{border-left:3px solid var(--amber);padding:4px 0 4px 12px}
+.waiting{color:var(--muted);font-size:14px;padding:12px;border:1px dashed var(--rule);border-radius:6px;text-align:center}
+.answer{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.answer input{width:9em;background:#000;border:1px solid var(--amber);color:var(--ink);border-radius:4px;padding:7px 9px;font-family:var(--mono);font-size:15px}
+.fb{font-size:15px}
+.fb.good{color:var(--good)}
+.fb.bad{color:var(--amber)}
+.more{border:1px solid var(--rule);border-radius:6px;padding:8px 12px;display:flex;flex-direction:column;gap:8px}
+.more summary{cursor:pointer;font-size:14px;color:var(--muted)}
+.more .eq{font-size:14px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{background:var(--redlight);color:#1a0c0a;border:0;border-radius:4px;padding:9px 16px;font-weight:600}
+.btn:disabled{background:var(--panel-2);color:#8d877b;cursor:not-allowed}
+.btn.ghost{background:none;border:1px solid var(--rule);color:var(--ink);font-weight:500}
+.btn.ghost:disabled{color:#8d877b}
+.btn.sm{padding:5px 10px;font-size:13px}
+.chip{background:#000;border:1px solid var(--rule);color:var(--ink);border-radius:999px;padding:5px 12px;font-size:13px;font-family:var(--mono)}
+.chip[aria-pressed="true"]{border-color:var(--redlight);color:var(--redlight)}
+.slider{display:flex;flex-direction:column;gap:6px}
+.slider input{width:100%;accent-color:var(--redlight)}
+.meter{height:8px;background:#000;border-radius:999px;overflow:hidden;width:140px}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--redlight),var(--amber),var(--good))}
+
+.drawer{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);display:flex;justify-content:flex-end}
+.drawer-box{width:min(480px,100%);height:100%;overflow:auto;background:var(--panel);border-left:1px solid var(--rule);padding:calc(env(safe-area-inset-top,0px) + 16px) max(18px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 24px) 18px;display:flex;flex-direction:column;gap:18px}
+.drawer-box h2{font-size:30px;text-transform:uppercase}
+.drawer-box h3{font-size:22px;text-transform:uppercase}
+.dsec{display:flex;flex-direction:column;gap:10px;padding-top:14px;border-top:1px solid var(--rule)}
+.dhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.lessonlist{display:flex;flex-direction:column;gap:6px}
+.lessonlist button{text-align:left;background:var(--panel-2);border:1px solid var(--rule);border-radius:4px;padding:8px 12px}
+.lessonlist button:disabled{opacity:.45;cursor:not-allowed}
+.code{font-family:var(--mono);font-size:18px;color:var(--amber);letter-spacing:.06em}
+.formrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.lbl{font-size:14px}
+.seg{border:1px solid var(--rule);border-radius:6px;padding:8px 12px 10px;margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+.seg legend{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:0 4px}
+.seg label{display:flex;gap:8px;align-items:baseline;font-size:15px}
+.seg input{accent-color:var(--redlight)}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:400;text-align:right;padding:4px 6px;border-bottom:1px solid var(--rule)}
+th:first-child,td:first-child{text-align:left}
+td{padding:5px 6px;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;border-bottom:1px solid var(--rule)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);background:var(--panel-2);border:1px solid var(--amber);padding:10px 16px;border-radius:6px;font-size:15px;z-index:90;max-width:calc(100% - 32px);box-shadow:0 10px 40px rgba(0,0,0,.6)}
+@media (prefers-reduced-motion:no-preference){.toast{animation:pop .3s ease-out}@keyframes pop{from{transform:translate(-50%,12px);opacity:0}}}
+
+.tut{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 12px) max(12px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 12px) max(12px,env(safe-area-inset-left,0px))}
+.tut-box{width:min(860px,100%);max-height:100%;overflow:auto;background:var(--panel);border:1px solid var(--rule);border-radius:8px;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+.tut-box:focus{outline:none}
+.tut-head{padding:18px 22px 12px;border-bottom:1px solid var(--rule)}
+.tut-head h2{font-size:clamp(30px,4.4vw,44px);text-transform:uppercase;margin-top:4px}
+.tut-body{padding:16px 22px 18px;display:flex;flex-direction:column;gap:12px}
+.tut-body p,.tut-body li{max-width:68ch}
+.tut-body b,.obs-body b,.lp b{color:var(--amber);font-weight:600}
+.tcv{width:100%;height:240px;display:block;background:#050505;border:1px solid var(--rule);border-radius:4px}
+.tcv.short{height:170px}
+.tcv.tall{height:290px}
+.tut-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 22px 16px;border-top:1px solid var(--rule);position:sticky;bottom:0;background:var(--panel)}
+.tut-foot .sp{flex:1;font-size:14px;color:var(--muted)}
+@media (max-width:520px){.tut-foot .sp{flex-basis:100%;order:-1}.tut-foot .sp:empty{display:none}.tut-foot #tSkip{margin-left:auto}.tut-head,.tut-body,.tut-foot{padding-left:16px;padding-right:16px}}
+.defs{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.defs li{padding:8px 12px;background:var(--panel-2);border-radius:4px}
+.recipe{counter-reset:s;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.recipe li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:baseline}
+.recipe li>div{display:flex;flex-direction:column;gap:8px;min-width:0}
+.recipe li::before{counter-increment:s;content:counter(s);font-family:var(--display);font-size:24px;font-weight:800;color:var(--redlight);line-height:1}
+.toggle{display:flex;flex-wrap:wrap;gap:6px}
+.quiz{display:flex;flex-direction:column;gap:12px}
+.q{border:1px solid var(--rule);border-radius:6px;padding:12px 14px 14px;margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+.q legend{padding:0 6px;font-weight:600;max-width:100%}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{background:var(--panel-2);border:1px solid var(--rule);border-radius:4px;padding:7px 12px;text-align:left}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt.right{border-color:var(--good);color:var(--good)}
+.opt.wrong{border-color:var(--redlight);color:var(--redlight)}
+.opt:disabled{cursor:default}
+</style>
+
+</head>
+<body>
+<header class="bar">
+  <h1>Climbing the <span>Cosmic Ladder</span></h1>
+  <nav class="levels" id="levels" aria-label="Levels"></nav>
+  <div class="tools"><button class="iconbtn" id="menuBtn">Menu</button><button class="iconbtn gear" id="gearBtn" aria-label="Instructor settings" title="Instructor settings">&#9881;&#xFE0E;</button></div>
+</header>
+
+<main class="app">
+  <section class="skywrap" aria-label="Night sky">
+    <canvas id="sky" tabindex="0" aria-label="Sky. Drag or use arrow keys to pan. Click a marked object to observe it."></canvas>
+    <p class="skyhint" id="skyhint"></p>
+    <div class="obs" id="obs" hidden></div>
+  </section>
+  <aside class="lp" id="lp" aria-live="polite"></aside>
+</main>
+<div class="drawer" id="drawer" hidden><div class="drawer-box" id="drawerBox" tabindex="-1"></div></div>
+<div class="toast" id="toast" hidden></div>
+<div class="tut" id="tut" hidden role="dialog" aria-modal="true" aria-labelledby="tutTitle"><div class="tut-box" id="tutBox" tabindex="-1"></div></div>
+
+<script>
+/* ================= constants ================= */
+const W=3600,H=2200,C=299792.458,LY=3.2616,MSUN=4.83,F10=1/(400*Math.PI),FOURPI=4*Math.PI;
+const L_A=372.4,L_B=1,L_SN=4.6e9;
+const mOf=F=>MSUN-2.5*Math.log10(F/F10);
+const FOfm=m=>F10*Math.pow(10,-0.4*(m-MSUN));
+const MOfL=L=>MSUN-2.5*Math.log10(L);
+const TXT='#f5f1e8',TXT2='#ddd6c8',GRID='#2c2c30',FONT='12px "IBM Plex Mono", monospace';
+const CL={F:'#5ab8ff',L:'#4fd67a',r:'#ff8ad1',d:'#ff6b6b',th:'#5ab8ff',P:'#b58cff'};
+const T={F:String.raw`{\color{#5ab8ff}F}`,Fb:String.raw`{\color{#5ab8ff}\bar{F}}`,Fpk:String.raw`{\color{#5ab8ff}F_\text{peak}}`,
+  L:String.raw`{\color{#4fd67a}L}`,Lsn:String.raw`{\color{#4fd67a}L_\text{SN}}`,r:String.raw`{\color{#ff8ad1}r}`,d:String.raw`{\color{#ff6b6b}d}`,
+  th:String.raw`{\color{#5ab8ff}\theta}`,P:String.raw`{\color{#b58cff}P}`,m:String.raw`{\color{#5ab8ff}\bar{m}}`,mpk:String.raw`{\color{#5ab8ff}m_\text{peak}}`,
+  M:String.raw`{\color{#4fd67a}M}`,Msn:String.raw`{\color{#4fd67a}M_\text{SN}}`,v:String.raw`{\color{#f6bd5f}v}`,z:String.raw`{\color{#f6bd5f}z}`};
+const FU=String.raw`L_\odot/\text{pc}^2`;
+const LINES=[
+  {n:'Ca K',l:393.37,a:-0.42,w:1.1},{n:'Ca H',l:396.85,a:-0.38,w:1.1},{n:'G band',l:430.5,a:-0.16,w:1.5},
+  {n:'Hβ',l:486.13,a:-0.14,w:1.1,em:0.3},{n:'[O III]',l:500.7,a:0,w:0.9,em:0.22},{n:'Mg b',l:517.5,a:-0.18,w:1.6},
+  {n:'Na D',l:589.3,a:-0.18,w:1.2},{n:'Hα',l:656.28,a:-0.1,w:1.1,em:1.1},{n:'[N II]',l:658.4,a:0,w:0.9,em:0.35}];
+const lineAmp=(g,ln)=>g.type==='spiral'?(ln.em??ln.a):ln.a;
+
+/* ================= helpers ================= */
+function hashStr(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19}return h>>>0}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function gaussOf(r){return()=>{let u=0;while(!u)u=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*r())}}
+function fitT(cv){const r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1,w2=Math.max(1,Math.round(r.width*dpr)),h2=Math.max(1,Math.round(r.height*dpr));if(cv.width!==w2||cv.height!==h2){cv.width=w2;cv.height=h2}const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,r.width,r.height);ctx.font=FONT;return{ctx,w:r.width,h:r.height}}
+function niceStep(range,n){const raw=range/n,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p;return(f<1.5?1:f<3?2:f<7?5:10)*p}
+const fmt=(x,d=0)=>(+x).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const sig3=x=>{const a=Math.abs(x);return a>=100?fmt(x,0):a>=10?fmt(x,1):fmt(x,2)};
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const sup=n=>String(n).split('').map(c=>SUP[c]||c).join('');
+function sci(x,s=3){const a=Math.abs(x);if(a>=0.01&&a<1e5)return sig3(x);let e=Math.floor(Math.log10(a)),m=x/Math.pow(10,e);if(Math.abs(+m.toFixed(s-1))>=10){e++;m=x/Math.pow(10,e)}return `${m.toFixed(s-1)}×10${sup(e)}`}
+function tx(x,s=3){if(!isFinite(x))return'?';const a=Math.abs(x);if(a===0)return'0';
+  if(a>=0.01&&a<1e5){const d=a>=1000?0:Math.max(0,s-1-Math.floor(Math.log10(a)));return fmt(x,Math.min(d,4)).replace(/,/g,'{,}')}
+  let e=Math.floor(Math.log10(a)),m=x/Math.pow(10,e);if(Math.abs(+m.toFixed(s-1))>=10){e++;m=x/Math.pow(10,e)}return `${m.toFixed(s-1)}\\times10^{${e}}`}
+const t2=x=>x.toFixed(2);
+const eqHtml=tex=>`<div class="eq">\\[${tex}\\]</div>`;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,5500)}
+function wl2rgb(l){let r=0,g=0,b=0;if(l<440){r=-(l-440)/60;b=1}else if(l<490){g=(l-440)/50;b=1}else if(l<510){g=1;b=-(l-510)/20}else if(l<580){r=(l-510)/70;g=1}else if(l<645){r=1;g=-(l-645)/65}else r=1;
+  const f=l<420?0.3+0.7*(l-380)/40:l>700?0.3+0.7*(780-l)/80:1;const c=v=>Math.round(255*Math.max(0,Math.min(1,v*f))*0.85);return`rgb(${c(r)},${c(g)},${c(b)})`}
+function axisLabelY(ctx,txt,x,y){ctx.save();ctx.translate(x,y);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillText(txt,0,0);ctx.restore()}
+function parseNum(s){s=String(s).trim().replace(/,/g,'').replace(/\s/g,'').replace(/−/g,'-').replace(/[×x*]10\^?/i,'e');if(!s)return null;const v=Number(s);return isFinite(v)?v:null}
+const rel=(ans,tol)=>x=>Math.abs(x-ans)<=Math.abs(ans)*tol;
+const absTol=(ans,t)=>x=>Math.abs(x-ans)<=t;
+const isFlux=()=>S.set.units==='flux';
+
+/* ================= settings / class code ================= */
+const DEFAULT_CODE='ORION-F1A53-10';
+/* ===== TEACHER PASSCODE for the gear (settings) button. Change the text between the quotes. ===== */
+const TEACHER_PASSCODE='ladder';
+const teacherOK=()=>{try{return localStorage.getItem('cosmic-ladder:teacher')===TEACHER_PASSCODE||sessionStorage.getItem('cosmic-ladder:teacher')===TEACHER_PASSCODE}catch(e){return false}};
+function cleanSeed(s){return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,16)||'ORION'}
+function parseCode(c){c=(c||'').trim().toUpperCase().replace(/[^A-Z0-9-]/g,'');const m=c.match(/^([A-Z0-9]{1,16})-([FM])([123])([AH])([3-9])([2-9])(?:-(\d{1,2}))?$/);if(!m)return null;
+  const o={seed:m[1],units:m[2]==='F'?'flux':'mag',start:+m[3],hand:m[4]==='H',n1:+m[5],n2:+m[6],n3:m[7]?Math.max(5,Math.min(30,+m[7])):10};o.code=makeCode(o.seed,o.units,o.start,o.hand,o.n1,o.n2,o.n3);return o}
+const makeCode=(seed,units,start,hand,n1,n2,n3=10)=>`${cleanSeed(seed)}-${units==='flux'?'F':'M'}${start}${hand?'H':'A'}${n1}${n2}-${n3}`;
+function settingsText(s){return [s.units==='flux'?'Flux and luminosity':'Magnitudes',['starts at Level 1 (full distance ladder)','starts at Level 2 (period-luminosity relation given)','starts at Level 3 (supernova luminosity given)'][s.start-1],s.hand?'students compute each step':'the game does the arithmetic',`${s.n1} variable stars and ${s.n2} supernova galaxies to unlock`,`${s.n3} galaxies to finish Level 3`].join(' · ')}
+
+const S={code:'',seed:'',set:{units:'flux',start:1,hand:false,n1:5,n2:3,n3:10},H0:0,U:null,st:null,view:1,cam:{x:0,y:0},cur:null,hover:null,showTrue:false};
+const blankSt=()=>({vars:{},hosts:{},far:{},lessons:{},quiz:{}});
+function saveSt(){try{localStorage.setItem('redshift-hunt:v3:'+S.code,JSON.stringify(S.st));localStorage.setItem('redshift-hunt:v3:code',S.code)}catch(e){}}
+function loadSt(){let o=null;try{o=JSON.parse(localStorage.getItem('redshift-hunt:v3:'+S.code)||'null')}catch(e){}S.st=Object.assign(blankSt(),o||{})}
+const cnt=k=>Object.keys(S.st[k]).length;
+function unlocked(lv){if(lv<S.set.start)return false;if(lv===S.set.start)return true;if(lv===2)return cnt('vars')>=S.set.n1;return unlocked(2)&&cnt('hosts')>=S.set.n2}
+const topLevel=()=>unlocked(3)?3:unlocked(2)?2:1;
+
+/* ================= universe ================= */
+let stars=null;
+function buildUniverse(seed){
+  const r=mulberry32(hashStr(seed)),g=gaussOf(r);S.H0=+(62+r()*16).toFixed(1);
+  const pos=()=>({x:140+r()*(W-280),y:140+r()*(H-280)});
+  const vars=[];for(let i=0;i<12;i++){const P=Math.pow(10,0.35+1.25*r()),d=150+r()*330;vars.push({id:'V'+String.fromCharCode(65+i),name:'Variable '+String.fromCharCode(65+i),kind:'var',P,d,L:L_A*P*Math.pow(10,0.045*g()),ph:r(),...pos()})}
+  const used=new Set(),gid=()=>{let n;do{n=100+Math.floor(r()*900)}while(used.has(n));used.add(n);return'SKY-'+n};
+  const hosts=[];for(let i=0;i<10;i++){const P=Math.pow(10,0.75+0.95*r());hosts.push({id:gid(),kind:'host',d:(8+r()*30)*1e6,P,L:L_A*P*Math.pow(10,0.045*g()),Lsn:L_SN*Math.pow(10,0.05*g()),ph:r(),type:'spiral',ang:r()*Math.PI,q:.3+.7*r(),...pos()})}
+  const far=[];for(let i=0;i<30;i++){const dM=i<6?15+r()*45:60+Math.sqrt(r())*360,v=S.H0*dM+g()*300;far.push({id:gid(),kind:'far',d:dM*1e6,Lsn:L_SN*Math.pow(10,0.05*g()),v,z:v/C,type:r()<.55?'spiral':'elliptical',ang:r()*Math.PI,q:.3+.7*r(),...pos()})}
+  S.U={vars,hosts,far,all:[...vars,...hosts,...far]};buildStars(seed)}
+function buildStars(seed){const r=mulberry32(hashStr(seed+'*'));stars=document.createElement('canvas');stars.width=W;stars.height=H;const c=stars.getContext('2d');c.fillStyle='#000';c.fillRect(0,0,W,H);
+  c.save();c.translate(W/2,H/2);c.rotate(-0.42);const band=c.createLinearGradient(0,-380,0,380);band.addColorStop(0,'rgba(110,110,130,0)');band.addColorStop(.5,'rgba(130,130,150,.12)');band.addColorStop(1,'rgba(110,110,130,0)');c.fillStyle=band;c.fillRect(-W,-380,W*2,760);
+  for(let i=0;i<9000;i++){const x=(r()-.5)*W*1.6,y=(r()+r()+r()-1.5)*260;c.fillStyle=`rgba(220,220,235,${0.08+r()*0.25})`;c.fillRect(x,y,1,1)}c.restore();
+  const tints=['255,255,255','255,226,190','210,220,255','255,200,170'];
+  for(let i=0;i<3000;i++){const x=r()*W,y=r()*H,b=r(),t=tints[Math.floor(r()*4)],s=b>0.985?1.4+r()*1.2:0.5+r()*0.8;
+    if(s>1.4){const gl=c.createRadialGradient(x,y,0,x,y,s*4);gl.addColorStop(0,`rgba(${t},.45)`);gl.addColorStop(1,`rgba(${t},0)`);c.fillStyle=gl;c.beginPath();c.arc(x,y,s*4,0,7);c.fill()}
+    c.fillStyle=`rgba(${t},${0.35+b*0.65})`;c.beginPath();c.arc(x,y,s,0,7);c.fill()}}
+
+/* ================= calibration ================= */
+function plRel(){if(S.set.start>=2)return{A:L_A,b:L_B,n:0,given:true};
+  const pts=Object.values(S.st.vars).map(v=>[Math.log10(v.P),Math.log10(v.L)]),n=pts.length;if(n<2)return null;
+  const mx=pts.reduce((s,p)=>s+p[0],0)/n,my=pts.reduce((s,p)=>s+p[1],0)/n;let sxx=0,sxy=0;pts.forEach(([x,y])=>{sxx+=(x-mx)**2;sxy+=(x-mx)*(y-my)});
+  const b=sxx>1e-4?sxy/sxx:1,a=my-b*mx;return{A:Math.pow(10,a),b,n}}
+const lumP=(rl,P)=>rl.A*Math.pow(P,rl.b);
+const hostDist=(h,rl)=>rl?Math.sqrt(lumP(rl,h.P)/(FOURPI*h.Fc)):null;
+function snCal(){if(S.set.start>=3)return{L:L_SN,n:0,given:true};const rl=plRel();if(!rl)return null;
+  const vals=Object.values(S.st.hosts).map(h=>{const r=hostDist(h,rl);return FOURPI*r*r*h.Fpk});if(!vals.length)return null;
+  const lg=vals.map(Math.log10),mu=lg.reduce((a,b)=>a+b,0)/lg.length,sd=lg.length>1?Math.sqrt(lg.reduce((a,b)=>a+(b-mu)**2,0)/(lg.length-1)):0;return{L:Math.pow(10,mu),n:vals.length,sd,vals}}
+const farDist=(f,cal)=>cal?Math.sqrt(cal.L/(FOURPI*f.Fpk)):null;
+function hubbleFit(){const cal=snCal();const pts=Object.values(S.st.far).map(f=>({d:farDist(f,cal)/1e6,v:f.z*C})).filter(p=>p.d);if(pts.length<3)return null;
+  let sdd=0,svd=0;pts.forEach(p=>{sdd+=p.d*p.d;svd+=p.v*p.d});const Hf=svd/sdd;let ss=0;pts.forEach(p=>ss+=(p.v-Hf*p.d)**2);return{H:Hf,err:Math.sqrt(ss/(pts.length-1)/sdd),n:pts.length}}
+
+/* ================= observations ================= */
+const pulseDl=ph=>{ph=((ph%1)+1)%1;return ph<0.2?0.5-ph/0.2:-0.5+(ph-0.2)/0.8};
+function lcCep(o,sig){const r=mulberry32(hashStr(S.seed+o.id+'c')),gs=gaussOf(r),Fm=o.L/(FOURPI*o.d*o.d),days=Math.max(12,Math.ceil(o.P*3.2)),step=o.P<4?0.25:o.P<8?0.5:1,lc=[];
+  for(let t=0;t<=days;t+=step){if(r()<0.2)continue;lc.push({t:+t.toFixed(2),F:Fm*Math.pow(10,-0.32*pulseDl(t/o.P+o.ph))*(1+gs()*sig)})}return lc}
+function lcSN(o){const r=mulberry32(hashStr(S.seed+o.id+'s')),gs=gaussOf(r),Fp=o.Lsn/(FOURPI*o.d*o.d),sig=0.02+0.04*o.d/4.2e8,lc=[];let t=-16+r()*2.5;
+  while(t<=42){const dl=t<0?2.4*(t/18)**2:(t<=15?0.073*t:1.1+0.03*(t-15));lc.push({t:+(t+16).toFixed(1),F:Fp*Math.pow(10,-0.4*dl)*(1+gs()*sig)});t+=1.8+r()*2.2}return lc}
+function specModel(type,z,L){const Lr=L/(1+z);let f=type==='elliptical'?(0.5+0.5*(1-Math.exp(-(Lr-350)/110)))*(0.8+0.2/(1+Math.exp(-(Lr-400)/2))):0.72+0.28*(1-Math.exp(-(Lr-350)/90));
+  for(const ln of LINES){const a=lineAmp({type},ln);if(a)f+=a*Math.exp(-0.5*((Lr-ln.l)/ln.w)**2)}return f}
+function specData(g){const r=mulberry32(hashStr(S.seed+g.id+'p')),gs=gaussOf(r),lam=[],flux=[],sig=0.012+g.d/4.2e8*0.045;for(let L=370;L<=770;L+=0.5){lam.push(L);flux.push(specModel(g.type,g.z,L)+gs()*sig)}return{lam,flux}}
+function parData(o){const r=mulberry32(hashStr(S.seed+o.id+'x')),g=gaussOf(r),th=1000/o.d,bg=[];for(let i=0;i<34;i++)bg.push({x:(r()-.5)*26,y:(r()-.5)*17,s:.25+r()*.7});const y0=(r()-.5)*4;
+  return{bg,jan:{x:-th+g()*0.12,y:y0+g()*0.08},jul:{x:th+g()*0.12,y:y0+g()*0.08}}}
+const avgFlux=lc=>{if(isFlux())return lc.reduce((s,p)=>s+p.F,0)/lc.length;return FOfm(lc.reduce((s,p)=>s+mOf(p.F),0)/lc.length)};
+
+/* ================= sky ================= */
+const sky=document.getElementById('sky');let skyW=0,skyH=0,pending=false;
+function requestDraw(){if(!pending){pending=true;requestAnimationFrame(()=>{pending=false;drawSky()})}}
+function clampCam(){S.cam.x=Math.max(0,Math.min(W-skyW,S.cam.x));S.cam.y=Math.max(0,Math.min(H-skyH,S.cam.y))}
+const galSize=g=>Math.max(1.4,220/(g.d/1e6));
+const targets=()=>S.view===1?S.U.vars:S.view===2?S.U.hosts:S.U.far;
+const recOf=o=>S.st[o.kind==='var'?'vars':o.kind==='host'?'hosts':'far'][o.id];
+function drawGalaxy(ctx,g,x,y){const s=galSize(g),a=Math.min(1,0.4+1.6/Math.sqrt(g.d/1e6));ctx.save();ctx.translate(x,y);ctx.rotate(g.ang);ctx.scale(1,g.q);ctx.globalAlpha=a;
+  const gr=ctx.createRadialGradient(0,0,0,0,0,s);if(g.type==='elliptical'){gr.addColorStop(0,'rgba(255,238,205,1)');gr.addColorStop(.35,'rgba(240,200,150,.55)');gr.addColorStop(1,'rgba(200,160,120,0)')}
+  else{gr.addColorStop(0,'rgba(255,242,220,1)');gr.addColorStop(.18,'rgba(222,216,240,.6)');gr.addColorStop(.6,'rgba(150,175,235,.22)');gr.addColorStop(1,'rgba(120,150,230,0)')}
+  ctx.fillStyle=gr;ctx.beginPath();ctx.arc(0,0,s,0,7);ctx.fill();
+  if(g.type==='spiral'&&s>9){ctx.fillStyle='rgba(185,205,255,.45)';for(let arm=0;arm<2;arm++)for(let t=0;t<1;t+=0.018){const th=t*4.4+arm*Math.PI,rr=s*(0.12+0.85*t);ctx.beginPath();ctx.arc(Math.cos(th)*rr,Math.sin(th)*rr,Math.max(.6,s*.05*(1-t*.5)),0,7);ctx.fill()}}ctx.restore()}
+function drawVarStar(ctx,x,y){const gl=ctx.createRadialGradient(x,y,0,x,y,16);gl.addColorStop(0,'rgba(255,236,190,.95)');gl.addColorStop(.3,'rgba(255,214,150,.4)');gl.addColorStop(1,'rgba(255,200,120,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(x,y,16,0,7);ctx.fill();
+  ctx.strokeStyle='rgba(255,236,200,.55)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-18,y);ctx.lineTo(x+18,y);ctx.moveTo(x,y-18);ctx.lineTo(x,y+18);ctx.stroke();ctx.fillStyle='#fff8e6';ctx.beginPath();ctx.arc(x,y,2.6,0,7);ctx.fill()}
+function drawSky(){
+  const {ctx,w,h}=fitT(sky);skyW=w;skyH=h;clampCam();ctx.drawImage(stars,S.cam.x,S.cam.y,w,h,0,0,w,h);
+  for(const o of S.U.all){const x=o.x-S.cam.x,y=o.y-S.cam.y;if(x<-60||y<-60||x>w+60||y>h+60)continue;o.kind==='var'?drawVarStar(ctx,x,y):drawGalaxy(ctx,o,x,y)}
+  ctx.font=FONT;
+  for(const o of targets()){const x=o.x-S.cam.x,y=o.y-S.cam.y;if(x<-60||y<-60||x>w+60||y>h+60)continue;const rr=o.kind==='var'?14:Math.max(galSize(o),2)+9,done=recOf(o);
+    ctx.strokeStyle=done?'#86dcae':'rgba(255,106,85,.75)';ctx.lineWidth=1.3;ctx.setLineDash(done?[]:[3,4]);ctx.beginPath();ctx.arc(x,y,rr,0,7);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=done?'#86dcae':TXT;ctx.textAlign='left';if(o.kind==='var')ctx.fillText(o.name,x+rr+5,y+4);else if(o.kind==='host'){ctx.fillStyle='#f6bd5f';ctx.font='15px sans-serif';ctx.fillText('★',x+rr+3,y-rr+6);ctx.font=FONT}
+    if(S.cur&&S.cur.obj===o){ctx.strokeStyle='#f6bd5f';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(x,y,rr+5,0,7);ctx.stroke()}}
+  if(S.hover&&!S.cur){const {x,y}=S.hover;ctx.strokeStyle='rgba(255,106,85,.85)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,22,0,7);ctx.stroke();for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ctx.beginPath();ctx.moveTo(x+dx*16,y+dy*16);ctx.lineTo(x+dx*28,y+dy*28);ctx.stroke()}}
+  const mw=140,mh=mw*H/W,mx=w-mw-12,my=h-mh-12;ctx.fillStyle='rgba(0,0,0,.85)';ctx.fillRect(mx,my,mw,mh);ctx.strokeStyle='#3a3a3e';ctx.strokeRect(mx+.5,my+.5,mw-1,mh-1);
+  for(const o of targets()){ctx.fillStyle=recOf(o)?'#86dcae':'#ff6a55';ctx.fillRect(mx+o.x/W*mw-1.5,my+o.y/H*mh-1.5,3,3)}
+  ctx.strokeStyle='#f6bd5f';ctx.strokeRect(mx+S.cam.x/W*mw,my+S.cam.y/H*mh,w/W*mw,h/H*mh);sky._mini={mx,my,mw,mh}}
+function pick(px,py){let best=null,bd=1e9;for(const o of targets()){const dd=Math.hypot(o.x-S.cam.x-px,o.y-S.cam.y-py),rad=o.kind==='var'?20:Math.max(16,galSize(o)+6);if(dd<rad&&dd<bd){bd=dd;best=o}}return best}
+let drag=null;
+sky.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,cx:S.cam.x,cy:S.cam.y,moved:false};sky.setPointerCapture(e.pointerId)});
+sky.addEventListener('pointermove',e=>{const r=sky.getBoundingClientRect();S.hover={x:e.clientX-r.left,y:e.clientY-r.top};
+  if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>5){drag.moved=true;sky.classList.add('grabbing')}if(drag.moved){S.cam.x=drag.cx-dx;S.cam.y=drag.cy-dy;clampCam()}}requestDraw()});
+sky.addEventListener('pointerup',e=>{sky.classList.remove('grabbing');if(drag&&!drag.moved){const r=sky.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top,m=sky._mini;
+  if(m&&px>=m.mx&&px<=m.mx+m.mw&&py>=m.my&&py<=m.my+m.mh){S.cam.x=(px-m.mx)/m.mw*W-skyW/2;S.cam.y=(py-m.my)/m.mh*H-skyH/2;clampCam();requestDraw()}else{const o=pick(px,py);if(o)openObj(o)}}drag=null});
+sky.addEventListener('pointerleave',()=>{S.hover=null;requestDraw()});
+sky.addEventListener('keydown',e=>{const k={ArrowLeft:[-80,0],ArrowRight:[80,0],ArrowUp:[0,-80],ArrowDown:[0,80]}[e.key];if(k){e.preventDefault();S.cam.x+=k[0];S.cam.y+=k[1];clampCam();requestDraw()}});
+function centerOn(o){fitT(sky);S.cam.x=o.x-sky.clientWidth/2;S.cam.y=o.y-sky.clientHeight/2;skyW=sky.clientWidth;skyH=sky.clientHeight;clampCam()}
+
+/* ================= charts ================= */
+const fx=(x,d)=>fmt(x,d);
+function drawPL(cv,hi){const {ctx,w,h}=fitT(cv),fl=isFlux(),L=fl?66:52,R=14,Tp=16,B=44,rl=plRel();
+  const X=p=>L+Math.log10(p)/2*(w-L-R),Y=fl?l=>Tp+(1-(Math.log10(l)-2)/3)*(h-Tp-B):l=>{const M=MOfL(l);return Tp+(M+8.5)/9*(h-Tp-B)};
+  ctx.strokeStyle=GRID;ctx.fillStyle=TXT2;ctx.textAlign='center';[1,2,5,10,20,50,100].forEach(p=>{const x=X(p);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillText(p,x,h-B+15)});
+  if(fl)[100,1000,10000,100000].forEach(l=>{const y=Y(l);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.textAlign='right';ctx.fillText(fmt(l),L-6,y+4)});
+  else for(let M=0;M>=-8;M-=2){const y=Tp+(M+8.5)/9*(h-Tp-B);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.textAlign='right';ctx.fillText(M,L-6,y+4)}
+  ctx.textAlign='center';ctx.fillText('Pulsation Period (days)',L+(w-L-R)/2,h-6);axisLabelY(ctx,fl?'Luminosity (Solar Units)':'Absolute magnitude M',13,Tp+(h-Tp-B)/2);
+  if(rl){ctx.strokeStyle='#ff7a6b';ctx.lineWidth=2.5;ctx.globalAlpha=.85;ctx.beginPath();ctx.moveTo(X(1),Y(lumP(rl,1)));ctx.lineTo(X(100),Y(lumP(rl,100)));ctx.stroke();ctx.globalAlpha=1;ctx.lineWidth=1;
+    ctx.fillStyle='#ff7a6b';ctx.textAlign='left';ctx.fillText(rl.given?'period-luminosity relation (given)':`your relation (${rl.n} stars)`,L+8,Tp+14)}
+  for(const v of Object.values(S.st.vars)){ctx.fillStyle='#ff9a8a';ctx.beginPath();ctx.arc(X(v.P),Y(v.L),4.5,0,7);ctx.fill()}
+  if(hi){const x=X(hi.P),y=Y(hi.L);if(hi.read){ctx.setLineDash([6,5]);ctx.lineWidth=2;ctx.strokeStyle=CL.P;ctx.beginPath();ctx.moveTo(x,h-B);ctx.lineTo(x,y);ctx.stroke();ctx.strokeStyle=CL.L;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(L,y);ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1}
+    ctx.strokeStyle='#f6bd5f';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle='#f6bd5f';ctx.beginPath();ctx.arc(x,y,4.5,0,7);ctx.fill()}
+  if(!rl&&!Object.keys(S.st.vars).length&&!hi){ctx.fillStyle=TXT;ctx.font='14px "IBM Plex Sans", sans-serif';ctx.textAlign='center';ctx.fillText('Your measured variable stars will appear here.',L+(w-L-R)/2,Tp+(h-Tp-B)/2)}}
+function drawSNL(cv,hi){const {ctx,w,h}=fitT(cv),fl=isFlux(),L=20,R=20,Tp=30,B=46,cal=snCal(),rl=plRel();
+  const lo=9.2,hiL=10.2,M0=MOfL(Math.pow(10,lo)),M1=MOfL(Math.pow(10,hiL)),X=fl?l=>L+(Math.log10(l)-lo)/(hiL-lo)*(w-L-R):l=>L+(MOfL(l)-M0)/(M1-M0)*(w-L-R);
+  ctx.strokeStyle=GRID;ctx.fillStyle=TXT2;ctx.textAlign='center';
+  if(fl)[2e9,3e9,5e9,7e9,1e10,1.5e10].forEach(l=>{const x=X(l);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillText(sci(l,2).replace('.0×','×'),x,h-B+15)});
+  else for(let M=-18.5;M>=-20.5;M-=0.5){const x=L+(M-M0)/(M1-M0)*(w-L-R);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillText(M.toFixed(1),x,h-B+15)}
+  ctx.fillText(fl?'Type 1a supernova peak luminosity (Solar Units)':'Type 1a supernova peak absolute magnitude M',L+(w-L-R)/2,h-6);
+  const pts=Object.entries(S.st.hosts).map(([id,hh])=>{const r=hostDist(hh,rl);return{id,L:FOURPI*r*r*hh.Fpk}});if(hi)pts.push({id:'this galaxy',L:hi.L,hi:true});
+  if(cal&&!cal.given&&cal.n){const x=X(cal.L);ctx.strokeStyle='#4fd67a';ctx.setLineDash([6,5]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,Tp-8);ctx.lineTo(x,h-B);ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1;ctx.fillStyle='#4fd67a';ctx.fillText('average',x,Tp-12)}
+  if(cal&&cal.given){const x=X(cal.L);ctx.strokeStyle='#4fd67a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle='#4fd67a';ctx.fillText('given',x,Tp-10)}
+  const rowH=Math.min(26,(h-Tp-B-10)/Math.max(1,pts.length));
+  pts.forEach((p,i)=>{const x=Math.max(L,Math.min(w-R,X(p.L))),y=Tp+10+i*rowH;ctx.fillStyle=p.hi?'#f6bd5f':'#86c9f2';ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x+6,y);ctx.lineTo(x,y+6);ctx.lineTo(x-6,y);ctx.closePath();ctx.fill();ctx.fillStyle=TXT;ctx.textAlign=x>w/2?'right':'left';ctx.fillText(p.id,x+(x>w/2?-11:11),y+4)});
+  if(!pts.length&&!cal){ctx.fillStyle=TXT;ctx.font='14px "IBM Plex Sans", sans-serif';ctx.textAlign='center';ctx.fillText('Each ★ galaxy you measure adds a supernova here.',w/2,Tp+(h-Tp-B)/2)}}
+function drawHub(cv,hi){const {ctx,w,h}=fitT(cv),L=62,R=14,Tp=14,B=44,cal=snCal();
+  const pts=Object.values(S.st.far).map(f=>({d:farDist(f,cal)/1e6,v:f.z*C})).filter(p=>p.d);if(hi)pts.push({...hi,hi:true});
+  const dmax=Math.max(60,...pts.map(p=>p.d*1.08))*1.05,vmax=Math.max(5000,...pts.map(p=>p.v))*1.1,vmin=Math.min(0,...pts.map(p=>p.v));const X=d=>L+d/dmax*(w-L-R),Y=v=>Tp+(1-(v-vmin)/(vmax-vmin))*(h-Tp-B);
+  ctx.fillStyle=TXT2;ctx.strokeStyle=GRID;const ds=niceStep(dmax,5);for(let d=0;d<=dmax;d+=ds){const x=X(d);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.textAlign='center';ctx.fillText(fmt(d),x,h-B+15)}
+  const vs=niceStep(vmax-vmin,5);for(let v=Math.ceil(vmin/vs)*vs;v<=vmax;v+=vs){const y=Y(v);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.textAlign='right';ctx.fillText(fmt(v),L-6,y+4)}
+  ctx.textAlign='center';ctx.fillText('distance r (Mpc)',L+(w-L-R)/2,h-6);axisLabelY(ctx,'velocity v (km/s)',12,Tp+(h-Tp-B)/2);
+  const line=(Hv,col,dash)=>{const dEnd=Math.min(dmax,vmax/Hv);ctx.strokeStyle=col;ctx.setLineDash(dash);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(0),Y(0));ctx.lineTo(X(dEnd),Y(Hv*dEnd));ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1};
+  if(S.showTrue||S.st.done)line(S.H0,'rgba(134,220,174,.7)',[2,4]);const f=hubbleFit();if(f)line(f.H,'#ff6a55',[7,5]);
+  for(const p of pts){const x=X(p.d),y=Y(p.v);ctx.strokeStyle='rgba(134,201,242,.6)';ctx.beginPath();ctx.moveTo(X(p.d*0.93),y);ctx.lineTo(X(p.d*1.07),y);ctx.stroke();ctx.fillStyle=p.hi?'#f6bd5f':'#86c9f2';ctx.beginPath();ctx.moveTo(x,y-5.5);ctx.lineTo(x+5.5,y);ctx.lineTo(x,y+5.5);ctx.lineTo(x-5.5,y);ctx.closePath();ctx.fill();if(p.hi){ctx.strokeStyle='#f6bd5f';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,9,0,7);ctx.stroke();ctx.lineWidth=1}}
+  if(!pts.length){ctx.fillStyle=TXT;ctx.font='14px "IBM Plex Sans", sans-serif';ctx.textAlign='center';ctx.fillText('Galaxies you measure will appear here.',L+(w-L-R)/2,Tp+(h-Tp-B)/2)}}
+function drawCurve(cv,lc,marked,color,avg){const {ctx,w,h}=fitT(cv),L=58,R=12,Tp=16,B=40,fl=isFlux();
+  const t1=Math.max(...lc.map(p=>p.t));let vals,k=0;if(fl){k=Math.floor(Math.log10(Math.max(...lc.map(p=>p.F))));vals=lc.map(p=>p.F/Math.pow(10,k))}else vals=lc.map(p=>mOf(p.F));
+  let v0=Math.min(...vals),v1=Math.max(...vals);const pad=(v1-v0)*0.12||0.1;v0-=pad;v1+=pad;
+  const X=t=>L+t/t1*(w-L-R),Y=fl?v=>Tp+(1-(v-v0)/(v1-v0))*(h-Tp-B):v=>Tp+(v-v0)/(v1-v0)*(h-Tp-B);
+  ctx.strokeStyle=GRID;ctx.fillStyle=TXT2;const ts=niceStep(t1,6);for(let t=0;t<=t1+1e-9;t+=ts){const x=X(t);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.textAlign='center';ctx.fillText(+t.toFixed(2),x,h-B+15)}
+  const vs=niceStep(v1-v0,4),dec=vs<0.1?2:vs<1?1:0;for(let v=Math.ceil(v0/vs)*vs;v<=v1;v+=vs){const y=Y(v);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.textAlign='right';ctx.fillText(v.toFixed(dec),L-6,y+4)}
+  ctx.textAlign='center';ctx.fillText('Time (days)',L+(w-L-R)/2,h-6);axisLabelY(ctx,fl?`Flux (10${sup(k)} L☉/pc²)`:'magnitude m (brighter ↑)',13,Tp+(h-Tp-B)/2);
+  if(avg){const av=fl?avgFlux(lc)/Math.pow(10,k):mOf(avgFlux(lc));ctx.strokeStyle='#5ab8ff';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(L,Y(av));ctx.lineTo(w-R,Y(av));ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1;ctx.fillStyle='#5ab8ff';ctx.textAlign='right';ctx.fillText('average',w-R-4,Y(av)-6)}
+  return lc.map((p,i)=>{const x=X(p.t),y=Y(vals[i]);if(marked.has(i)){ctx.strokeStyle='rgba(181,140,255,.7)';ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillStyle='#b58cff';ctx.beginPath();ctx.arc(x,y,6,0,7);ctx.fill();ctx.fillStyle=TXT;ctx.textAlign='center';ctx.fillText('day '+p.t,x,Tp+11)}
+    else{ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,3,0,7);ctx.fill()}return{x,y,i}})}
+function nearestPt(pts,e){const r=e.currentTarget.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;let best=null,bd=20;for(const p of pts){const d=Math.hypot(p.x-px,(p.y-py)*0.6);if(d<bd){bd=d;best=p}}return best}
+
+/* ================= measurement cards ================= */
+const obsEl=document.getElementById('obs');
+function openObj(o){stopBlink();const k=o.kind;S.cur={kind:k,obj:o,i:0,marks:[],snPick:null,zGuess:0,pm:{},epoch:'jan',blink:false,blinkShow:'jan',hand:{},msg:null,
+  lc:k==='far'?null:lcCep(o,k==='var'?0.012:0.03+0.04*(o.d/4e7)),snlc:k==='var'?null:lcSN(o),spec:k==='far'?specData(o):null,par:k==='var'?parData(o):null,review:!!recOf(o)};renderPanel();requestDraw()}
+function closePanel(){stopBlink();S.cur=null;obsEl.hidden=true;obsEl.innerHTML='';requestDraw()}
+function stopBlink(){if(S.cur&&S.cur.blinkTimer){clearInterval(S.cur.blinkTimer);S.cur.blinkTimer=null}}
+function calc(cur){const o={},k=cur.kind,fl=isFlux();
+  if(cur.lc){const ts=cur.marks.map(i=>cur.lc[i].t).sort((a,b)=>a-b);o.ts=ts;o.n=ts.length;o.P=o.n>=2?(ts[o.n-1]-ts[0])/(o.n-1):null;if(o.P===0)o.P=null;o.F=avgFlux(cur.lc);o.m=mOf(o.F)}
+  if(k==='var'){const a=cur.pm.jan,b=cur.pm.jul;if(a&&b){o.shift=Math.hypot(b.x-a.x,b.y-a.y)*0.001;o.th=o.shift/2;o.d=1/o.th;o.L=FOURPI*o.d*o.d*o.F;o.M=MOfL(o.L)}}
+  if(k==='host'){o.rel=plRel();if(o.P&&o.rel){o.Lc=lumP(o.rel,o.P);o.Mc=MOfL(o.Lc);o.r=Math.sqrt(o.Lc/(FOURPI*o.F));o.relM={a:MSUN-2.5*Math.log10(o.rel.A),b:-2.5*o.rel.b}}}
+  if(cur.snlc&&cur.snPick!=null){o.Fpk=cur.snlc[cur.snPick].F;o.mpk=mOf(o.Fpk)}
+  if(k==='host'&&o.r&&o.Fpk){o.Lsn=FOURPI*o.r*o.r*o.Fpk;o.Msn=MOfL(o.Lsn)}
+  if(k==='far'){o.cal=snCal();if(o.cal&&o.Fpk){o.r=Math.sqrt(o.cal.L/(FOURPI*o.Fpk))}o.lam=Math.round(393.37*(1+cur.zGuess)*10)/10;o.z=(o.lam-393.37)/393.37;o.v=C*o.z}
+  return o}
+function relTex(rl,fl){if(fl)return String.raw`${T.L} = ${tx(rl.A)}\,L_\odot \times ${T.P}^{\,${rl.b.toFixed(2)}}`;const a=MSUN-2.5*Math.log10(rl.A),b=-2.5*rl.b;return String.raw`${T.M} = ${a.toFixed(2)} ${b<0?'-':'+'} ${Math.abs(b).toFixed(2)}\log_{10}${T.P}`}
+
+function cardsFor(cur){const k=cur.kind,fl=isFlux(),given1=S.set.start>=2,cs=[];
+  const cP={id:'P',t:'Pulsation period',w:'lc',text:k==='var'?'This nearby variable star gets brighter and dimmer. Click the peak of each pulse. Mark at least two peaks in a row. Marking more peaks averages out your error.':'Your telescope can pick out a variable star in this galaxy. Click the peak of each pulse (at least two in a row).',
+    ready:o=>!!o.P,wait:'Mark at least two peaks to see the period.',eq:(o,a)=>String.raw`${T.P} = \frac{t_\text{last}-t_\text{first}}{N_\text{peaks}-1} = \frac{${fx(o.ts[o.n-1],2)}-${fx(o.ts[0],2)}}{${o.n-1}} = ${a}\ \text{days}`,
+    ans:o=>tx(o.P),hand:o=>({ans:o.P,ok:rel(o.P,.03),unit:'days',hint:'Subtract the first peak time from the last, then divide by the number of gaps between peaks (one less than the number of peaks).'})};
+  const cF={id:'F',t:fl?'Average flux':'Average brightness',w:'lcAvg',text:fl?"The dashed blue line is the star's average flux: how much of its light we actually receive.":"The dashed blue line is the star's average apparent magnitude: how bright it looks from Earth.",
+    ready:()=>true,eq:o=>fl?String.raw`${T.Fb} = ${tx(o.F)}\ ${FU}`:String.raw`${T.m} = ${t2(o.m)}`};
+  if(k==='var'){
+    cs.push(cP,cF,
+      {id:'th',t:'Parallax angle',w:'par',text:"These two images were taken six months apart, from opposite sides of Earth's orbit. Click the center of the variable star in the January image, then in the July image. Use Blink to see it shift against the background stars.",
+        ready:o=>!!o.th,wait:'Click the star in both images to measure its shift.',eq:(o,a)=>String.raw`${T.th} = \frac{\text{total shift}}{2} = \frac{${o.shift.toFixed(5)}''}{2} = ${a}''`,ans:o=>o.th.toFixed(5),
+        hand:o=>({ans:o.th,ok:rel(o.th,.02),unit:'arcsec',hint:'The parallax angle is half of the total shift.'})},
+      {id:'d',t:'Distance',text:'Turn the parallax angle into a distance.',ready:()=>true,eq:(o,a)=>String.raw`${T.d}\ [\text{pc}] = \frac{1\ [\text{AU}]}{${T.th}\ [\text{arcsec}]} = \frac{1}{${o.th.toFixed(5)}} = ${a}\ \text{pc}`,ans:o=>tx(o.d),
+        hand:o=>({ans:o.d,ok:rel(o.d,.03),unit:'pc',hint:'Divide 1 by the parallax angle in arcseconds.'})},
+      fl?{id:'L',t:'Luminosity',text:'Now you know how much light you receive and how far away the star is. The inverse square law gives its luminosity. The distance r is the parallax distance d you just found.',ready:()=>true,
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.L} &= 4\pi ${T.r}^2 ${T.F} \\ &= 4\pi\,(${tx(o.d)}\ \text{pc})^2\,(${tx(o.F)}\ ${FU}) \\ &= ${a}\ L_\odot \end{aligned}`,ans:o=>tx(o.L),
+        hand:o=>({ans:o.L,ok:rel(o.L,.05),unit:'L☉',hint:'Square the distance, multiply by the flux, then multiply by 4π (about 12.57).'})}
+      :{id:'L',t:'Absolute magnitude',text:'Now you know how bright the star looks and how far away it is, so you can find how bright it truly is.',ready:()=>true,
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.M} &= ${T.m} - 5\log_{10}\!\left(\frac{${T.d}}{10\ \text{pc}}\right) \\ &= ${t2(o.m)} - 5\log_{10}\!\left(\frac{${tx(o.d)}}{10}\right) \\ &= ${a} \end{aligned}`,ans:o=>t2(o.M),
+        hand:o=>({ans:o.M,ok:absTol(o.M,.05),unit:'',hint:'Divide the distance by 10, take log base 10, multiply by 5, and subtract that from m.'})},
+      {id:'plot',t:'Add it to your relation',w:'plPrev',text:'Here is this star on your period-luminosity chart (gold). Add it to build your relation.',ready:()=>true,act:'Add to my relation'})}
+  else if(k==='host'){
+    cs.push(cP,
+      {id:'Lc',t:fl?'Luminosity from the relation':'M from the relation',w:'plRead',text:given1?'Use the period-luminosity relation to find how luminous this variable star is.':'Use your period-luminosity relation from Level 1 to find how luminous this variable star is.',ready:o=>!!o.Lc,
+        eq:(o,a)=>fl?String.raw`\begin{aligned} ${T.L} &= ${tx(o.rel.A)}\,L_\odot \times ${T.P}^{\,${o.rel.b.toFixed(2)}} \\ &= ${tx(o.rel.A)} \times (${tx(o.P)})^{${o.rel.b.toFixed(2)}} \\ &= ${a}\ L_\odot \end{aligned}`
+          :String.raw`\begin{aligned} ${T.M} &= ${o.relM.a.toFixed(2)} - ${Math.abs(o.relM.b).toFixed(2)}\log_{10}${T.P} \\ &= ${o.relM.a.toFixed(2)} - ${Math.abs(o.relM.b).toFixed(2)}\log_{10}(${tx(o.P)}) \\ &= ${a} \end{aligned}`,
+        ans:o=>fl?tx(o.Lc):t2(o.Mc),hand:o=>fl?{ans:o.Lc,ok:rel(o.Lc,.04),unit:'L☉',hint:'Raise the period to the power shown, then multiply by the number in front.'}:{ans:o.Mc,ok:absTol(o.Mc,.05),unit:'',hint:'Take log base 10 of the period, multiply by the number in front of it, and subtract from the first number.'}},
+      cF,
+      fl?{id:'r',t:'Distance',text:"You know the variable star's luminosity and its flux. Solve the inverse square law for the distance r.",ready:()=>true,
+        eq:(o,a)=>String.raw`\begin{aligned} 4\pi ${T.r}^2 ${T.F} &= ${T.L} \\ ${T.r} &= \sqrt{\frac{${T.L}}{4\pi ${T.F}}} = \sqrt{\frac{${tx(o.Lc)}}{4\pi\,(${tx(o.F)})}} \\ &= ${tx(o.r)}\ \text{pc} = ${a}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
+        hand:o=>({ans:o.r/1e6,ok:rel(o.r/1e6,.05),unit:'Mpc',hint:'Divide L by 4π times F, take the square root to get parsecs, then divide by 1,000,000 for Mpc.'})}
+      :{id:'r',t:'Distance',text:'You know how bright the variable star truly is (M) and how bright it looks (m). Their difference gives the distance.',ready:()=>true,
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.d} &= 10^{(${T.m} - ${T.M} + 5)/5}\ \text{pc} \\ &= 10^{(${t2(o.m)} - (${t2(o.Mc)}) + 5)/5}\ \text{pc} \\ &= ${tx(o.r)}\ \text{pc} = ${a}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
+        hand:o=>({ans:o.r/1e6,ok:rel(o.r/1e6,.05),unit:'Mpc',hint:'Work out m − M, add 5, divide by 5, raise 10 to that power for parsecs, then divide by 1,000,000.'})},
+      {id:'Fpk',t:'Supernova peak',w:'sn',text:'A Type 1a supernova exploded in this same galaxy. Click the brightest point of its light curve.',ready:o=>o.Fpk!=null,wait:'Click the peak of the supernova light curve.',
+        eq:o=>fl?String.raw`${T.Fpk} = ${tx(o.Fpk)}\ ${FU}`:String.raw`${T.mpk} = ${t2(o.mpk)}`},
+      fl?{id:'Lsn',t:'Supernova luminosity',text:'The supernova is in the same galaxy as the variable star, so it is at the same distance r.',ready:()=>true,
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.Lsn} &= 4\pi ${T.r}^2 ${T.Fpk} \\ &= 4\pi\,(${tx(o.r)}\ \text{pc})^2\,(${tx(o.Fpk)}\ ${FU}) \\ &= ${a}\ L_\odot \end{aligned}`,ans:o=>tx(o.Lsn),
+        hand:o=>({ans:o.Lsn,ok:rel(o.Lsn,.05),unit:'L☉',hint:'Square the distance in parsecs, multiply by the peak flux, then by 4π.'})}
+      :{id:'Lsn',t:'Supernova absolute magnitude',text:'The supernova is in the same galaxy as the variable star, so it is at the same distance d.',ready:()=>true,
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.Msn} &= ${T.mpk} - 5\log_{10}\!\left(\frac{${T.d}}{10\ \text{pc}}\right) \\ &= ${t2(o.mpk)} - 5\log_{10}\!\left(\frac{${tx(o.r)}}{10}\right) \\ &= ${a} \end{aligned}`,ans:o=>t2(o.Msn),
+        hand:o=>({ans:o.Msn,ok:absTol(o.Msn,.05),unit:'',hint:'Divide the distance by 10, take log base 10, multiply by 5, and subtract from the peak magnitude.'})},
+      {id:'rec',t:'Record the supernova',w:'snPrev',text:'Here is this supernova (gold) next to the others you have measured. Do they all have about the same luminosity?',ready:()=>true,act:'Add to my supernova results'})}
+  else{
+    cs.push({id:'Fpk',t:'Supernova peak',w:'sn',text:'You caught a Type 1a supernova in this distant galaxy. Click the brightest point of its light curve.',ready:o=>o.Fpk!=null,wait:'Click the peak of the supernova light curve.',
+        eq:o=>fl?String.raw`${T.Fpk} = ${tx(o.Fpk)}\ ${FU}`:String.raw`${T.mpk} = ${t2(o.mpk)}`},
+      fl?{id:'r',t:'Distance',text:S.set.start>=3?'Type 1a supernovae all have about the same peak luminosity, so this one is a standard candle.':'You found in Level 2 that Type 1a supernovae all have about the same peak luminosity. Use your average value.',ready:()=>true,
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.r} &= \sqrt{\frac{${T.Lsn}}{4\pi ${T.Fpk}}} = \sqrt{\frac{${tx(o.cal.L)}}{4\pi\,(${tx(o.Fpk)})}} \\ &= ${tx(o.r)}\ \text{pc} = ${a}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
+        hand:o=>({ans:o.r/1e6,ok:rel(o.r/1e6,.05),unit:'Mpc',hint:'Divide L by 4π times the peak flux, take the square root for parsecs, then divide by 1,000,000.'})}
+      :{id:'r',t:'Distance',text:S.set.start>=3?'Type 1a supernovae all reach about the same peak absolute magnitude, so this one is a standard candle.':'You found in Level 2 that Type 1a supernovae all reach about the same peak absolute magnitude. Use your average value.',ready:()=>true,
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.d} &= 10^{(${T.mpk} - ${T.Msn} + 5)/5}\ \text{pc} \\ &= 10^{(${t2(o.mpk)} - (${t2(MOfL(o.cal.L))}) + 5)/5}\ \text{pc} \\ &= ${tx(o.r)}\ \text{pc} = ${a}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
+        hand:o=>({ans:o.r/1e6,ok:rel(o.r/1e6,.05),unit:'Mpc',hint:'Work out m − M, add 5, divide by 5, raise 10 to that power for parsecs, then divide by 1,000,000.'})},
+      {id:'spec',t:'Spectrum and speed',w:'spec',text:`Now the spectrograph. The dashed lines show where familiar lines sit when the galaxy is not moving. Slide them until they line up with the dips${cur.obj.type==='spiral'?' and spikes':''} in this galaxy's spectrum. The more the lines are shifted toward the red, the faster the galaxy is moving away. The game turns the shift into a speed for you.`,ready:()=>true,
+        eq:o=>String.raw`${T.v} = ${tx(o.v)}\ \text{km/s}`,
+        more:o=>`<details class="more"><summary>How does the game get the speed from the shift?</summary><p class="note">It compares where the calcium K line appears with where it sits in a lab on Earth, then scales by the speed of light.</p>${eqHtml(String.raw`z = \frac{\lambda_\text{obs}-\lambda_\text{rest}}{\lambda_\text{rest}} = \frac{${o.lam.toFixed(1)} - 393.4}{393.4} = ${o.z.toFixed(4)}`)}${eqHtml(String.raw`v = c\,z = (3.00\times10^{5}\ \text{km/s})(${o.z.toFixed(4)}) = ${tx(o.v)}\ \text{km/s}`)}</details>`},
+      {id:'hub',t:'Plot it',w:'hubPrev',text:'This galaxy becomes one point on your Hubble diagram (gold).',ready:()=>true,act:'Add to Hubble diagram'})}
+  return cs}
+
+function renderPanel(){
+  const cur=S.cur;if(!cur)return;obsEl.hidden=false;const o=cur.obj,fl=isFlux();
+  const kindTxt=cur.kind==='var'?'Variable star in our galaxy':cur.kind==='host'?'Galaxy with a variable star and a supernova ★':`${o.type==='spiral'?'Spiral':'Elliptical'} galaxy with a supernova`;
+  const title=cur.kind==='var'?o.name:o.id;
+  if(cur.review){const rc=recOf(o);let rows='';
+    if(cur.kind==='var')rows=fl?String.raw`${T.P} = ${tx(rc.P)}\ \text{days} \qquad ${T.L} = ${tx(rc.L)}\ L_\odot`:String.raw`${T.P} = ${tx(rc.P)}\ \text{days} \qquad ${T.M} = ${t2(MOfL(rc.L))}`;
+    else if(cur.kind==='host'){const r=hostDist(rc,plRel());rows=r?(fl?String.raw`${T.r} = ${tx(r/1e6)}\ \text{Mpc} \qquad ${T.Lsn} = ${tx(FOURPI*r*r*rc.Fpk)}\ L_\odot`:String.raw`${T.d} = ${tx(r/1e6)}\ \text{Mpc} \qquad ${T.Msn} = ${t2(MOfL(FOURPI*r*r*rc.Fpk))}`):''}
+    else{const r=farDist(rc,snCal());rows=String.raw`${fl?T.r:T.d} = ${r?tx(r/1e6):'?'}\ \text{Mpc} \qquad ${T.v} = ${tx(rc.z*C)}\ \text{km/s}`}
+    obsEl.innerHTML=`<div class="obs-head"><div><span class="eyebrow">${kindTxt}</span><h2>${title}</h2></div><button class="x" id="closeObs" aria-label="Close">×</button></div>
+      <div class="obs-body"><p>You already measured this one.</p>${rows?eqHtml(rows):''}</div><div class="obs-foot"><span class="sp"></span><button class="btn ghost" id="redo">Measure again</button></div>`;
+    obsEl.querySelector('#closeObs').onclick=closePanel;obsEl.querySelector('#redo').onclick=()=>{cur.review=false;renderPanel()};typeset(obsEl);return}
+  const cards=cardsFor(cur),c=cards[cur.i],ca=calc(cur),hand=S.set.hand&&!!c.hand,ready=c.ready(ca);
+  const hd=hand&&ready?c.hand(ca):null,solved=!hand||cur.hand[c.id]!=null;
+  let eqBlock='';
+  if(c.eq){if(!ready)eqBlock=`<p class="waiting">${c.wait||''}</p>`;
+    else if(c.ans){eqBlock=eqHtml(c.eq(ca,solved?c.ans(ca):String.raw`\boxed{\,?\,}`));
+      if(hand&&!solved)eqBlock+=`<div class="answer"><label for="hIn">Your answer</label><input id="hIn" inputmode="decimal" autocomplete="off">${hd.unit?`<span>${hd.unit}</span>`:''}<button class="btn ghost sm" id="hChk">Check</button></div>${cur.msg?`<p class="fb bad" role="status">${cur.msg}</p>`:''}`;
+      else if(hand&&solved)eqBlock+=`<p class="fb good">Correct.</p>`}
+    else eqBlock=eqHtml(c.eq(ca))+(c.more?c.more(ca):'')}
+  const widget={lc:'<canvas class="plot" id="wv" aria-label="Light curve. Click peaks."></canvas>',lcAvg:'<canvas class="plot static" id="wv" aria-label="Light curve with average"></canvas>',sn:'<canvas class="plot" id="wv" aria-label="Supernova light curve. Click the peak."></canvas>',
+    par:`<div class="row"><button class="chip" data-ep="jan" aria-pressed="${!cur.blink&&cur.epoch==='jan'}">January image</button><button class="chip" data-ep="jul" aria-pressed="${!cur.blink&&cur.epoch==='jul'}">July image</button><button class="chip" id="blink" aria-pressed="${cur.blink}">Blink</button><button class="chip" id="clrPar">Clear clicks</button></div><canvas class="plot par" id="wv" aria-label="Star field. Each grid square is 0.001 arcseconds."></canvas><p class="note">Each grid square is 0.001 arcseconds.</p>`,
+    spec:`<canvas class="plot static" id="wv" style="height:250px" aria-label="Galaxy spectrum"></canvas><div class="slider"><label for="zr" class="eyebrow">Slide the template</label><input type="range" id="zr" min="-0.004" max="0.11" step="0.0001" value="${cur.zGuess}"><div class="row"><button class="btn ghost sm" data-nz="-0.001">−0.001</button><button class="btn ghost sm" data-nz="-0.0001">−0.0001</button><button class="btn ghost sm" data-nz="0.0001">+0.0001</button><button class="btn ghost sm" data-nz="0.001">+0.001</button><span class="note">Match</span><span class="meter"><i id="mt"></i></span></div></div>`,
+    plPrev:'<canvas class="plot static" id="wv" style="height:280px"></canvas>',plRead:'<canvas class="plot static" id="wv" style="height:280px"></canvas>',snPrev:'<canvas class="plot static" id="wv"></canvas>',hubPrev:'<canvas class="plot static" id="wv" style="height:280px"></canvas>'}[c.w]||'';
+  const canNext=ready&&solved,last=cur.i===cards.length-1;
+  obsEl.innerHTML=`<div class="obs-head"><div><span class="eyebrow">${kindTxt}</span><h2>${title}</h2><div class="dots">${cards.map((_,j)=>`<i class="${j===cur.i?'on':j<cur.i?'done':''}"></i>`).join('')}</div></div><button class="x" id="closeObs" aria-label="Close">×</button></div>
+    <div class="obs-body"><span class="eyebrow">Step ${cur.i+1} of ${cards.length}</span><h3>${c.t}</h3><p class="task">${c.text}</p>${widget}<div id="eqZone">${eqBlock}</div></div>
+    <div class="obs-foot"><button class="btn ghost" id="bk" ${cur.i?'':'disabled'}>Back</button><span class="sp"></span><button class="btn" id="nx" ${canNext?'':'disabled'}>${c.act||'Next'}</button></div>`;
+  obsEl.querySelector('#closeObs').onclick=closePanel;
+  obsEl.querySelector('#bk').onclick=()=>{cur.i--;cur.msg=null;stopBlink();cur.blink=false;renderPanel()};
+  obsEl.querySelector('#nx').onclick=()=>{stopBlink();cur.blink=false;if(last)saveObj(ca);else{cur.i++;cur.msg=null;renderPanel();obsEl.scrollTop=0}};
+  if(hand&&!solved&&ready){const inp=obsEl.querySelector('#hIn'),go=()=>{const x=parseNum(inp.value);if(x==null)cur.msg='Type a number first.';else if(hd.ok(x)){cur.hand[c.id]=x;cur.msg=null}else cur.msg='Not quite. '+hd.hint;refreshEq();const ni=obsEl.querySelector('#hIn');if(ni)ni.focus({preventScroll:true})};
+    obsEl.querySelector('#hChk').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go()}}
+  mountWidget(c,ca);typeset(obsEl.querySelector('#eqZone'))}
+function refreshEq(){const top=obsEl.scrollTop;renderPanel();obsEl.scrollTop=top}
+function mountWidget(c,ca){const cur=S.cur,cv=obsEl.querySelector('#wv');if(!cv)return;
+  const resetHand=()=>{for(const k of ['P','th','d','L','Lc','r','Lsn','z','v'])delete cur.hand[k];cur.msg=null};
+  if(c.w==='lc'||c.w==='lcAvg'){const draw=()=>{cur.pts=drawCurve(cv,cur.lc,new Set(c.w==='lc'?cur.marks:[]),'#f6bd5f',c.w==='lcAvg')};draw();cur.redraw=draw;
+    if(c.w==='lc')cv.onclick=e=>{const p=nearestPt(cur.pts,e);if(!p)return;const k=cur.marks.indexOf(p.i);k>=0?cur.marks.splice(k,1):cur.marks.push(p.i);resetHand();refreshEq()}}
+  else if(c.w==='sn'){const draw=()=>{cur.pts=drawCurve(cv,cur.snlc,new Set(cur.snPick!=null?[cur.snPick]:[]),'#86c9f2',false)};draw();cur.redraw=draw;cv.onclick=e=>{const p=nearestPt(cur.pts,e);if(!p)return;cur.snPick=p.i;resetHand();refreshEq()}}
+  else if(c.w==='par'){const draw=()=>drawPar(cv);draw();cur.redraw=draw;
+    cv.onclick=e=>{if(cur.blink){stopBlink();cur.blink=false}const r=cv.getBoundingClientRect(),v=parView(r.width,r.height);cur.pm[cur.epoch]={x:(e.clientX-r.left-v.cx)/v.sc,y:-(e.clientY-r.top-v.cy)/v.sc};resetHand();if(cur.epoch==='jan'&&!cur.pm.jul)cur.epoch='jul';refreshEq()};
+    obsEl.querySelectorAll('[data-ep]').forEach(b=>b.onclick=()=>{stopBlink();cur.blink=false;cur.epoch=b.dataset.ep;refreshEq()});
+    obsEl.querySelector('#clrPar').onclick=()=>{cur.pm={};cur.epoch='jan';resetHand();refreshEq()};
+    obsEl.querySelector('#blink').onclick=()=>{if(cur.blink){stopBlink();cur.blink=false;refreshEq()}else{cur.blink=true;cur.blinkShow='jan';refreshEq();cur.blinkTimer=setInterval(()=>{cur.blinkShow=cur.blinkShow==='jan'?'jul':'jan';const v=obsEl.querySelector('#wv');if(v)drawPar(v)},650)}}}
+  else if(c.w==='spec'){const g=cur.obj,upd=()=>{drawSpec(cv);obsEl.querySelector('#mt').style.width=(100*Math.exp(-(((cur.zGuess-g.z)/0.0014)**2))).toFixed(0)+'%'};upd();cur.redraw=()=>drawSpec(cv);
+    const setZ=z=>{cur.zGuess=z;resetHand();upd();const ez=obsEl.querySelector('#eqZone'),op=ez.querySelector('details')?.open,cc=calc(cur);ez.innerHTML=eqHtml(c.eq(cc))+(c.more?c.more(cc):'');if(op)ez.querySelector('details').open=true;typeset(ez)};
+    obsEl.querySelector('#zr').oninput=e=>setZ(+e.target.value);
+    obsEl.querySelectorAll('[data-nz]').forEach(b=>b.onclick=()=>{const z=Math.max(-0.004,Math.min(0.11,+(cur.zGuess+ +b.dataset.nz).toFixed(4)));obsEl.querySelector('#zr').value=z;setZ(z)})}
+  else if(c.w==='plPrev'){const d=()=>drawPL(cv,{P:ca.P,L:ca.L});d();cur.redraw=d}
+  else if(c.w==='plRead'){const d=()=>drawPL(cv,ca.Lc?{P:ca.P,L:ca.Lc,read:true}:null);d();cur.redraw=d}
+  else if(c.w==='snPrev'){const d=()=>drawSNL(cv,{L:ca.Lsn});d();cur.redraw=d}
+  else if(c.w==='hubPrev'){const d=()=>drawHub(cv,{d:ca.r/1e6,v:ca.v});d();cur.redraw=d}}
+function parView(w,h){return{sc:Math.min(w/26,h/17),cx:w/2,cy:h/2}}
+function drawPar(cv){const cur=S.cur;if(!cur||!cur.par)return;const {ctx,w,h}=fitT(cv),{sc,cx,cy}=parView(w,h),X=x=>cx+x*sc,Y=y=>cy-y*sc,ep=cur.blink?cur.blinkShow:cur.epoch,pd=cur.par;
+  ctx.fillStyle='#020202';ctx.fillRect(0,0,w,h);
+  for(let x=-13;x<=13;x++){ctx.strokeStyle=x%5===0?'#3a3a3e':'#1c1c1f';ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),h);ctx.stroke()}
+  for(let y=-8;y<=8;y++){ctx.strokeStyle=y%5===0?'#3a3a3e':'#1c1c1f';ctx.beginPath();ctx.moveTo(0,Y(y));ctx.lineTo(w,Y(y));ctx.stroke()}
+  ctx.fillStyle=TXT2;ctx.textAlign='center';for(let x=-10;x<=10;x+=5)ctx.fillText((x/1000).toFixed(3)+'″',X(x),h-6);
+  for(const s of pd.bg){const gl=ctx.createRadialGradient(X(s.x),Y(s.y),0,X(s.x),Y(s.y),s.s*sc);gl.addColorStop(0,'rgba(235,235,245,.9)');gl.addColorStop(1,'rgba(235,235,245,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(X(s.x),Y(s.y),s.s*sc,0,7);ctx.fill()}
+  const st=pd[ep],R=1.5*sc,gl=ctx.createRadialGradient(X(st.x),Y(st.y),0,X(st.x),Y(st.y),R);gl.addColorStop(0,'rgba(255,248,225,1)');gl.addColorStop(.35,'rgba(255,220,160,.8)');gl.addColorStop(1,'rgba(255,200,120,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(X(st.x),Y(st.y),R,0,7);ctx.fill();
+  for(const [k,col,lab] of [['jan','#f6bd5f','Jan'],['jul','#86c9f2','Jul']]){const m=cur.pm[k];if(!m)continue;const x=X(m.x),y=Y(m.y);ctx.strokeStyle=col;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(x-9,y);ctx.lineTo(x-3,y);ctx.moveTo(x+3,y);ctx.lineTo(x+9,y);ctx.moveTo(x,y-9);ctx.lineTo(x,y-3);ctx.moveTo(x,y+3);ctx.lineTo(x,y+9);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle=col;ctx.textAlign='center';ctx.fillText(lab,x,y-13)}
+  ctx.font='600 15px "IBM Plex Sans", sans-serif';ctx.fillStyle=TXT;ctx.textAlign='left';ctx.fillText(ep==='jan'?'January':'July',10,22);ctx.font=FONT;if(cur.blink){ctx.fillStyle='#ff6a55';ctx.textAlign='right';ctx.fillText('BLINKING',w-10,22)}}
+function drawSpec(cv){const cur=S.cur,{ctx,w,h}=fitT(cv),{lam,flux}=cur.spec,L=40,R=12,Tp=42,B=42,fmin=Math.min(...flux)-0.05,fmax=Math.max(...flux)+0.05,X=l=>L+(l-370)/400*(w-L-R),Y=f=>Tp+(1-(f-fmin)/(fmax-fmin))*(h-Tp-B);
+  for(let l=370;l<770;l+=2){ctx.fillStyle=wl2rgb(l);ctx.fillRect(X(l),h-B+2,X(l+2)-X(l)+0.5,6)}
+  ctx.fillStyle=TXT2;ctx.strokeStyle=GRID;ctx.textAlign='center';for(let l=400;l<=750;l+=50){const x=X(l);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillText(l,x,h-B+22)}
+  ctx.fillText('wavelength (nm)',L+(w-L-R)/2,h-4);axisLabelY(ctx,'flux',14,Tp+(h-Tp-B)/2);
+  ctx.strokeStyle=TXT;ctx.lineWidth=1.1;ctx.beginPath();lam.forEach((l,i)=>{const x=X(l),y=Y(flux[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.lineWidth=1;
+  LINES.filter(ln=>lineAmp(cur.obj,ln)).forEach((ln,i)=>{const lo=ln.l*(1+cur.zGuess);if(lo<370||lo>770)return;const x=X(lo);ctx.strokeStyle='rgba(255,106,85,.9)';ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(x,Tp-4);ctx.lineTo(x,h-B);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#ff6a55';ctx.fillText(ln.n,x,i%2?Tp-9:Tp-24)})}
+
+function saveObj(ca){const cur=S.cur,o=cur.obj,was=[unlocked(2),unlocked(3)];
+  if(cur.kind==='var')S.st.vars[o.id]={P:ca.P,F:ca.F,th:ca.th,d:ca.d,L:ca.L};
+  else if(cur.kind==='host')S.st.hosts[o.id]={P:ca.P,Fc:ca.F,Fpk:ca.Fpk};
+  else S.st.far[o.id]={Fpk:ca.Fpk,z:ca.z};
+  saveSt();closePanel();renderAll();
+  if(!was[0]&&unlocked(2))toast('Level 2 unlocked. Your period-luminosity relation is ready to use.');
+  else if(!was[1]&&unlocked(3))toast('Level 3 unlocked. You know how luminous Type 1a supernovae are. Time to measure the expanding universe.');
+  else if(cur.kind==='far'&&!S.st.done&&cnt('far')>=S.set.n3){S.st.done=true;saveSt();renderAll();showFinish()}
+  else toast(cur.kind==='var'?`${o.name} added to your relation.`:cur.kind==='host'?`${o.id} added to your supernova results.`:`${o.id} added to your Hubble diagram.`)}
+
+/* ================= level panel & tabs ================= */
+const LV=[null,{name:'Variable stars',title:'Build a period-luminosity relation'},{name:'Supernovae',title:'How luminous are Type 1a supernovae?'},{name:'Hubble diagram',title:'Measure the expanding universe'}];
+function renderTabs(){const nav=document.getElementById('levels');let h='';for(let lv=S.set.start;lv<=3;lv++){const un=unlocked(lv),prog=lv===1?`${cnt('vars')}/${S.set.n1}`:lv===2?`${cnt('hosts')}/${S.set.n2}`:`${cnt('far')}/${S.set.n3}`;
+  h+=`<button class="lvl" data-lv="${lv}" aria-current="${S.view===lv}" ${un?'':'disabled'}><b>${lv}</b><span>${LV[lv].name}</span><small>${un?prog:'locked'}</small></button>`}
+  nav.innerHTML=h;nav.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>setView(+b.dataset.lv))}
+function setView(lv){if(!unlocked(lv))return;closePanel();S.view=lv;const t=targets(),nx=t.find(o=>!recOf(o))||t[0];centerOn(nx);renderAll();if(!S.st.lessons['l'+lv])openTut('l'+lv)}
+function renderLP(){const lp=document.getElementById('lp'),lv=S.view,fl=isFlux();let goal,count,need,result='',extra='';
+  if(lv===1){count=cnt('vars');need=S.set.n1;goal=`Measure nearby variable stars in our own galaxy. For each one, find its pulsation period, its ${fl?'flux':'brightness'}, and its distance from parallax. Then work out its ${fl?'luminosity':'absolute magnitude'} and plot it.`;
+    const rl=plRel();if(rl&&rl.n>=2)result=eqHtml(relTex(rl,fl))+`<p class="note">Your best-fit line from ${rl.n} stars, with the period in days.</p>`}
+  else if(lv===2){count=cnt('hosts');need=S.set.n2;goal='Find galaxies marked ★ that have both a variable star and a Type 1a supernova. Use the variable star to get the distance, then work out how luminous the supernova was.';
+    const cal=snCal();if(cal&&cal.n)result=eqHtml(fl?String.raw`\text{average } ${T.Lsn} = ${tx(cal.L)}\ L_\odot`:String.raw`\text{average } ${T.Msn} = ${t2(MOfL(cal.L))}`)+(cal.n>1?`<p class="note">Your ${cal.n} supernovae agree to within about ${fmt((Math.pow(10,cal.sd)-1)*100)}%.</p>`:'')}
+  else{count=cnt('far');need=S.set.n3;goal=`Use supernovae to find distances to faraway galaxies and their spectra to find how fast they move. Plot velocity against distance. Measure ${S.set.n3} galaxies to finish.`;
+    const f=hubbleFit();if(f)result=eqHtml(String.raw`H_0 = ${f.H.toFixed(1)} \pm ${f.err.toFixed(1)}\ \text{km/s/Mpc}`)+`<p class="note">That suggests the universe is about ${fmt(977.8/f.H,1)} billion years old.${S.showTrue||S.st.done?` True value for this sky: ${S.H0} km/s/Mpc.`:''}</p>`;else extra='<p class="note">Plot 3 galaxies to fit a line.</p>';
+    if(S.st.done)extra+='<button class="btn" id="seeFinal">See your final results</button>'}
+  const pct=need?Math.min(100,count/need*100):Math.min(100,count/12*100),nextUn=lv<3&&unlocked(lv+1);
+  lp.innerHTML=`<span class="eyebrow">Level ${lv} of 3</span><h2>${LV[lv].title}</h2><p>${goal}</p>
+    <div class="prog" aria-hidden="true"><i style="width:${pct}%"></i></div><p class="mono">${need?`${count} of ${need} ${lv===1?'variable stars':lv===2?'★ galaxies':'galaxies'} measured${count>=need?' · level complete':''}`:`${count} galaxies on your diagram`}</p>
+    <canvas class="chart" id="lpc" aria-label="${LV[lv].title} chart"></canvas>${result}${extra}
+    ${nextUn?`<button class="btn" id="goNext">Go to Level ${lv+1}</button>`:''}`;
+  const cv=lp.querySelector('#lpc');(lv===1?drawPL:lv===2?drawSNL:drawHub)(cv,null);
+  const gn=lp.querySelector('#goNext');if(gn)gn.onclick=()=>setView(lv+1);const sf=lp.querySelector('#seeFinal');if(sf)sf.onclick=showFinish;typeset(lp)}
+function renderHint(){document.getElementById('skyhint').textContent=S.view===1?'Click a circled variable star to observe it':S.view===2?'Click a galaxy marked ★ to observe it':'Click a circled galaxy to observe it'}
+function renderAll(){renderTabs();renderLP();renderHint();requestDraw()}
+
+/* ================= drawer: menu & settings ================= */
+const drawer=document.getElementById('drawer'),dbox=document.getElementById('drawerBox');
+function openDrawer(kind){drawer.hidden=false;kind==='menu'?renderMenu():kind==='lock'?renderLock():renderSettings();dbox.focus({preventScroll:true})}
+function renderLock(){dbox.innerHTML=`<div class="dhead"><h2>Instructor settings</h2><button class="x" id="dClose" aria-label="Close">×</button></div>
+  <p>Enter the teacher passcode to change class settings.</p>
+  <form id="lockForm" class="inst"><div class="formrow"><label class="lbl" for="pass">Passcode</label><input type="password" id="pass" autocomplete="off" style="flex:1;min-width:9em"></div>
+  <label class="formrow"><input type="checkbox" id="remember"> Remember on this device</label>
+  <div class="row"><button class="btn" type="submit">Unlock</button><span class="fb bad" id="lockMsg" role="status"></span></div></form>
+  <p class="note">Students: you don't need this. Enter your teacher's class code under Menu, then Your class.</p>`;
+  dbox.querySelector('#dClose').onclick=closeDrawer;
+  dbox.querySelector('#lockForm').onsubmit=e=>{e.preventDefault();const v=dbox.querySelector('#pass').value;
+    if(v===TEACHER_PASSCODE){try{(dbox.querySelector('#remember').checked?localStorage:sessionStorage).setItem('cosmic-ladder:teacher',v)}catch(x){}renderSettings()}
+    else{dbox.querySelector('#lockMsg').textContent='That passcode is not right.';dbox.querySelector('#pass').select()}};
+  setTimeout(()=>dbox.querySelector('#pass')?.focus(),0)}
+function closeDrawer(){drawer.hidden=true;dbox.innerHTML=''}
+drawer.addEventListener('click',e=>{if(e.target===drawer)closeDrawer()});
+document.getElementById('menuBtn').onclick=()=>openDrawer('menu');document.getElementById('gearBtn').onclick=()=>openDrawer(teacherOK()?'settings':'lock');
+const lessonIds=()=>[1,2,3].filter(l=>l>=S.set.start).map(l=>'l'+l);
+const LESSON_NAMES={l1:'Level 1 · Variable stars and parallax',l2:'Level 2 · Standard candles and supernovae',l3:'Level 3 · Redshift and the Hubble diagram'};
+function renderMenu(){let name='';try{name=localStorage.getItem('redshift-hunt:name')||''}catch(e){}
+  const rl=plRel(),cal=snCal();
+  const vrows=Object.entries(S.st.vars).map(([id,v])=>`<tr><td>${S.U.vars.find(x=>x.id===id)?.name||id}</td><td>${fmt(v.P,1)}</td><td>${fmt(v.d)}</td><td>${isFlux()?sci(v.L):MOfL(v.L).toFixed(2)}</td></tr>`).join('');
+  const hrows=Object.entries(S.st.hosts).map(([id,h])=>{const r=hostDist(h,rl);return`<tr><td>${id}</td><td>${r?sig3(r/1e6):'—'}</td><td>${r?(isFlux()?sci(FOURPI*r*r*h.Fpk):MOfL(FOURPI*r*r*h.Fpk).toFixed(2)):'—'}</td></tr>`}).join('');
+  const frows=Object.entries(S.st.far).map(([id,f])=>{const r=farDist(f,cal);return`<tr><td>${id}</td><td>${r?sig3(r/1e6):'—'}</td><td>${f.z.toFixed(4)}</td><td>${fmt(f.z*C)}</td></tr>`}).join('');
+  dbox.innerHTML=`<div class="dhead"><h2>Menu</h2><button class="x" id="dClose" aria-label="Close menu">×</button></div>
+  <section class="dsec"><h3>Lessons</h3><div class="lessonlist">${lessonIds().map(id=>`<button data-les="${id}" ${unlocked(+id[1])?'':'disabled'}>${LESSON_NAMES[id]}${S.st.lessons[id]?' · done':''}</button>`).join('')}</div></section>
+  <section class="dsec"><h3>Logbook</h3>
+    ${S.set.start<=1?`<p class="eyebrow">Level 1 · variable stars</p>${vrows?`<div class="tablewrap"><table><thead><tr><th>Star</th><th>P (days)</th><th>d (pc)</th><th>${isFlux()?'L (L☉)':'M'}</th></tr></thead><tbody>${vrows}</tbody></table></div>`:'<p class="note">None yet.</p>'}`:''}
+    ${S.set.start<=2?`<p class="eyebrow">Level 2 · ★ galaxies</p>${hrows?`<div class="tablewrap"><table><thead><tr><th>Galaxy</th><th>r (Mpc)</th><th>${isFlux()?'L SN (L☉)':'M SN'}</th></tr></thead><tbody>${hrows}</tbody></table></div>`:'<p class="note">None yet.</p>'}`:''}
+    <p class="eyebrow">Level 3 · Hubble diagram</p>${frows?`<div class="tablewrap"><table><thead><tr><th>Galaxy</th><th>r (Mpc)</th><th>z</th><th>v (km/s)</th></tr></thead><tbody>${frows}</tbody></table></div>`:'<p class="note">None yet.</p>'}
+    <p class="note">1 pc ≈ 3.26 light-years. 1 Mpc is a million parsecs, about 3.26 million light-years.</p></section>
+  <section class="dsec"><div class="dhead"><h3>Your class</h3><span class="code">${S.code}</span></div><p class="note">${settingsText(S.set)}.</p>
+    <div class="formrow"><label class="lbl" for="stuName">Your name</label><input type="text" id="stuName" autocomplete="off" value="${name.replace(/"/g,'&quot;')}" style="flex:1;min-width:9em"></div>
+    <div class="formrow"><label class="lbl" for="joinCode">Class code</label><input type="text" id="joinCode" autocomplete="off" value="${S.code}" style="width:11em"><button class="btn ghost" id="joinBtn">Join class</button></div><p class="note" id="joinMsg"></p>
+    <div class="row"><button class="btn" id="repBtn">Copy report for your teacher</button><span class="note" id="repMsg"></span></div><textarea id="repText" rows="9" readonly hidden aria-label="Report text"></textarea></section>`;
+  dbox.querySelector('#dClose').onclick=closeDrawer;
+  dbox.querySelectorAll('[data-les]').forEach(b=>b.onclick=()=>{closeDrawer();openTut(b.dataset.les)});
+  dbox.querySelector('#stuName').oninput=e=>{try{localStorage.setItem('redshift-hunt:name',e.target.value)}catch(x){}};
+  dbox.querySelector('#joinBtn').onclick=()=>{const p=parseCode(dbox.querySelector('#joinCode').value);if(!p){dbox.querySelector('#joinMsg').textContent='That code does not look right. Codes look like ORION-F1A53.';return}closeDrawer();applyCode(p.code);toast(`Joined class ${p.code}.`)};
+  dbox.querySelector('#repBtn').onclick=()=>{const t=buildReport(),ta=dbox.querySelector('#repText'),msg=dbox.querySelector('#repMsg');ta.value=t;ta.hidden=false;const named=!!dbox.querySelector('#stuName').value.trim();
+    navigator.clipboard?.writeText(t).then(()=>{msg.textContent=named?'Copied. Paste it where your teacher asked.':'Copied, but add your name above and copy again.'},()=>{ta.select();msg.textContent='Select the text below and copy it.'})}}
+function renderSettings(){const s=S.set,opt=(lo,hi,v)=>Array.from({length:hi-lo+1},(_,i)=>lo+i).map(x=>`<option ${x===v?'selected':''}>${x}</option>`).join('');
+  dbox.innerHTML=`<div class="dhead"><h2>Instructor settings</h2><button class="x" id="dClose" aria-label="Close settings">×</button></div>
+  <p class="note">Choose settings, then share the class code. Students enter it under Menu, then Your class. Or they can open the game's link with # and the code added to the end.</p>
+  <div class="formrow"><label class="lbl" for="seed">Sky seed</label><input type="text" id="seed" value="${S.seed}" maxlength="16" style="width:11em"></div>
+  <fieldset class="seg"><legend>Brightness language</legend><label><input type="radio" name="units" value="flux" ${s.units==='flux'?'checked':''}> Flux and luminosity (inverse square law)</label><label><input type="radio" name="units" value="mag" ${s.units==='mag'?'checked':''}> Magnitudes</label></fieldset>
+  <fieldset class="seg"><legend>Starting level</legend><label><input type="radio" name="start" value="1" ${s.start===1?'checked':''}> Level 1: build the period-luminosity relation from parallax</label><label><input type="radio" name="start" value="2" ${s.start===2?'checked':''}> Level 2: period-luminosity relation is given</label><label><input type="radio" name="start" value="3" ${s.start===3?'checked':''}> Level 3: supernova luminosity is given</label></fieldset>
+  <fieldset class="seg"><legend>Arithmetic</legend><label><input type="radio" name="hand" value="0" ${!s.hand?'checked':''}> The game fills in each equation</label><label><input type="radio" name="hand" value="1" ${s.hand?'checked':''}> Students compute each result, and the game checks it</label></fieldset>
+  <fieldset class="seg"><legend>Goals</legend><label>Variable stars needed to unlock Level 2 <select id="n1">${opt(3,9,s.n1)}</select></label><label>★ galaxies needed to unlock Level 3 <select id="n2">${opt(2,9,s.n2)}</select></label><label>Galaxies needed to finish Level 3 <select id="n3">${opt(5,20,s.n3)}</select></label></fieldset>
+  <div class="row"><span>Class code: <span class="code" id="newCode"></span></span></div>
+  <div class="row"><button class="btn" id="applyCode">Use these settings here</button><button class="btn ghost" id="copyCode">Copy code</button><span class="note" id="instMsg"></span></div>
+  <section class="dsec"><h3>Class tools</h3><label class="formrow"><input type="checkbox" id="showTrue" ${S.showTrue?'checked':''}> Show the true H₀ line on the Hubble diagram</label>
+    <div class="row"><button class="btn ghost" id="copyCsv">Copy data as CSV</button><button class="btn ghost" id="clearAll">Clear progress on this device</button><button class="btn ghost" id="lockBtn">Lock settings</button></div></section>
+  <section class="dsec"><h3>Check a student report</h3><textarea id="verifyIn" rows="6" placeholder="Paste a student's report here" aria-label="Student report"></textarea><div class="row"><button class="btn ghost" id="verifyBtn">Check report</button><span id="verifyOut"></span></div></section>`;
+  const q=s=>dbox.querySelector(s),val=n=>(dbox.querySelector(`input[name="${n}"]:checked`)||{}).value;
+  const nc=()=>makeCode(q('#seed').value,val('units'),+val('start'),val('hand')==='1',+q('#n1').value,+q('#n2').value,+q('#n3').value);const upd=()=>q('#newCode').textContent=nc();upd();
+  dbox.querySelectorAll('input,select').forEach(i=>i.addEventListener(i.type==='text'?'input':'change',upd));
+  const msg=t=>{q('#instMsg').textContent=t};
+  q('#dClose').onclick=closeDrawer;q('#applyCode').onclick=()=>{const c=nc();closeDrawer();applyCode(c);toast(`This device now uses class ${c}.`)};
+  q('#copyCode').onclick=()=>navigator.clipboard?.writeText(q('#newCode').textContent).then(()=>msg('Copied.'),()=>msg('Copy blocked. Select the code instead.'));
+  q('#showTrue').onchange=e=>{S.showTrue=e.target.checked;renderAll()};
+  q('#copyCsv').onclick=()=>{const rl=plRel(),cal=snCal();let csv='level,object,period_days,distance_pc,luminosity_Lsun,z,velocity_km_s\n';
+    for(const [id,v] of Object.entries(S.st.vars))csv+=`1,${id},${v.P.toFixed(2)},${v.d.toFixed(1)},${v.L.toFixed(0)},,\n`;
+    for(const [id,h] of Object.entries(S.st.hosts)){const r=hostDist(h,rl);csv+=`2,${id},${h.P.toFixed(2)},${r?r.toFixed(0):''},${r?(FOURPI*r*r*h.Fpk).toExponential(3):''},,\n`}
+    for(const [id,f] of Object.entries(S.st.far)){const r=farDist(f,cal);csv+=`3,${id},,${r?r.toFixed(0):''},,${f.z.toFixed(5)},${(f.z*C).toFixed(0)}\n`}
+    navigator.clipboard?.writeText(csv).then(()=>msg('Data copied.'),()=>msg('Copy blocked here.'))};
+  const clr=q('#clearAll');clr.onclick=()=>{if(clr.dataset.arm){S.st=blankSt();saveSt();S.view=S.set.start;renderAll();clr.textContent='Clear progress on this device';delete clr.dataset.arm;msg('Progress cleared.')}else{clr.dataset.arm=1;clr.textContent='Click again to clear everything'}};
+  q('#lockBtn').onclick=()=>{try{localStorage.removeItem('cosmic-ladder:teacher');sessionStorage.removeItem('cosmic-ladder:teacher')}catch(e){}closeDrawer();toast('Settings locked. The gear now asks for the passcode.')};
+  q('#verifyBtn').onclick=()=>{const out=q('#verifyOut'),lines=normReport(q('#verifyIn').value),i=lines.findIndex(l=>l.startsWith('Check code: '));
+    if(i<1){out.innerHTML='<span class="fb bad">No check code found. Paste the whole report.</span>';return}
+    out.innerHTML=chk(lines.slice(0,i).join('\n'))===lines[i].slice(12).trim()?'<span class="fb good">Valid. This report has not been edited.</span>':'<span class="fb bad">Does not match. The report was changed after it was copied.</span>'}}
+function chk(body){const a=hashStr('RH3|'+body),b=hashStr(body+'|RH3');return (a.toString(36)+b.toString(36)).toUpperCase().slice(0,8)}
+function normReport(t){return t.replace(/\r/g,'').split('\n').map(l=>l.replace(/\s+$/,'')).filter((l,i,a)=>!(l===''&&i===a.length-1))}
+function buildReport(){let name='';try{name=localStorage.getItem('redshift-hunt:name')||''}catch(e){}
+  const lines=['CLIMBING THE COSMIC LADDER · STUDENT REPORT',`Student: ${name.trim()||'(no name entered)'}`,`Class code: ${S.code}`,`Date: ${new Date().toLocaleDateString('en-CA')}`];
+  for(const id of lessonIds()){const q=S.st.quiz[id];if(!q||!q.n){lines.push(`${LESSON_NAMES[id]} quiz: not attempted`);continue}
+    const it=q.items||{},ans=Object.keys(it).length,first=Object.values(it).filter(x=>x.ok&&x.tries===1).length,extra=Object.entries(it).filter(([,x])=>x.tries>1).map(([k,x])=>`Q${+k+1} took ${x.tries} tries`);
+    lines.push(`${LESSON_NAMES[id]} quiz: ${first} of ${q.n} right on first try${ans<q.n?` (${q.n-ans} unanswered)`:''}${extra.length?' · '+extra.join(', '):''}`)}
+  const rl=plRel(),cal=snCal(),f=hubbleFit();
+  if(S.set.start<=1)lines.push(`Level 1: ${cnt('vars')} variable stars${rl&&!rl.given?` · relation L = ${sig3(rl.A)} × P^${rl.b.toFixed(2)} Lsun`:''}`);
+  if(S.set.start<=2)lines.push(`Level 2: ${cnt('hosts')} supernova galaxies${cal&&!cal.given?` · average L_SN = ${cal.L.toExponential(2)} Lsun`:''}`);
+  lines.push(`Level 3: ${cnt('far')} galaxies · H0 = ${f?`${f.H.toFixed(1)} ± ${f.err.toFixed(1)} km/s/Mpc`:'not enough data yet'}`);
+  if(S.st.done&&f)lines.push(`Finished the game · true H0 = ${S.H0} km/s/Mpc · off by ${fmt(Math.abs(f.H-S.H0)/S.H0*100,1)}%`);
+  const body=lines.join('\n');return body+'\nCheck code: '+chk(body)}
+
+/* ================= lessons ================= */
+let TUT=null;
+function anim(fn){let id,t0=null;const f=now=>{if(t0==null)t0=now;fn((now-t0)/1000);id=requestAnimationFrame(f)};id=requestAnimationFrame(f);TUT.stops.push(()=>cancelAnimationFrame(id))}
+const pulse=ph=>{ph=((ph%1)+1)%1;return ph<0.2?ph/0.2:1-(ph-0.2)/0.8};
+function drawPulse(ctx,x,y,R,b,dim=1){const rr=R*(0.95+0.1*b),gR=rr*(1.6+1.4*b);const gl=ctx.createRadialGradient(x,y,0,x,y,gR);gl.addColorStop(0,`rgba(255,226,160,${(0.3+0.6*b)*dim})`);gl.addColorStop(1,'rgba(255,200,120,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(x,y,gR,0,7);ctx.fill();
+  const core=ctx.createRadialGradient(x-rr*.3,y-rr*.3,0,x,y,rr);core.addColorStop(0,`rgba(255,246,220,${dim})`);core.addColorStop(1,`rgba(230,${Math.round(140+70*b)},${Math.round(60+60*b)},${dim})`);ctx.fillStyle=core;ctx.beginPath();ctx.arc(x,y,rr,0,7);ctx.fill()}
+const tutLines=(type,z=0)=>LINES.map(ln=>({...ln,amp:lineAmp({type},ln),lo:ln.l*(1+z)})).filter(ln=>ln.amp);
+function strip(ctx,x,y,w,h,l0,l1,lines){for(let px=0;px<w;px++){ctx.fillStyle=wl2rgb(l0+(l1-l0)*px/w);ctx.fillRect(x+px,y,1.3,h)}
+  for(const ln of lines){if(ln.lo<l0||ln.lo>l1)continue;const cx=x+(ln.lo-l0)/(l1-l0)*w,lw=Math.max(2,ln.w*2.4/(l1-l0)*w);ctx.fillStyle=ln.amp>0?`rgba(255,255,255,${Math.min(.95,.45+ln.amp*.5)})`:`rgba(0,0,0,${Math.min(.92,.45+Math.abs(ln.amp)*1.4)})`;ctx.fillRect(cx-lw/2,y,lw,h)}}
+function quiz(root,lessonId,qs){const right=new Set(),box=root.querySelector('.quiz'),rec=S.st.quiz[lessonId]||(S.st.quiz[lessonId]={n:qs.length,items:{}});rec.n=qs.length;
+  box.innerHTML=qs.map((q,qi)=>`<fieldset class="q"><legend>${qi+1}. ${q.q}</legend><div class="opts">${q.o.map((o,oi)=>`<button class="opt" data-q="${qi}" data-o="${oi}">${o}</button>`).join('')}</div><p class="fb" id="fb${qi}" aria-live="polite"></p></fieldset>`).join('');
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const qi=+b.dataset.q,oi=+b.dataset.o,q=qs[qi],ok=oi===q.a,fb=box.querySelector('#fb'+qi);b.classList.add(ok?'right':'wrong');fb.textContent=q.f[oi];fb.className='fb '+(ok?'good':'bad');
+    const it=rec.items[qi]||(rec.items[qi]={tries:0,ok:false});if(!it.ok){it.tries++;if(ok)it.ok=true;saveSt()}if(ok){right.add(qi);b.parentNode.querySelectorAll('.opt').forEach(x=>x.disabled=true)}if(right.size===qs.length)setTutOk(true)})}
+const E=tex=>eqHtml(tex);
+const EQ={inv:E(String.raw`${T.F} = \frac{${T.L}}{4\pi ${T.r}^2}`),bal:E(String.raw`4\pi ${T.r}^2\, ${T.F} = ${T.L}`),par:E(String.raw`${T.d}\ [\text{pc}] = \frac{1\ [\text{AU}]}{${T.th}\ [\text{arcsec}]}`),
+  rsolve:E(String.raw`${T.r} = \sqrt{\frac{${T.L}}{4\pi ${T.F}}}`),mag:E(String.raw`${T.M} = ${T.m} - 5\log_{10}\!\left(\frac{${T.d}}{10\ \text{pc}}\right)`),magd:E(String.raw`${T.d} = 10^{(${T.m} - ${T.M} + 5)/5}\ \text{pc}`),
+  z:E(String.raw`${T.z} = \frac{\lambda_\text{obs}-\lambda_\text{rest}}{\lambda_\text{rest}}`),v:E(String.raw`${T.v} = c\,${T.z}`),hub:E(String.raw`${T.v} = H_0\, ${T.r}`)};
+
+function lesson1(){const fl=isFlux();return{label:'Level 1 · Variable stars and parallax',finish:'Start Level 1',slides:[
+{title:'A nearby variable star',html:`<p>Some stars pulsate, periodically getting brighter and dimmer. These are called <b>variable stars</b>. Here is one in our own galaxy, fairly close to us.</p>
+<canvas class="tcv" id="tc" aria-label="Animated variable star and its light curve"></canvas>
+<p>We can measure two things right away: its <b>pulsation period</b> (the time from one peak to the next) and how bright it appears to us. What we <b>don't</b> know yet is how bright it truly is, its ${fl?'luminosity':'absolute magnitude'}. How could we figure that out?</p>`,
+mount(r){const cv=r.querySelector('#tc'),per=2.4,win=3*per;anim(t=>{const {ctx,w,h}=fitT(cv),sx=Math.min(w*0.15,90);drawPulse(ctx,sx,h/2-6,Math.min(26,h*0.12),pulse(t/per));ctx.fillStyle=TXT2;ctx.textAlign='center';ctx.fillText('variable star',sx,h-14);
+  const x0=sx*2+24,x1=w-14,top=50,bot=h-32,Y=b=>bot-(b*0.85+0.05)*(bot-top),X=tt=>x1-(t-tt)/win*(x1-x0);ctx.strokeStyle=GRID;ctx.beginPath();ctx.moveTo(x0,top-8);ctx.lineTo(x0,bot);ctx.lineTo(x1,bot);ctx.stroke();ctx.fillStyle=TXT2;ctx.textAlign='right';ctx.fillText('Time →',x1,bot+18);axisLabelY(ctx,fl?'Flux ↑':'brightness ↑',x0-10,(top+bot)/2);
+  const peaks=[];for(let k=Math.floor((t-win)/per)-1;k<=Math.floor(t/per)+1;k++){const tp=(k+0.2)*per;if(tp>=t-win&&tp<=t)peaks.push(tp)}
+  if(peaks.length>=2){const a=X(peaks[peaks.length-2]),b2=X(peaks[peaks.length-1]),yy=top-18;ctx.strokeStyle=CL.P;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a,yy);ctx.lineTo(b2,yy);ctx.moveTo(a,yy-5);ctx.lineTo(a,yy+5);ctx.moveTo(b2,yy-5);ctx.lineTo(b2,yy+5);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle=CL.P;ctx.textAlign='center';ctx.fillText('pulsation period',(a+b2)/2,yy-8)}
+  ctx.strokeStyle='#ff7a6b';ctx.lineWidth=1.8;ctx.beginPath();let first=true;for(let x=x0;x<=x1;x+=2){const y=Y(pulse((t-(x1-x)/(x1-x0)*win)/per));first?ctx.moveTo(x,y):ctx.lineTo(x,y);first=false}ctx.stroke();ctx.lineWidth=1})}},
+fl?{title:'Flux vs. luminosity',html:`<ul class="defs"><li><b>Luminosity</b>: how much energy an object emits as light each second. In other words, how bright it truly is, like the wattage of a lightbulb.</li><li><b>Flux</b>: how much light we actually receive. How bright it appears.</li></ul>
+<p>Light spreads out over a spherical area. A 20 Watt bulb stays 20 Watts, but the farther away it is, the fainter it appears. Move the bulb and watch.</p>
+<canvas class="tcv short" id="tc" aria-label="A 20 watt bulb moved farther away"></canvas>
+<div class="slider"><label for="tD" class="eyebrow">Distance to the bulb</label><input type="range" id="tD" min="1" max="4" step="0.05" value="2"></div>
+<p>How much light we receive depends on the star's luminosity and its distance from us. That is the <b>inverse square law</b>:</p>${EQ.inv}
+<p>To use the "balancing scale" analogy, get rid of the fraction:</p>${EQ.bal}`,
+mount(r){const cv=r.querySelector('#tc'),sl=r.querySelector('#tD');anim(()=>{const {ctx,w,h}=fitT(cv),d=+sl.value,x0=60,x=x0+(d-1)/3*(w-200)+20,looks=20/(d*d);
+  ctx.fillStyle='#86c9f2';ctx.beginPath();ctx.arc(30,h/2,7,0,7);ctx.fill();ctx.fillStyle=TXT2;ctx.textAlign='center';ctx.fillText('you',30,h/2+24);
+  const gl=ctx.createRadialGradient(x+40,h/2-8,0,x+40,h/2-8,40);gl.addColorStop(0,'rgba(255,230,160,.9)');gl.addColorStop(1,'rgba(255,230,160,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(x+40,h/2-8,40,0,7);ctx.fill();
+  ctx.fillStyle='#ffe9a8';ctx.beginPath();ctx.arc(x+40,h/2-8,13,0,7);ctx.fill();ctx.fillStyle='#8a8a8a';ctx.fillRect(x+33,h/2+4,14,12);
+  ctx.fillStyle=CL.L;ctx.fillText('20 Watt bulb',x+40,22);ctx.fillStyle=CL.F;ctx.fillText(`looks like ${looks>=10?fmt(looks,0):fmt(looks,1)} Watts`,x+40,h-14);
+  ctx.strokeStyle=CL.r;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(40,h/2+30);ctx.lineTo(x+24,h/2+30);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=CL.r;ctx.fillText(`${d.toFixed(1)}× as far`,(40+x+24)/2,h/2+46)})}}
+:{title:'Apparent vs. absolute magnitude',html:`<ul class="defs"><li><b>Absolute magnitude M</b>: how bright a star truly is. Defined as how bright it would look from 10 parsecs away.</li><li><b>Apparent magnitude m</b>: how bright it appears from Earth.</li></ul>
+<p>Magnitudes run backwards: bigger numbers are fainter. A star looks fainter the farther away it is, so the difference between m and M tells you its distance:</p>${EQ.mag}<p>Or, solving for the distance:</p>${EQ.magd}`},
+{title:'Parallax',html:`<p>Hold your thumb at arm's length and blink one eye, then the other. Your thumb seems to jump against the background. <b>Parallax</b> is the apparent shift in a star's position due to the motion of Earth. Your eyes are like Earth at different points in its orbit. Your thumb is like a nearby star. The target is the far away background stars.</p>
+<canvas class="tcv tall" id="tc" aria-label="Earth orbiting the Sun and a nearby star shifting against background stars"></canvas>
+<div class="slider"><label for="tD" class="eyebrow">Distance to the star</label><input type="range" id="tD" min="1" max="20" step="0.1" value="4"></div>
+<p>The star's <b>parallax angle θ</b> is half of the total angle that it travels over the course of 6 months. A parsec is defined so that a star with a parallax angle of 1 arcsecond is 1 parsec away. To find the distance in parsecs:</p>${EQ.par}
+<p class="note">Nearby stars have large parallax angles, while more distant stars have smaller ones. Parallax is only good out to about 500 parsecs. Every variable star in Level 1 is closer than that.</p>`,
+mount(r){const cv=r.querySelector('#tc'),sl=r.querySelector('#tD');anim(t=>{const d=+sl.value,{ctx,w,h}=fitT(cv),sx=w*0.5,sy=h-60,R=Math.min(70,w*0.16),th=t*0.9,ex=sx+R*Math.cos(th),ey=sy+R*0.35*Math.sin(th),stY=sy-30-(d/20)*(h-150),bgY=26;
+  ctx.fillStyle='#ffe066';for(let i=0;i<40;i++)ctx.fillRect(((i*97)%Math.max(1,w-20))+10,bgY-8+(i*37)%16,2,2);ctx.fillStyle=TXT2;ctx.textAlign='left';ctx.fillText('background stars',10,bgY+24);
+  ctx.strokeStyle='#666';ctx.setLineDash([5,5]);ctx.beginPath();ctx.ellipse(sx,sy,R,R*0.35,0,0,7);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#ffd27a';ctx.beginPath();ctx.arc(sx,sy,9,0,7);ctx.fill();ctx.fillStyle=TXT2;ctx.textAlign='center';ctx.fillText('Sun',sx,sy+26);
+  ctx.fillStyle='#86c9f2';ctx.beginPath();ctx.arc(ex,ey,5,0,7);ctx.fill();ctx.fillStyle=TXT;ctx.fillText('Earth',ex,ey-10);ctx.fillStyle='#ff6b6b';ctx.beginPath();ctx.arc(sx,stY,5,0,7);ctx.fill();ctx.textAlign='left';ctx.fillText('nearby star',sx+10,stY+4);
+  const ix=ex+(sx-ex)*(ey-bgY)/(ey-stY);ctx.strokeStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(ix,bgY);ctx.stroke();
+  ctx.fillStyle='#ff6b6b';ctx.beginPath();ctx.arc(Math.max(4,Math.min(w-4,ix)),bgY,6,0,7);ctx.fill();ctx.fillStyle=TXT;ctx.textAlign='right';ctx.fillText(`d = ${d.toFixed(1)} pc   θ = ${(1/d).toFixed(3)}″`,w-10,h-10)})}},
+{title:'The plan',html:`<p>Henrietta Swan-Leavitt discovered that the pulsation period of a variable star is directly related to its ${fl?'luminosity':'absolute magnitude'}. In Level 1 you'll rediscover this yourself. For each nearby variable star:</p>
+<ol class="recipe"><li><div><b>Measure the pulsation period</b> from its light curve.</div></li><li><div><b>Measure its average ${fl?'flux':'apparent magnitude'}</b>.</div></li>
+<li><div><b>Measure its parallax angle</b> and turn it into a distance.${EQ.par}</div></li>
+<li><div><b>Work out how bright it truly is.</b>${fl?EQ.bal:EQ.mag}</div></li><li><div><b>Plot it</b> on a chart of ${fl?'luminosity':'absolute magnitude'} against pulsation period.</div></li></ol>
+<p>After ${S.set.n1} stars, you'll have your own <b>period-luminosity relation</b>, and Level 2 unlocks.</p>`},
+{title:'Check yourself',gate:true,html:'<p>Answer these to start Level 1.</p><div class="quiz"></div>',mount(r){quiz(r,'l1',[
+  fl?{q:'Star A and Star B are the same distance away. Star A has twice the luminosity of Star B. How much flux do we get from Star A?',o:['Four times the flux of Star B','Twice the flux of Star B','Half the flux of Star B','A fourth the flux of Star B'],a:1,f:['Not quite. They are at the same distance, so only the luminosity changes.','Right. Same distance, twice the luminosity, so twice the flux.','Not quite. More luminous means more flux.','Not quite. Distance did not change, so the flux scales with luminosity.']}
+   :{q:'Star A and Star B have the same absolute magnitude. Star B is 10 times farther away. How do their apparent magnitudes compare?',o:['Star B is 5 magnitudes fainter','Star B is 10 magnitudes fainter','Star B is 5 magnitudes brighter','They look the same'],a:0,f:['Right. 10 times farther means 100 times fainter, which is 5 magnitudes.','Not quite. Every 5 magnitudes is a factor of 10 in distance.','Not quite. Farther away means fainter, which is a bigger magnitude.','Not quite. Distance changes how bright a star appears.']},
+  fl?{q:'Star A and Star B have the same luminosity. Star B is twice as far away as Star A. How much flux do we get from Star B?',o:['4 times the flux of Star A','2 times the flux of Star A','½ times the flux of Star A','¼ times the flux of Star A'],a:3,f:['Not quite. Star B is farther, so it appears fainter.','Not quite. Star B is farther, so it appears fainter.','Close. The distance is squared in the inverse square law, so twice as far gives ¼ the flux.','Right. Twice as far, and the distance is squared: ¼ the flux.']}
+   :{q:'A star is exactly 10 parsecs away. How do its apparent and absolute magnitudes compare?',o:['They are equal','m is 10 more than M','m is 5 more than M','m is 5 less than M'],a:0,f:['Right. M is defined as how bright the star would look from 10 pc, so m = M.','Not quite. At 10 pc the star is at the reference distance.','Not quite. At 10 pc the star is at the reference distance.','Not quite. At 10 pc the star is at the reference distance.']},
+  {q:'Astronomers measure the parallax angle of a star to be 20″ (20 arcseconds). How far away is this star in parsecs?',o:['20 pc','5 pc','0.05 pc','0.02 pc'],a:2,f:['Not quite. Divide 1 by the parallax angle in arcseconds.','Not quite. Divide 1 by the parallax angle in arcseconds.','Right. 1 divided by 20 is 0.05 pc.','Not quite. Divide 1 by 20.']},
+  {q:"Star X is 10 pc away. What is true about Star X's parallax angle?",o:['It is larger than 1″','It is smaller than 1″','It is equal to 1″','There is not enough information to tell'],a:1,f:['Not quite. Farther stars have smaller parallax angles. A star at 1 pc has 1″.','Right. It is farther than 1 pc, so its parallax angle is smaller than 1″ (0.1″).','Not quite. That would be a star 1 pc away.','You can tell: 1 divided by 10 gives 0.1″.']}])}}]}}
+
+function lesson2(){const fl=isFlux(),g=S.set.start>=2;return{label:'Level 2 · Standard candles and supernovae',finish:'Start Level 2',slides:[
+{title:'Standard candles',html:`<p>A <b>standard candle</b> is a special type of object that we know the ${fl?'luminosity':'absolute magnitude'} of.</p>
+<p>Say we see a lightbulb very far away. We measure its brightness from our perspective: it looks like a 5 Watt bulb. If we know how bright the bulb actually is, say 20 Watts, we can determine the distance!</p>${fl?EQ.inv:EQ.magd}
+<p>${g?'Astronomers have already worked out the period-luminosity relation for variable stars, so':'Thanks to the period-luminosity relation you built in Level 1,'} variable stars are now standard candles. If we can measure the pulsation period of a variable star, we can determine its ${fl?'luminosity':'absolute magnitude'}!</p>`},
+{title:'Distance to a variable star',html:`<p>${fl?'Once you know L from the period and measure F, solve the inverse square law for r:':'Once you know M from the period and measure m, solve for the distance:'}</p>
+${fl?E(String.raw`\begin{aligned} 4\pi ${T.r}^2 ${T.F} &= ${T.L} \\ ${T.r}^2 &= \frac{${T.L}}{4\pi ${T.F}} \\ ${T.r} &= \sqrt{\frac{${T.L}}{4\pi ${T.F}}} \end{aligned}`):EQ.magd}
+<p>Worked example: a variable star in another galaxy has a pulsation period of 20 days. The period-luminosity relation says that means ${fl?'about 7,400 Suns':'an absolute magnitude of −4.85'}. Its average ${fl?'flux is tiny':'apparent magnitude is 26.20'}:</p>
+${fl?E(String.raw`${T.r} = \sqrt{\frac{7{,}400\ L_\odot}{4\pi\,(3.5\times10^{-12}\ ${FU})}} = 1.30\times10^{7}\ \text{pc} = 13.0\ \text{Mpc}`):E(String.raw`${T.d} = 10^{(26.20 - (-4.85) + 5)/5}\ \text{pc} = 1.62\times10^{7}\ \text{pc} = 16.2\ \text{Mpc}`)}
+<p class="note">1 Mpc (megaparsec) is a million parsecs, about 3.26 million light-years. Beyond about 40 Mpc, single variable stars are too faint to see.</p>`},
+{title:'Type 1a supernovae',html:`<p>White dwarf stars cannot be larger than 1.4 solar masses. Any bigger, and the electron degeneracy pressure that supports them fails. If a white dwarf eats material from another star, it will exceed 1.4 solar masses and explode as a <b>Type 1a supernova</b>.</p>
+<p>Astronomers are pretty sure that all Type 1a supernovae explode with the same brightness. In other words, they all have the same ${fl?'luminosity':'absolute magnitude'}. And they are so bright that we can see them in galaxies far beyond the reach of variable stars. <b>In Level 2 you'll test that claim and find out how bright they are.</b></p>`},
+{title:'The plan',html:`<p>Some galaxies (marked ★ in the sky) have both a variable star you can measure and a Type 1a supernova. Everything in one galaxy is at the same distance. For each ★ galaxy:</p>
+<ol class="recipe"><li><div><b>Measure the variable star's pulsation period</b> and use the period-luminosity relation to get its ${fl?'luminosity':'absolute magnitude'}.</div></li>
+<li><div><b>Measure its average ${fl?'flux':'apparent magnitude'} and find the distance.</b>${fl?EQ.rsolve:EQ.magd}</div></li>
+<li><div><b>Measure the supernova's peak ${fl?'flux':'apparent magnitude'}.</b> It is at the same distance.</div></li>
+<li><div><b>Work out the supernova's ${fl?'luminosity':'absolute magnitude'}.</b>${fl?E(String.raw`${T.Lsn} = 4\pi ${T.r}^2\, ${T.Fpk}`):E(String.raw`${T.Msn} = ${T.mpk} - 5\log_{10}\!\left(\frac{${T.d}}{10\ \text{pc}}\right)`)}</div></li></ol>
+<p>After ${S.set.n2} ★ galaxies, compare your supernovae. Do they really all have about the same ${fl?'luminosity':'absolute magnitude'}?</p>`},
+{title:'Check yourself',gate:true,html:'<p>Answer these to start Level 2.</p><div class="quiz"></div>',mount(r){quiz(r,'l2',[
+  {q:'At minimum, what two pieces of information do we need in order to determine the distance to a variable star?',o:[fl?"The star's flux and its temperature":"The star's apparent magnitude and its temperature",fl?"The star's flux and its pulsation period":"The star's apparent magnitude and its pulsation period","The star's size and its pulsation period",fl?"Just the star's flux":"Just the star's apparent magnitude"],a:1,
+   f:['Not quite. Temperature does not tell us how bright the star truly is here.',`Right. The pulsation period gives how bright it truly is, and with how bright it appears we get the distance.`,'Not quite. We also need to measure how bright it appears.',"Not quite. Without knowing how bright it truly is, how bright it appears can't give the distance."]},
+  fl?{q:"A variable star and a supernova are in the same galaxy. At its peak, the supernova's flux is 500,000 times the variable star's flux. How do their luminosities compare?",o:['The supernova is 500,000 times more luminous','The supernova is about 700 times more luminous','They have the same luminosity','You need to know the distance first'],a:0,f:['Right. Same galaxy, same distance, so the flux ratio equals the luminosity ratio.','Not quite. No square root is needed: the distance is the same for both.','Not quite. One looks far brighter at the same distance, so it truly is brighter.',"You don't: at the same distance, the flux ratio is the luminosity ratio."]}
+   :{q:'A variable star and a supernova are in the same galaxy. At its peak, the supernova appears 14 magnitudes brighter than the variable star. How do their absolute magnitudes compare?',o:['The supernova is 14 magnitudes brighter','The supernova is 7 magnitudes brighter','They are the same','You need to know the distance first'],a:0,f:['Right. Same distance, so the difference in m equals the difference in M.','Not quite. No halving: both are at the same distance.','Not quite. One looks far brighter at the same distance, so it truly is brighter.',"You don't: at the same distance, the difference in m is the difference in M."]},
+  {q:`Suppose your period-luminosity relation makes every variable star come out ${fl?'10% more luminous':'a little brighter'} than it really is. What happens to the supernova ${fl?'luminosities':'brightnesses'} you calculate?`,o:['They come out too high as well','They come out too low','Nothing, they are measured separately'],a:0,f:['Right. A too-bright standard candle makes the galaxy seem farther, which makes the supernova seem brighter too. Errors carry up the distance ladder.','Not quite. Think it through: brighter variable star, farther distance, brighter supernova.','Not quite. The supernova distance comes from the variable star, so errors carry over.']}])}}]}}
+
+function lesson3(){const fl=isFlux(),cal=snCal();const Ltxt=cal?(fl?String.raw`${T.Lsn} \approx ${tx(cal.L)}\ L_\odot`:String.raw`${T.Msn} \approx ${t2(MOfL(cal.L))}`):'';return{label:'Level 3 · Redshift and the Hubble diagram',finish:'Start Level 3',slides:[
+{title:'Supernovae as standard candles',html:`<p>${S.set.start>=3?'Type 1a supernovae all have about the same peak':'In Level 2 you found that Type 1a supernovae all have about the same peak'} ${fl?'luminosity':'absolute magnitude'}:</p>${Ltxt?E(Ltxt):''}
+<p>That makes every Type 1a supernova a standard candle. Catch one in a faraway galaxy, measure its peak ${fl?'flux':'apparent magnitude'}, and you have the distance to that galaxy, even hundreds of megaparsecs away:</p>${fl?E(String.raw`${T.r} = \sqrt{\frac{${T.Lsn}}{4\pi ${T.Fpk}}}`):E(String.raw`${T.d} = 10^{(${T.mpk} - ${T.Msn} + 5)/5}\ \text{pc}`)}
+<p>The ${fl?'inverse square law':'distance formula'} tells us about the distance to galaxies. The <b>Doppler effect</b> tells us about their motion.</p>`},
+{title:'The Doppler shift',html:`<p><b>Doppler shift</b>: the change in the wavelength of light as seen by an observer when the source of light is moving toward or away from the observer.</p>
+<ul class="defs"><li>Moving <b>away</b> from us: the light gets stretched out. We say the light is <b>redshifted</b>.</li><li>Moving <b>toward</b> us: the light gets scrunched up. We say it is <b>blueshifted</b>.</li><li>The faster it moves, the more shifted its light. Moving side to side, there is no shift.</li></ul>
+<canvas class="tcv" id="tc" aria-label="Lab spectrum compared with a shifted spectrum"></canvas>
+<div class="slider"><label for="tV" class="eyebrow">Velocity (negative is toward us)</label><input type="range" id="tV" min="-30000" max="30000" step="500" value="9000"></div>`,
+mount(r){const cv=r.querySelector('#tc'),sl=r.querySelector('#tV');anim(()=>{const v=+sl.value,{ctx,w,h}=fitT(cv),L=12,R=12,l0=350,l1=740,sw=w-L-R,X=l=>L+(l-l0)/(l1-l0)*sw,z=v/C,y1=24,y2=h-64,sh=32;
+  ctx.fillStyle=TXT;ctx.textAlign='left';ctx.fillText('Not moving (lab on Earth)',L,16);strip(ctx,L,y1,sw,sh,l0,l1,tutLines('elliptical'));strip(ctx,L,y2,sw,sh,l0,l1,tutLines('elliptical',z));
+  ctx.strokeStyle=v>=0?'rgba(255,106,85,.85)':'rgba(134,201,242,.9)';ctx.setLineDash([3,3]);tutLines('elliptical').forEach(ln=>{const lo=ln.l*(1+z);if(lo>l1||lo<l0)return;ctx.beginPath();ctx.moveTo(X(ln.l),y1+sh+2);ctx.lineTo(X(lo),y2-22);ctx.stroke()});ctx.setLineDash([]);
+  ctx.fillStyle=v>0?'#ff6a55':v<0?'#86c9f2':TXT;ctx.fillText(v>0?`Moving away at ${fmt(v)} km/s: redshifted`:v<0?`Moving toward us at ${fmt(-v)} km/s: blueshifted`:'Not moving toward or away: no shift',L,y2-7);
+  ctx.fillStyle=TXT2;ctx.textAlign='center';for(let l=400;l<=700;l+=50)ctx.fillText(l,X(l),h-12);ctx.textAlign='left';ctx.fillText('Blue',L,h-12);ctx.textAlign='right';ctx.fillText('Red',w-R,h-12)})}},
+{title:"A galaxy's spectrum",html:`<p>A galaxy's light is the combined light of billions of stars, so its spectrum shows absorption lines from elements like calcium, hydrogen, magnesium and sodium. A spectrograph records it as a graph of flux against wavelength. Each dark absorption line becomes a <b>dip</b>. Galaxies still forming stars also have glowing gas that adds bright emission lines, which show up as <b>spikes</b>.</p>
+<div class="toggle"><button class="chip" data-ty="elliptical" aria-pressed="true">Elliptical galaxy</button><button class="chip" data-ty="spiral" aria-pressed="false">Spiral galaxy</button></div>
+<canvas class="tcv tall" id="tc" aria-label="Galaxy spectrum as a graph"></canvas>
+<p class="note">In Level 3 you'll slide a template of these lines (at their lab wavelengths) until it lines up with each galaxy's spectrum.</p>`,
+mount(r){const cv=r.querySelector('#tc');let type='elliptical';r.querySelectorAll('[data-ty]').forEach(b=>b.onclick=()=>{type=b.dataset.ty;r.querySelectorAll('[data-ty]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+  anim(()=>{const {ctx,w,h}=fitT(cv),L=40,R=12,l0=380,l1=700,X=l=>L+(l-l0)/(l1-l0)*(w-L-R),top=84,bot=h-38;strip(ctx,L,10,w-L-R,28,l0,l1,tutLines(type));
+    const fs=[];for(let l=l0;l<=l1;l+=0.5)fs.push(specModel(type,0,l));const fmin=Math.min(...fs)-.05,fmax=Math.max(...fs)+.05,Y=f=>top+(1-(f-fmin)/(fmax-fmin))*(bot-top);
+    ctx.strokeStyle=GRID;ctx.fillStyle=TXT2;ctx.textAlign='center';for(let l=400;l<=700;l+=50){const x=X(l);ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bot);ctx.stroke();ctx.fillText(l,x,bot+16)}ctx.fillText('wavelength (nm)',L+(w-L-R)/2,h-4);axisLabelY(ctx,'flux',16,(top+bot)/2);
+    let i=0;for(const ln of tutLines(type)){if(ln.n==='Ca H'||ln.n==='[N II]')continue;const x=X(ln.l),y=i++%2?58:73;ctx.strokeStyle=ln.amp>0?'rgba(134,220,174,.55)':'rgba(255,106,85,.5)';ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(x,y+3);ctx.lineTo(x,bot);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=ln.amp>0?'#86dcae':'#ff6a55';ctx.fillText(ln.n==='Ca K'?'Ca H&K':ln.n,x,y)}
+    ctx.strokeStyle=TXT;ctx.lineWidth=1.3;ctx.beginPath();fs.forEach((f,k)=>{const x=X(l0+k*0.5),y=Y(f);k?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.lineWidth=1})}},
+{title:'From shift to speed',html:`<p>The faster a galaxy is moving away, the more its lines are shifted toward the red end of the spectrum. In Level 3 you'll line up a template of lines with each galaxy's spectrum. Once they match, the game reads off how far the lines shifted and tells you the galaxy's speed.</p>
+<details class="more"><summary>For the curious: how the game turns a shift into a speed</summary><p class="note">It uses the redshift z, the fraction by which the light was stretched, and multiplies it by the speed of light c. This works well for galaxies moving much slower than light.</p>${EQ.z}${EQ.v}</details>`},
+{title:'The Hubble diagram',html:`<p>For each galaxy you'll have two numbers: how far away it is, and how fast it is moving. Plot velocity against distance. If the universe is expanding, galaxies farther away move away faster, and the points fall along a straight line through the origin:</p>${EQ.hub}
+<p>The slope of that line, <b>H₀</b>, is the Hubble constant. Its inverse gives a rough age for the universe. Measure ${S.set.n3} galaxies to finish the game, and you'll find out how close you got to the true value.</p>`},
+{title:'Check yourself',gate:true,html:'<p>Answer these to start Level 3.</p><div class="quiz"></div>',mount(r){quiz(r,'l3',[
+  {q:"Galaxy A's absorption lines are shifted a little toward the red. Galaxy B's lines are shifted a lot toward the red. Which galaxy is moving away from us faster?",o:['Galaxy A','Galaxy B','They move at the same speed','Neither is moving away'],a:1,f:['Not quite. A bigger shift means a faster speed.','Right. The faster a galaxy moves away, the more its light is stretched toward the red.','Not quite. Different shifts mean different speeds.','Not quite. A shift toward the red means moving away.']},
+  {q:"A galaxy's absorption lines appear at shorter wavelengths than in a lab on Earth. What is the galaxy doing?",o:['Moving away from us','Moving toward us','Moving side to side','Not moving at all'],a:1,f:['Not quite. Moving away stretches the light to longer wavelengths.','Right. Shorter wavelengths mean the light is scrunched up: blueshifted, so it is moving toward us.','Not quite. Side to side motion gives no shift.','Not quite. A galaxy at rest shows lines at the lab wavelengths.']},
+  {q:'Galaxy B is moving away from us twice as fast as galaxy A. If the Hubble law is true, galaxy B is…',o:['half as far away','at the same distance','about twice as far away','four times as far away'],a:2,f:['Not quite. Larger velocity goes with larger distance.','Not quite. Different velocities mean different distances.','Right. Velocity is proportional to distance. Your Hubble diagram will test this.','Not quite. It is a straight line, so twice v means twice r.']}])}}]}}
+const LESSONS={l1:lesson1,l2:lesson2,l3:lesson3};
+const tutEl=document.getElementById('tut'),tutBox=document.getElementById('tutBox');
+function setTutOk(v){if(!TUT)return;TUT.ok=v;const n=tutBox.querySelector('#tNext'),hn=tutBox.querySelector('#tHint');if(n)n.disabled=!v;if(hn&&v&&TUT.L.slides[TUT.i].gate)hn.textContent='All correct. Nice work.'}
+function openTut(id){if(TUT)TUT.stops.forEach(f=>f());TUT={id,i:0,stops:[],ok:true,L:LESSONS[id]()};tutEl.hidden=false;renderTut();tutBox.focus({preventScroll:true})}
+function closeTut(noMark){if(!TUT)return;TUT.stops.forEach(f=>f());const id=TUT.id;TUT=null;tutEl.hidden=true;tutBox.innerHTML='';if(!noMark){S.st.lessons[id]=1;saveSt()}sky.focus({preventScroll:true})}
+function renderTut(){TUT.stops.forEach(f=>f());TUT.stops=[];const Ls=TUT.L,s=Ls.slides[TUT.i],n=Ls.slides.length,last=TUT.i===n-1;TUT.ok=!s.gate;
+  tutBox.innerHTML=`<div class="tut-head"><span class="eyebrow">${Ls.label} · ${TUT.i+1} of ${n}</span><h2 id="tutTitle">${s.title}</h2><div class="dots">${Ls.slides.map((_,k)=>`<i class="${k===TUT.i?'on':k<TUT.i?'done':''}"></i>`).join('')}</div></div>
+  <div class="tut-body">${s.html}</div><div class="tut-foot"><button class="btn ghost" id="tBack" ${TUT.i?'':'disabled'}>Back</button><span class="sp" id="tHint">${s.gate?'Answer every question to continue.':''}</span>${last?'':'<button class="btn ghost" id="tSkip">Skip lesson</button>'}<button class="btn" id="tNext" ${TUT.ok?'':'disabled'}>${last?Ls.finish:'Next'}</button></div>`;
+  tutBox.scrollTop=0;tutBox.querySelector('#tBack').onclick=()=>{TUT.i--;renderTut()};tutBox.querySelector('#tNext').onclick=()=>{if(last)closeTut();else{TUT.i++;renderTut()}};
+  const sk=tutBox.querySelector('#tSkip');if(sk)sk.onclick=()=>closeTut();if(s.mount)s.mount(tutBox);typeset(tutBox.querySelector('.tut-body'))}
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(TUT)closeTut();else if(!tutEl.hidden)closeFinish();else if(!drawer.hidden)closeDrawer();else if(S.cur)closePanel()});
+
+/* ================= finish screen ================= */
+function closeFinish(){tutEl.hidden=true;tutBox.innerHTML=''}
+function showFinish(){if(TUT)closeTut(true);if(S.cur)closePanel();const f=hubbleFit();if(!f)return;const off=(f.H-S.H0)/S.H0*100,fl=isFlux(),rl=plRel(),cal=snCal();let name='';try{name=localStorage.getItem('redshift-hunt:name')||''}catch(e){}
+  const a=Math.abs(off),verdict=a<5?'Excellent work. Your ladder held up beautifully.':a<10?'Very good. Your ladder held up well.':a<20?'Not bad. Small measurement errors added up as you climbed the ladder.':'Your value is fairly far off. Errors at each rung of the ladder add up. Look back at your period-luminosity relation and your supernovae to see where they crept in.';
+  tutEl.hidden=false;tutBox.innerHTML=`<div class="tut-head"><span class="eyebrow">Game complete</span><h2 id="tutTitle">You climbed the cosmic ladder</h2></div><div class="tut-body">
+    <p>You measured ${cnt('far')} faraway galaxies and found how fast the universe is expanding.</p>
+    ${eqHtml(String.raw`H_0^\text{yours} = ${f.H.toFixed(1)} \pm ${f.err.toFixed(1)}\ \text{km/s/Mpc} \qquad H_0^\text{true} = ${S.H0.toFixed(1)}\ \text{km/s/Mpc}`)}
+    <p><b>You were ${fmt(a,1)}% ${off>0?'too high':'too low'}.</b> ${verdict}</p>
+    <p>Your value puts the age of the universe at about ${fmt(977.8/f.H,1)} billion years. The true value for this sky gives ${fmt(977.8/S.H0,1)} billion years. The true H₀ line now shows on your Hubble diagram.</p>
+    <ol class="recipe">${S.set.start<=1&&rl&&!rl.given?`<li><div><b>Parallax → variable stars.</b> From ${rl.n} nearby stars you found this period-luminosity relation:${eqHtml(relTex(rl,fl))}</div></li>`:''}${S.set.start<=2&&cal&&!cal.given?`<li><div><b>Variable stars → supernovae.</b> From ${cal.n} ★ galaxies you found:${eqHtml(fl?String.raw`${T.Lsn} = ${tx(cal.L)}\ L_\odot`:String.raw`${T.Msn} = ${t2(MOfL(cal.L))}`)}</div></li>`:''}<li><div><b>Supernovae → the Hubble law.</b> ${cnt('far')} galaxies gave you your value of H₀.</div></li></ol>
+    <div class="formrow"><label class="lbl" for="finName">Your name</label><input type="text" id="finName" autocomplete="off" value="${name.replace(/"/g,'&quot;')}" style="flex:1;min-width:9em"></div>
+    <textarea id="finRep" rows="10" readonly hidden aria-label="Report text"></textarea><p class="note" id="finMsg" role="status"></p></div>
+    <div class="tut-foot"><button class="btn ghost" id="finReset">Start over</button><span class="sp"></span><button class="btn ghost" id="finKeep">Keep exploring</button><button class="btn" id="finExp">Export results for teacher</button></div>`;
+  const q=s=>tutBox.querySelector(s);
+  q('#finName').oninput=e=>{try{localStorage.setItem('redshift-hunt:name',e.target.value)}catch(x){}};
+  q('#finKeep').onclick=closeFinish;
+  q('#finExp').onclick=()=>{const t=buildReport(),ta=q('#finRep'),m=q('#finMsg'),named=!!q('#finName').value.trim();ta.value=t;ta.hidden=false;
+    navigator.clipboard?.writeText(t).then(()=>{m.textContent=named?'Copied. Paste it where your teacher asked.':'Copied, but add your name above and export again.'},()=>{ta.select();m.textContent='Select the text above and copy it.'})};
+  const rs=q('#finReset');rs.onclick=()=>{if(rs.dataset.arm){S.st=blankSt();saveSt();closeFinish();applyCode(S.code);toast('Progress cleared. Starting over.')}else{rs.dataset.arm=1;rs.textContent='Click again to erase all progress'}};
+  typeset(q('.tut-body'));tutBox.focus({preventScroll:true})}
+
+/* ================= boot ================= */
+function applyCode(code){const p=parseCode(code)||parseCode(DEFAULT_CODE);if(S.cur)closePanel();if(TUT)closeTut(true);
+  S.code=p.code;S.seed=p.seed;S.set={units:p.units,start:p.start,hand:p.hand,n1:p.n1,n2:p.n2,n3:p.n3};buildUniverse(S.seed);loadSt();S.view=topLevel();
+  const t=targets();centerOn(t.find(o=>!recOf(o))||t[0]);try{localStorage.setItem('redshift-hunt:v3:code',S.code)}catch(e){}
+  renderAll();if(!S.st.lessons['l'+S.view])openTut('l'+S.view)}
+window.addEventListener('resize',()=>{requestDraw();renderLP();if(S.cur&&S.cur.redraw)S.cur.redraw()});
+window.addEventListener('hashchange',()=>{const p=parseCode(location.hash.slice(1));if(p&&p.code!==S.code)applyCode(p.code)});
+document.fonts&&document.fonts.ready.then(()=>{requestDraw();renderLP()});
+let startCode=parseCode(location.hash.slice(1))?.code;if(!startCode){try{startCode=localStorage.getItem('redshift-hunt:v3:code')}catch(e){}}
+applyCode(startCode||DEFAULT_CODE);
+</script>
+
+</body>
+</html>
