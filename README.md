@@ -39,6 +39,7 @@ Example: `ORION-F1A53-10`
 | `5` | Variable stars needed to unlock Level 2 | 3 to 9 |
 | `3` | ★ galaxies needed to unlock Level 3 | 2 to 9 |
 | `10` | Galaxies needed to finish Level 3 | 5 to 20 |
+| *(optional)* `Q0` / `Q2` | Quick-check questions | `Q0` off · nothing added for sometimes (the default) · `Q2` often |
 
 **Sharing a code with students.** Either:
 - add it to the end of the link: `https://alexsobotka.github.io/cosmic-ladder/#ORION-F1A53-10`, or
@@ -56,6 +57,7 @@ The gear button is protected by a passcode. **The default passcode is `ladder`.*
 
 - choose the sky seed and every option above, and copy the resulting class code
 - tick exactly which calculation steps students must do themselves (period, parallax angle, distance from parallax, luminosity, and so on); checked steps show the equation with a blank answer that the game checks
+- set how often **quick-check questions** pop up (off, sometimes, often): short concept questions about the step a student just finished, sometimes using their own numbers; students must answer correctly to continue, and the report records how many they got right on the first try
 - show the true H₀ line on the Hubble diagram
 - copy all of the current device's measurements as CSV
 - clear progress on the current device
@@ -82,6 +84,7 @@ Students open **Menu → Your class**, enter their name, and click **Copy report
 - for each lesson quiz, how many questions they got right on the first try, and which ones took extra tries
 - how many objects they measured at each level, their period-luminosity relation and their average supernova luminosity
 - their H₀, and after finishing, the true H₀ and how far off they were
+- quick checks answered right on the first try, and their best streak
 - a **check code**
 
 To confirm a report wasn't edited, paste it into **⚙ → Check a student report**.
