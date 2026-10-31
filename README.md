@@ -91,6 +91,7 @@ To confirm a report wasn't edited, paste it into **⚙ → Check a student repor
 ## Good to know
 
 - **Progress is stored in each student's browser.** Students who switch devices, use a private window or clear their browser data start over. Each class code has its own separate save.
+- **Sound:** the game generates its own music and sound effects in the browser, with no audio files. The soundtrack, "Starlight Synthwave," is a 2:40 synthwave piece that builds from a soft intro through bass, drums and a bell melody before looping. Music starts when a student clicks Start. Students can set music and effects volume, or mute everything, under **Menu → Sound**; the choice is remembered on their device.
 - **An internet connection is needed** to load the fonts and the equation renderer (MathJax, from a public CDN). Without it, equations appear as raw LaTeX text.
 - **The physics is simulated with some simplifications:**
   - Variable star luminosity is proportional to period, with about 10% scatter.

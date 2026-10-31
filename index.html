@@ -115,6 +115,7 @@ textarea{width:100%;resize:vertical}
 .dsec{display:flex;flex-direction:column;gap:10px;padding-top:14px;border-top:1px solid var(--rule)}
 .dhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .lessonlist{display:flex;flex-direction:column;gap:6px}
+.drawer-box input[type=range]{accent-color:var(--redlight)}
 .lessonlist button{text-align:left;background:var(--panel-2);border:1px solid var(--rule);border-radius:4px;padding:8px 12px}
 .lessonlist button:disabled{opacity:.45;cursor:not-allowed}
 .code{font-family:var(--mono);font-size:18px;color:var(--amber);letter-spacing:.06em}
@@ -228,6 +229,8 @@ const T={F:String.raw`{\color{#5ab8ff}F}`,Fb:String.raw`{\color{#5ab8ff}\bar{F}}
   th:String.raw`{\color{#5ab8ff}\theta}`,P:String.raw`{\color{#b58cff}P}`,m:String.raw`{\color{#5ab8ff}\bar{m}}`,mpk:String.raw`{\color{#5ab8ff}m_\text{peak}}`,
   M:String.raw`{\color{#4fd67a}M}`,Msn:String.raw`{\color{#4fd67a}M_\text{SN}}`,v:String.raw`{\color{#f6bd5f}v}`,z:String.raw`{\color{#f6bd5f}z}`};
 const FU=String.raw`L_\odot/\text{pc}^2`;
+/* color a plugged-in number to match its variable: F/m blue, L/M green, r pink, d red, θ blue, P purple, v amber */
+const cl=(k,x)=>`{\\color{${{F:'#5ab8ff',m:'#5ab8ff',th:'#5ab8ff',L:'#4fd67a',M:'#4fd67a',r:'#ff8ad1',d:'#ff6b6b',P:'#b58cff',v:'#f6bd5f'}[k]}}${x}}`;
 const LINES=[
   {n:'Ca K',l:393.37,a:-0.42,w:1.1},{n:'Ca H',l:396.85,a:-0.38,w:1.1},{n:'G band',l:430.5,a:-0.16,w:1.5},
   {n:'Hβ',l:486.13,a:-0.14,w:1.1,em:0.3},{n:'[O III]',l:500.7,a:0,w:0.9,em:0.22},{n:'Mg b',l:517.5,a:-0.18,w:1.6},
@@ -439,57 +442,58 @@ function relTex(rl,fl){if(fl)return String.raw`${T.L} = ${tx(rl.A)}\,L_\odot \ti
 
 function cardsFor(cur){const k=cur.kind,fl=isFlux(),given1=S.set.start>=2,cs=[];
   const cP={id:'P',t:'Pulsation period',w:'lc',text:k==='var'?'This nearby variable star gets brighter and dimmer. Click the peak of each pulse. Mark at least two peaks in a row. Marking more peaks averages out your error.':'Your telescope can pick out a variable star in this galaxy. Click the peak of each pulse (at least two in a row).',
-    ready:o=>!!o.P,wait:'Mark at least two peaks to see the period.',eq:(o,a)=>String.raw`${T.P} = \frac{t_\text{last}-t_\text{first}}{N_\text{peaks}-1} = \frac{${fx(o.ts[o.n-1],2)}-${fx(o.ts[0],2)}}{${o.n-1}} = ${a}\ \text{days}`,
+    ready:o=>!!o.P,wait:'Mark at least two peaks to see the period.',eq:(o,a)=>String.raw`${T.P} = \frac{t_\text{last}-t_\text{first}}{N_\text{peaks}-1} = \frac{${fx(o.ts[o.n-1],2)}-${fx(o.ts[0],2)}}{${o.n-1}} = ${cl('P',a)}\ \text{days}`,
     ans:o=>tx(o.P),hand:o=>({ans:o.P,ok:rel(o.P,.03),unit:'days',hint:'Subtract the first peak time from the last, then divide by the number of gaps between peaks (one less than the number of peaks).'})};
   const cF={id:'F',t:fl?'Average flux':'Average brightness',w:'lcAvg',text:fl?"The dashed blue line is the star's average flux: how much of its light we actually receive.":"The dashed blue line is the star's average apparent magnitude: how bright it looks from Earth.",
-    ready:()=>true,eq:o=>fl?String.raw`${T.Fb} = ${tx(o.F)}\ ${FU}`:String.raw`${T.m} = ${t2(o.m)}`};
+    ready:()=>true,eq:o=>fl?String.raw`${T.Fb} = ${cl('F',tx(o.F))}\ ${FU}`:String.raw`${T.m} = ${cl('m',t2(o.m))}`};
   if(k==='var'){
     cs.push(cP,cF,
       {id:'th',t:'Parallax angle',w:'par',text:"These two images were taken six months apart, from opposite sides of Earth's orbit. Click the center of the variable star in the January image, then in the July image. Use Blink to see it shift against the background stars.",
-        ready:o=>!!o.th,wait:'Click the star in both images to measure its shift.',eq:(o,a)=>String.raw`${T.th} = \frac{{\color{#6ee07a}\text{total shift}}}{2} = \frac{{\color{#6ee07a}${o.shift.toFixed(5)}''}}{2} = ${a}''`,ans:o=>o.th.toFixed(5),
+        ready:o=>!!o.th,wait:'Click the star in both images to measure its shift.',eq:(o,a)=>String.raw`${T.th} = \frac{{\color{#6ee07a}\text{total shift}}}{2} = \frac{{\color{#6ee07a}${o.shift.toFixed(5)}''}}{2} = ${cl('th',a)}''`,ans:o=>o.th.toFixed(5),
         hand:o=>({ans:o.th,ok:rel(o.th,.02),unit:'arcsec',hint:'The parallax angle is half of the total shift.'})},
-      {id:'d',t:'Distance',text:'Turn the parallax angle into a distance.',ready:()=>true,eq:(o,a)=>String.raw`${T.d}\ [\text{pc}] = \frac{1\ [\text{AU}]}{${T.th}\ [\text{arcsec}]} = \frac{1}{${o.th.toFixed(5)}} = ${a}\ \text{pc}`,ans:o=>tx(o.d),
+      {id:'d',t:'Distance',w:'parSnap',text:'Here is your measurement from the last step. Now turn the parallax angle into a distance.',
+        prev:o=>String.raw`${T.th} = \frac{{\color{#6ee07a}\text{total shift}}}{2} = \frac{{\color{#6ee07a}${o.shift.toFixed(5)}''}}{2} = ${cl('th',o.th.toFixed(5))}''`,ready:()=>true,eq:(o,a)=>String.raw`${T.d}\ [\text{pc}] = \frac{1\ [\text{AU}]}{${T.th}\ [\text{arcsec}]} = \frac{1}{${cl('th',o.th.toFixed(5))}} = ${cl('d',a)}\ \text{pc}`,ans:o=>tx(o.d),
         hand:o=>({ans:o.d,ok:rel(o.d,.03),unit:'pc',hint:'Divide 1 by the parallax angle in arcseconds.'})},
       fl?{id:'L',t:'Luminosity',text:'Now you know how much light you receive and how far away the star is. The inverse square law gives its luminosity. The distance r is the parallax distance d you just found.',ready:()=>true,
-        eq:(o,a)=>String.raw`\begin{aligned} ${T.L} &= 4\pi ${T.r}^2 ${T.F} \\ &= 4\pi\,(${tx(o.d)}\ \text{pc})^2\,(${tx(o.F)}\ ${FU}) \\ &= ${a}\ L_\odot \end{aligned}`,ans:o=>tx(o.L),
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.L} &= 4\pi ${T.r}^2 ${T.F} \\ &= 4\pi\,(${cl('r',tx(o.d))}\ \text{pc})^2\,(${cl('F',tx(o.F))}\ ${FU}) \\ &= ${cl('L',a)}\ L_\odot \end{aligned}`,ans:o=>tx(o.L),
         hand:o=>({ans:o.L,ok:rel(o.L,.05),unit:'L☉',hint:'Square the distance, multiply by the flux, then multiply by 4π (about 12.57).'})}
       :{id:'L',t:'Absolute magnitude',text:'Now you know how bright the star looks and how far away it is, so you can find how bright it truly is.',ready:()=>true,
-        eq:(o,a)=>String.raw`\begin{aligned} ${T.M} &= ${T.m} - 5\log_{10}\!\left(\frac{${T.d}}{10\ \text{pc}}\right) \\ &= ${t2(o.m)} - 5\log_{10}\!\left(\frac{${tx(o.d)}}{10}\right) \\ &= ${a} \end{aligned}`,ans:o=>t2(o.M),
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.M} &= ${T.m} - 5\log_{10}\!\left(\frac{${T.d}}{10\ \text{pc}}\right) \\ &= ${cl('m',t2(o.m))} - 5\log_{10}\!\left(\frac{${cl('d',tx(o.d))}}{10}\right) \\ &= ${cl('M',a)} \end{aligned}`,ans:o=>t2(o.M),
         hand:o=>({ans:o.M,ok:absTol(o.M,.05),unit:'',hint:'Divide the distance by 10, take log base 10, multiply by 5, and subtract that from m.'})},
       {id:'plot',t:'Add it to your relation',w:'plPrev',text:'Here is this star on your period-luminosity chart (gold). Add it to build your relation.',ready:()=>true,act:'Add to my relation'})}
   else if(k==='host'){
     cs.push(cP,
       {id:'Lc',t:fl?'Luminosity from the relation':'M from the relation',w:'plRead',text:given1?'Use the period-luminosity relation to find how luminous this variable star is.':'Use your period-luminosity relation from Level 1 to find how luminous this variable star is.',ready:o=>!!o.Lc,
-        eq:(o,a)=>fl?String.raw`\begin{aligned} ${T.L} &= ${tx(o.rel.A)}\,L_\odot \times ${T.P}^{\,${o.rel.b.toFixed(2)}} \\ &= ${tx(o.rel.A)} \times (${tx(o.P)})^{${o.rel.b.toFixed(2)}} \\ &= ${a}\ L_\odot \end{aligned}`
-          :String.raw`\begin{aligned} ${T.M} &= ${o.relM.a.toFixed(2)} - ${Math.abs(o.relM.b).toFixed(2)}\log_{10}${T.P} \\ &= ${o.relM.a.toFixed(2)} - ${Math.abs(o.relM.b).toFixed(2)}\log_{10}(${tx(o.P)}) \\ &= ${a} \end{aligned}`,
+        eq:(o,a)=>fl?String.raw`\begin{aligned} ${T.L} &= ${tx(o.rel.A)}\,L_\odot \times ${T.P}^{\,${o.rel.b.toFixed(2)}} \\ &= ${tx(o.rel.A)} \times (${cl('P',tx(o.P))})^{${o.rel.b.toFixed(2)}} \\ &= ${cl('L',a)}\ L_\odot \end{aligned}`
+          :String.raw`\begin{aligned} ${T.M} &= ${o.relM.a.toFixed(2)} - ${Math.abs(o.relM.b).toFixed(2)}\log_{10}${T.P} \\ &= ${o.relM.a.toFixed(2)} - ${Math.abs(o.relM.b).toFixed(2)}\log_{10}(${cl('P',tx(o.P))}) \\ &= ${cl('M',a)} \end{aligned}`,
         ans:o=>fl?tx(o.Lc):t2(o.Mc),hand:o=>fl?{ans:o.Lc,ok:rel(o.Lc,.04),unit:'L☉',hint:'Raise the period to the power shown, then multiply by the number in front.'}:{ans:o.Mc,ok:absTol(o.Mc,.05),unit:'',hint:'Take log base 10 of the period, multiply by the number in front of it, and subtract from the first number.'}},
       cF,
       fl?{id:'rc',t:'Distance',text:"You know the variable star's luminosity and its flux. Solve the inverse square law for the distance r.",ready:()=>true,
-        eq:(o,a)=>String.raw`\begin{aligned} 4\pi ${T.r}^2 ${T.F} &= ${T.L} \\ ${T.r} &= \sqrt{\frac{${T.L}}{4\pi ${T.F}}} = \sqrt{\frac{${tx(o.Lc)}}{4\pi\,(${tx(o.F)})}} \\ &= ${tx(o.r)}\ \text{pc} = ${a}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
+        eq:(o,a)=>String.raw`\begin{aligned} 4\pi ${T.r}^2 ${T.F} &= ${T.L} \\ ${T.r} &= \sqrt{\frac{${T.L}}{4\pi ${T.F}}} = \sqrt{\frac{${cl('L',tx(o.Lc))}}{4\pi\,(${cl('F',tx(o.F))})}} \\ &= ${cl('r',tx(o.r))}\ \text{pc} = ${cl('r',a)}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
         hand:o=>({ans:o.r/1e6,ok:rel(o.r/1e6,.05),unit:'Mpc',hint:'Divide L by 4π times F, take the square root to get parsecs, then divide by 1,000,000 for Mpc.'})}
       :{id:'rc',t:'Distance',text:'You know how bright the variable star truly is (M) and how bright it looks (m). Their difference gives the distance.',ready:()=>true,
-        eq:(o,a)=>String.raw`\begin{aligned} ${T.d} &= 10^{(${T.m} - ${T.M} + 5)/5}\ \text{pc} \\ &= 10^{(${t2(o.m)} - (${t2(o.Mc)}) + 5)/5}\ \text{pc} \\ &= ${tx(o.r)}\ \text{pc} = ${a}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.d} &= 10^{(${T.m} - ${T.M} + 5)/5}\ \text{pc} \\ &= 10^{(${cl('m',t2(o.m))} - (${cl('M',t2(o.Mc))}) + 5)/5}\ \text{pc} \\ &= ${cl('d',tx(o.r))}\ \text{pc} = ${cl('d',a)}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
         hand:o=>({ans:o.r/1e6,ok:rel(o.r/1e6,.05),unit:'Mpc',hint:'Work out m − M, add 5, divide by 5, raise 10 to that power for parsecs, then divide by 1,000,000.'})},
       {id:'Fpk',t:'Supernova peak',w:'sn',text:'A Type 1a supernova exploded in this same galaxy. Click the brightest point of its light curve.',ready:o=>o.Fpk!=null,wait:'Click the peak of the supernova light curve.',
-        eq:o=>fl?String.raw`${T.Fpk} = ${tx(o.Fpk)}\ ${FU}`:String.raw`${T.mpk} = ${t2(o.mpk)}`},
+        eq:o=>fl?String.raw`${T.Fpk} = ${cl('F',tx(o.Fpk))}\ ${FU}`:String.raw`${T.mpk} = ${cl('m',t2(o.mpk))}`},
       fl?{id:'Lsn',t:'Supernova luminosity',text:'The supernova is in the same galaxy as the variable star, so it is at the same distance r.',ready:()=>true,
-        eq:(o,a)=>String.raw`\begin{aligned} ${T.Lsn} &= 4\pi ${T.r}^2 ${T.Fpk} \\ &= 4\pi\,(${tx(o.r)}\ \text{pc})^2\,(${tx(o.Fpk)}\ ${FU}) \\ &= ${a}\ L_\odot \end{aligned}`,ans:o=>tx(o.Lsn),
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.Lsn} &= 4\pi ${T.r}^2 ${T.Fpk} \\ &= 4\pi\,(${cl('r',tx(o.r))}\ \text{pc})^2\,(${cl('F',tx(o.Fpk))}\ ${FU}) \\ &= ${cl('L',a)}\ L_\odot \end{aligned}`,ans:o=>tx(o.Lsn),
         hand:o=>({ans:o.Lsn,ok:rel(o.Lsn,.05),unit:'L☉',hint:'Square the distance in parsecs, multiply by the peak flux, then by 4π.'})}
       :{id:'Lsn',t:'Supernova absolute magnitude',text:'The supernova is in the same galaxy as the variable star, so it is at the same distance d.',ready:()=>true,
-        eq:(o,a)=>String.raw`\begin{aligned} ${T.Msn} &= ${T.mpk} - 5\log_{10}\!\left(\frac{${T.d}}{10\ \text{pc}}\right) \\ &= ${t2(o.mpk)} - 5\log_{10}\!\left(\frac{${tx(o.r)}}{10}\right) \\ &= ${a} \end{aligned}`,ans:o=>t2(o.Msn),
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.Msn} &= ${T.mpk} - 5\log_{10}\!\left(\frac{${T.d}}{10\ \text{pc}}\right) \\ &= ${cl('m',t2(o.mpk))} - 5\log_{10}\!\left(\frac{${cl('d',tx(o.r))}}{10}\right) \\ &= ${cl('M',a)} \end{aligned}`,ans:o=>t2(o.Msn),
         hand:o=>({ans:o.Msn,ok:absTol(o.Msn,.05),unit:'',hint:'Divide the distance by 10, take log base 10, multiply by 5, and subtract from the peak magnitude.'})},
       {id:'rec',t:'Record the supernova',w:'snPrev',text:'Here is this supernova (gold) next to the others you have measured. Do they all have about the same luminosity?',ready:()=>true,act:'Add to my supernova results'})}
   else{
     cs.push({id:'Fpk',t:'Supernova peak',w:'sn',text:'You caught a Type 1a supernova in this distant galaxy. Click the brightest point of its light curve.',ready:o=>o.Fpk!=null,wait:'Click the peak of the supernova light curve.',
-        eq:o=>fl?String.raw`${T.Fpk} = ${tx(o.Fpk)}\ ${FU}`:String.raw`${T.mpk} = ${t2(o.mpk)}`},
+        eq:o=>fl?String.raw`${T.Fpk} = ${cl('F',tx(o.Fpk))}\ ${FU}`:String.raw`${T.mpk} = ${cl('m',t2(o.mpk))}`},
       fl?{id:'rs',t:'Distance',text:S.set.start>=3?'Type 1a supernovae all have about the same peak luminosity, so this one is a standard candle.':'You found in Level 2 that Type 1a supernovae all have about the same peak luminosity. Use your average value.',ready:()=>true,
-        eq:(o,a)=>String.raw`\begin{aligned} ${T.r} &= \sqrt{\frac{${T.Lsn}}{4\pi ${T.Fpk}}} = \sqrt{\frac{${tx(o.cal.L)}}{4\pi\,(${tx(o.Fpk)})}} \\ &= ${tx(o.r)}\ \text{pc} = ${a}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.r} &= \sqrt{\frac{${T.Lsn}}{4\pi ${T.Fpk}}} = \sqrt{\frac{${cl('L',tx(o.cal.L))}}{4\pi\,(${cl('F',tx(o.Fpk))})}} \\ &= ${cl('r',tx(o.r))}\ \text{pc} = ${cl('r',a)}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
         hand:o=>({ans:o.r/1e6,ok:rel(o.r/1e6,.05),unit:'Mpc',hint:'Divide L by 4π times the peak flux, take the square root for parsecs, then divide by 1,000,000.'})}
       :{id:'rs',t:'Distance',text:S.set.start>=3?'Type 1a supernovae all reach about the same peak absolute magnitude, so this one is a standard candle.':'You found in Level 2 that Type 1a supernovae all reach about the same peak absolute magnitude. Use your average value.',ready:()=>true,
-        eq:(o,a)=>String.raw`\begin{aligned} ${T.d} &= 10^{(${T.mpk} - ${T.Msn} + 5)/5}\ \text{pc} \\ &= 10^{(${t2(o.mpk)} - (${t2(MOfL(o.cal.L))}) + 5)/5}\ \text{pc} \\ &= ${tx(o.r)}\ \text{pc} = ${a}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
+        eq:(o,a)=>String.raw`\begin{aligned} ${T.d} &= 10^{(${T.mpk} - ${T.Msn} + 5)/5}\ \text{pc} \\ &= 10^{(${cl('m',t2(o.mpk))} - (${cl('M',t2(MOfL(o.cal.L)))}) + 5)/5}\ \text{pc} \\ &= ${cl('d',tx(o.r))}\ \text{pc} = ${cl('d',a)}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
         hand:o=>({ans:o.r/1e6,ok:rel(o.r/1e6,.05),unit:'Mpc',hint:'Work out m − M, add 5, divide by 5, raise 10 to that power for parsecs, then divide by 1,000,000.'})},
       {id:'spec',t:'Spectrum and speed',w:'spec',text:`Now the spectrograph. The dashed lines show where familiar lines sit when the galaxy is not moving. Slide them until they line up with the dips${cur.obj.type==='spiral'?' and spikes':''} in this galaxy's spectrum. The more the lines are shifted toward the red, the faster the galaxy is moving away. The game turns the shift into a speed for you.`,ready:()=>true,
-        eq:o=>String.raw`${T.v} = ${tx(o.v)}\ \text{km/s}`,
+        eq:o=>String.raw`${T.v} = ${cl('v',tx(o.v))}\ \text{km/s}`,
         more:o=>`<details class="more"><summary>How does the game get the speed from the shift?</summary><p class="note">It compares where the calcium K line appears with where it sits in a lab on Earth, then scales by the speed of light.</p>${eqHtml(String.raw`z = \frac{\lambda_\text{obs}-\lambda_\text{rest}}{\lambda_\text{rest}} = \frac{${o.lam.toFixed(1)} - 393.4}{393.4} = ${o.z.toFixed(4)}`)}${eqHtml(String.raw`v = c\,z = (3.00\times10^{5}\ \text{km/s})(${o.z.toFixed(4)}) = ${tx(o.v)}\ \text{km/s}`)}</details>`},
       {id:'hub',t:'Plot it',w:'hubPrev',text:'This galaxy becomes one point on your Hubble diagram (gold).',ready:()=>true,act:'Add to Hubble diagram'})}
   return cs}
@@ -499,9 +503,9 @@ function renderPanel(){
   const kindTxt=cur.kind==='var'?'Variable star in our galaxy':cur.kind==='host'?'Galaxy with a variable star and a supernova ★':`${o.type==='spiral'?'Spiral':'Elliptical'} galaxy with a supernova`;
   const title=cur.kind==='var'?o.name:o.id;
   if(cur.review){const rc=recOf(o);let rows='';
-    if(cur.kind==='var')rows=fl?String.raw`${T.P} = ${tx(rc.P)}\ \text{days} \qquad ${T.L} = ${tx(rc.L)}\ L_\odot`:String.raw`${T.P} = ${tx(rc.P)}\ \text{days} \qquad ${T.M} = ${t2(MOfL(rc.L))}`;
-    else if(cur.kind==='host'){const r=hostDist(rc,plRel());rows=r?(fl?String.raw`${T.r} = ${tx(r/1e6)}\ \text{Mpc} \qquad ${T.Lsn} = ${tx(FOURPI*r*r*rc.Fpk)}\ L_\odot`:String.raw`${T.d} = ${tx(r/1e6)}\ \text{Mpc} \qquad ${T.Msn} = ${t2(MOfL(FOURPI*r*r*rc.Fpk))}`):''}
-    else{const r=farDist(rc,snCal());rows=String.raw`${fl?T.r:T.d} = ${r?tx(r/1e6):'?'}\ \text{Mpc} \qquad ${T.v} = ${tx(rc.z*C)}\ \text{km/s}`}
+    if(cur.kind==='var')rows=fl?String.raw`${T.P} = ${cl('P',tx(rc.P))}\ \text{days} \qquad ${T.L} = ${cl('L',tx(rc.L))}\ L_\odot`:String.raw`${T.P} = ${cl('P',tx(rc.P))}\ \text{days} \qquad ${T.M} = ${cl('M',t2(MOfL(rc.L)))}`;
+    else if(cur.kind==='host'){const r=hostDist(rc,plRel());rows=r?(fl?String.raw`${T.r} = ${cl('r',tx(r/1e6))}\ \text{Mpc} \qquad ${T.Lsn} = ${cl('L',tx(FOURPI*r*r*rc.Fpk))}\ L_\odot`:String.raw`${T.d} = ${cl('d',tx(r/1e6))}\ \text{Mpc} \qquad ${T.Msn} = ${cl('M',t2(MOfL(FOURPI*r*r*rc.Fpk)))}`):''}
+    else{const r=farDist(rc,snCal());rows=String.raw`${fl?T.r:T.d} = ${cl(fl?'r':'d',r?tx(r/1e6):'?')}\ \text{Mpc} \qquad ${T.v} = ${cl('v',tx(rc.z*C))}\ \text{km/s}`}
     obsEl.innerHTML=`<div class="obs-head"><div><span class="eyebrow">${kindTxt}</span><h2>${title}</h2></div><button class="x" id="closeObs" aria-label="Close">×</button></div>
       <div class="obs-body"><p>You already measured this one.</p>${rows?eqHtml(rows):''}</div><div class="obs-foot"><span class="sp"></span><button class="btn ghost" id="redo">Measure again</button></div>`;
     obsEl.querySelector('#closeObs').onclick=closePanel;obsEl.querySelector('#redo').onclick=()=>{cur.review=false;renderPanel()};typeset(obsEl);return}
@@ -516,25 +520,26 @@ function renderPanel(){
   const widget={lc:'<canvas class="plot" id="wv" aria-label="Light curve. Click peaks."></canvas>',lcAvg:'<canvas class="plot static" id="wv" aria-label="Light curve with average"></canvas>',sn:'<canvas class="plot" id="wv" aria-label="Supernova light curve. Click the peak."></canvas>',
     par:`<div class="row"><button class="chip" data-ep="jan" aria-pressed="${!cur.blink&&cur.epoch==='jan'}">January image</button><button class="chip" data-ep="jul" aria-pressed="${!cur.blink&&cur.epoch==='jul'}">July image</button><button class="chip" id="blink" aria-pressed="${cur.blink}">Blink</button><button class="chip" id="clrPar">Clear clicks</button></div><canvas class="plot par" id="wv" aria-label="Star field. Each grid square is 0.001 arcseconds."></canvas><p class="note">Each grid square is 0.001 arcseconds.</p>`,
     spec:`<canvas class="plot static" id="wv" style="height:250px" aria-label="Galaxy spectrum"></canvas><div class="slider"><label for="zr" class="eyebrow">Slide the template</label><input type="range" id="zr" min="-0.004" max="0.11" step="0.0001" value="${cur.zGuess}"><div class="row"><button class="btn ghost sm" data-nz="-0.001">−0.001</button><button class="btn ghost sm" data-nz="-0.0001">−0.0001</button><button class="btn ghost sm" data-nz="0.0001">+0.0001</button><button class="btn ghost sm" data-nz="0.001">+0.001</button><span class="note">Match</span><span class="meter"><i id="mt"></i></span></div></div>`,
+    parSnap:'<canvas class="plot static" id="wv" style="height:220px" aria-label="Snapshot of your two star positions and the shift between them"></canvas>',
     plPrev:'<canvas class="plot static" id="wv" style="height:280px"></canvas>',plRead:'<canvas class="plot static" id="wv" style="height:280px"></canvas>',snPrev:'<canvas class="plot static" id="wv"></canvas>',hubPrev:'<canvas class="plot static" id="wv" style="height:280px"></canvas>'}[c.w]||'';
   const canNext=ready&&solved,last=cur.i===cards.length-1;
   obsEl.innerHTML=`<div class="obs-head"><div><span class="eyebrow">${kindTxt}</span><h2>${title}</h2><div class="dots">${cards.map((_,j)=>`<i class="${j===cur.i?'on':j<cur.i?'done':''}"></i>`).join('')}</div></div><button class="x" id="closeObs" aria-label="Close">×</button></div>
-    <div class="obs-body"><span class="eyebrow">Step ${cur.i+1} of ${cards.length}</span><h3>${c.t}</h3><p class="task">${c.text}</p>${widget}<div id="eqZone">${eqBlock}</div></div>
+    <div class="obs-body"><span class="eyebrow">Step ${cur.i+1} of ${cards.length}</span><h3>${c.t}</h3><p class="task">${c.text}</p>${widget}${c.prev&&ready?`<p class="note">Your parallax angle from the previous step:</p>${eqHtml(c.prev(ca))}<p class="note">Now the distance:</p>`:''}<div id="eqZone">${eqBlock}</div></div>
     <div class="obs-foot"><button class="btn ghost" id="bk" ${cur.i?'':'disabled'}>Back</button><span class="sp"></span><button class="btn" id="nx" ${canNext?'':'disabled'}>${c.act||'Next'}</button></div>`;
   obsEl.querySelector('#closeObs').onclick=closePanel;
   obsEl.querySelector('#bk').onclick=()=>{cur.i--;cur.msg=null;stopBlink();cur.blink=false;renderPanel()};
-  obsEl.querySelector('#nx').onclick=()=>{stopBlink();cur.blink=false;if(last)saveObj(ca);else{cur.i++;cur.msg=null;renderPanel();obsEl.scrollTop=0}};
-  if(hand&&!solved&&ready){const inp=obsEl.querySelector('#hIn'),go=()=>{const x=parseNum(inp.value);if(x==null)cur.msg='Type a number first.';else if(hd.ok(x)){cur.hand[c.id]=x;cur.msg=null}else cur.msg='Not quite. '+hd.hint;refreshEq();const ni=obsEl.querySelector('#hIn');if(ni)ni.focus({preventScroll:true})};
+  obsEl.querySelector('#nx').onclick=()=>{stopBlink();cur.blink=false;if(last)saveObj(ca);else{sfx('step');cur.i++;cur.msg=null;renderPanel();obsEl.scrollTop=0}};
+  if(hand&&!solved&&ready){const inp=obsEl.querySelector('#hIn'),go=()=>{const x=parseNum(inp.value);if(x==null)cur.msg='Type a number first.';else if(hd.ok(x)){cur.hand[c.id]=x;cur.msg=null;sfx('right')}else{cur.msg='Not quite. '+hd.hint;sfx('wrong')}refreshEq();const ni=obsEl.querySelector('#hIn');if(ni)ni.focus({preventScroll:true})};
     obsEl.querySelector('#hChk').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go()}}
-  mountWidget(c,ca);typeset(obsEl.querySelector('#eqZone'))}
+  mountWidget(c,ca);typeset(obsEl.querySelector('.obs-body'))}
 function refreshEq(){const top=obsEl.scrollTop;renderPanel();obsEl.scrollTop=top}
 function mountWidget(c,ca){const cur=S.cur,cv=obsEl.querySelector('#wv');if(!cv)return;
   const resetHand=()=>{for(const k of ['P','th','d','L','Lc','rc','rs','Lsn'])delete cur.hand[k];cur.msg=null};
   if(c.w==='lc'||c.w==='lcAvg'){const draw=()=>{cur.pts=drawCurve(cv,cur.lc,new Set(c.w==='lc'?cur.marks:[]),'#f6bd5f',c.w==='lcAvg',c.w==='lc')};draw();cur.redraw=draw;
-    if(c.w==='lc')cv.onclick=e=>{const p=nearestPt(cur.pts,e);if(!p)return;const k=cur.marks.indexOf(p.i);k>=0?cur.marks.splice(k,1):cur.marks.push(p.i);resetHand();refreshEq()}}
-  else if(c.w==='sn'){const draw=()=>{cur.pts=drawCurve(cv,cur.snlc,new Set(cur.snPick!=null?[cur.snPick]:[]),'#86c9f2',false)};draw();cur.redraw=draw;cv.onclick=e=>{const p=nearestPt(cur.pts,e);if(!p)return;cur.snPick=p.i;resetHand();refreshEq()}}
+    if(c.w==='lc')cv.onclick=e=>{const p=nearestPt(cur.pts,e);if(!p)return;const k=cur.marks.indexOf(p.i);k>=0?cur.marks.splice(k,1):cur.marks.push(p.i);sfx('tick');resetHand();refreshEq()}}
+  else if(c.w==='sn'){const draw=()=>{cur.pts=drawCurve(cv,cur.snlc,new Set(cur.snPick!=null?[cur.snPick]:[]),'#86c9f2',false)};draw();cur.redraw=draw;cv.onclick=e=>{const p=nearestPt(cur.pts,e);if(!p)return;cur.snPick=p.i;sfx('tick');resetHand();refreshEq()}}
   else if(c.w==='par'){const draw=()=>drawPar(cv);draw();cur.redraw=draw;
-    cv.onclick=e=>{if(cur.blink){stopBlink();cur.blink=false}const r=cv.getBoundingClientRect(),v=parView(r.width,r.height);cur.pm[cur.epoch]={x:(e.clientX-r.left-v.cx)/v.sc,y:-(e.clientY-r.top-v.cy)/v.sc};resetHand();if(cur.epoch==='jan'&&!cur.pm.jul)cur.epoch='jul';refreshEq()};
+    cv.onclick=e=>{if(cur.blink){stopBlink();cur.blink=false}const r=cv.getBoundingClientRect(),v=parView(r.width,r.height);cur.pm[cur.epoch]={x:(e.clientX-r.left-v.cx)/v.sc,y:-(e.clientY-r.top-v.cy)/v.sc};sfx('tick');resetHand();if(cur.epoch==='jan'&&!cur.pm.jul)cur.epoch='jul';refreshEq()};
     obsEl.querySelectorAll('[data-ep]').forEach(b=>b.onclick=()=>{stopBlink();cur.blink=false;cur.epoch=b.dataset.ep;refreshEq()});
     obsEl.querySelector('#clrPar').onclick=()=>{cur.pm={};cur.epoch='jan';resetHand();refreshEq()};
     obsEl.querySelector('#blink').onclick=()=>{if(cur.blink){stopBlink();cur.blink=false;refreshEq()}else{cur.blink=true;cur.blinkShow='jan';refreshEq();cur.blinkTimer=setInterval(()=>{cur.blinkShow=cur.blinkShow==='jan'?'jul':'jan';const v=obsEl.querySelector('#wv');if(v)drawPar(v)},650)}}}
@@ -542,24 +547,25 @@ function mountWidget(c,ca){const cur=S.cur,cv=obsEl.querySelector('#wv');if(!cv)
     const setZ=z=>{cur.zGuess=z;resetHand();upd();const ez=obsEl.querySelector('#eqZone'),op=ez.querySelector('details')?.open,cc=calc(cur);ez.innerHTML=eqHtml(c.eq(cc))+(c.more?c.more(cc):'');if(op)ez.querySelector('details').open=true;typeset(ez)};
     obsEl.querySelector('#zr').oninput=e=>setZ(+e.target.value);
     obsEl.querySelectorAll('[data-nz]').forEach(b=>b.onclick=()=>{const z=Math.max(-0.004,Math.min(0.11,+(cur.zGuess+ +b.dataset.nz).toFixed(4)));obsEl.querySelector('#zr').value=z;setZ(z)})}
+  else if(c.w==='parSnap'){const d=()=>drawPar(cv,true);d();cur.redraw=d}
   else if(c.w==='plRead'){const d=()=>drawPL(cv,ca.Lc?{P:ca.P,L:ca.Lc,read:true}:null);d();cur.redraw=d}
   else if(c.w==='plPrev'||c.w==='snPrev'||c.w==='hubPrev'){const hi=c.w==='plPrev'?{P:ca.P,L:ca.L}:c.w==='snPrev'?{L:ca.Lsn}:{d:ca.r/1e6,v:ca.v},fn=c.w==='plPrev'?drawPL:c.w==='snPrev'?drawSNL:drawHub;
     const d=t=>fn(cv,{...hi,pulse:t});d(null);cur.redraw=()=>d(null);
     if(!matchMedia('(prefers-reduced-motion: reduce)').matches){const loop=t=>{if(!cv.isConnected)return;d(t/1000);requestAnimationFrame(loop)};requestAnimationFrame(loop)}}}
 function parView(w,h){return{sc:Math.min(w/26,h/17),cx:w/2,cy:h/2}}
-function drawPar(cv){const cur=S.cur;if(!cur||!cur.par)return;const {ctx,w,h}=fitT(cv),{sc,cx,cy}=parView(w,h),X=x=>cx+x*sc,Y=y=>cy-y*sc,ep=cur.blink?cur.blinkShow:cur.epoch,pd=cur.par;
+function drawPar(cv,snap){const cur=S.cur;if(!cur||!cur.par)return;const {ctx,w,h}=fitT(cv),{sc,cx,cy}=parView(w,h),X=x=>cx+x*sc,Y=y=>cy-y*sc,ep=cur.blink?cur.blinkShow:cur.epoch,pd=cur.par;
   ctx.fillStyle='#020202';ctx.fillRect(0,0,w,h);
   for(let x=-13;x<=13;x++){ctx.strokeStyle=x%5===0?'#3a3a3e':'#1c1c1f';ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),h);ctx.stroke()}
   for(let y=-8;y<=8;y++){ctx.strokeStyle=y%5===0?'#3a3a3e':'#1c1c1f';ctx.beginPath();ctx.moveTo(0,Y(y));ctx.lineTo(w,Y(y));ctx.stroke()}
   ctx.fillStyle=TXT2;ctx.textAlign='center';for(let x=-10;x<=10;x+=5)ctx.fillText((x/1000).toFixed(3)+'″',X(x),h-6);
   for(const s of pd.bg){const gl=ctx.createRadialGradient(X(s.x),Y(s.y),0,X(s.x),Y(s.y),s.s*sc);gl.addColorStop(0,'rgba(235,235,245,.9)');gl.addColorStop(1,'rgba(235,235,245,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(X(s.x),Y(s.y),s.s*sc,0,7);ctx.fill()}
-  const st=pd[ep],R=1.5*sc,gl=ctx.createRadialGradient(X(st.x),Y(st.y),0,X(st.x),Y(st.y),R);gl.addColorStop(0,'rgba(255,248,225,1)');gl.addColorStop(.35,'rgba(255,220,160,.8)');gl.addColorStop(1,'rgba(255,200,120,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(X(st.x),Y(st.y),R,0,7);ctx.fill();
+  for(const e of snap?['jan','jul']:[ep]){const st=pd[e],R=1.5*sc,gl=ctx.createRadialGradient(X(st.x),Y(st.y),0,X(st.x),Y(st.y),R);gl.addColorStop(0,'rgba(255,248,225,1)');gl.addColorStop(.35,'rgba(255,220,160,.8)');gl.addColorStop(1,'rgba(255,200,120,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(X(st.x),Y(st.y),R,0,7);ctx.fill()}
   for(const [k,col,lab] of [['jan','#f6bd5f','Jan'],['jul','#86c9f2','Jul']]){const m=cur.pm[k];if(!m)continue;const x=X(m.x),y=Y(m.y);ctx.strokeStyle=col;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(x-9,y);ctx.lineTo(x-3,y);ctx.moveTo(x+3,y);ctx.lineTo(x+9,y);ctx.moveTo(x,y-9);ctx.lineTo(x,y-3);ctx.moveTo(x,y+3);ctx.lineTo(x,y+9);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle=col;ctx.textAlign='center';ctx.fillText(lab,x,y-13)}
   if(cur.pm.jan&&cur.pm.jul){const a=cur.pm.jan,b=cur.pm.jul,x1=X(a.x),y1=Y(a.y),x2=X(b.x),y2=Y(b.y),len=Math.hypot(x2-x1,y2-y1);
     if(len>20){const ux=(x2-x1)/len,uy=(y2-y1)/len;ctx.strokeStyle=SHIFT_GREEN;ctx.fillStyle=SHIFT_GREEN;ctx.lineWidth=2.5;arrowLine(ctx,x1+ux*11,y1+uy*11,x2-ux*11,y2-uy*11,false);ctx.lineWidth=1}
     const lab=`${(Math.hypot(b.x-a.x,b.y-a.y)*0.001).toFixed(5)}″`,mx=(x1+x2)/2,my=(y1+y2)/2+26;ctx.font='600 14px "IBM Plex Mono", monospace';const tw=ctx.measureText(lab).width;
     ctx.fillStyle='rgba(0,0,0,.8)';ctx.fillRect(mx-tw/2-6,my-15,tw+12,21);ctx.fillStyle=SHIFT_GREEN;ctx.textAlign='center';ctx.fillText(lab,mx,my);ctx.font=FONT}
-  ctx.font='600 15px "IBM Plex Sans", sans-serif';ctx.fillStyle=TXT;ctx.textAlign='left';ctx.fillText(ep==='jan'?'January':'July',10,22);ctx.font=FONT;if(cur.blink){ctx.fillStyle='#ff6a55';ctx.textAlign='right';ctx.fillText('BLINKING',w-10,22)}}
+  ctx.font='600 15px "IBM Plex Sans", sans-serif';ctx.fillStyle=TXT;ctx.textAlign='left';ctx.fillText(snap?'Your measurement: January and July':ep==='jan'?'January':'July',10,22);ctx.font=FONT;if(cur.blink){ctx.fillStyle='#ff6a55';ctx.textAlign='right';ctx.fillText('BLINKING',w-10,22)}}
 function drawSpec(cv){const cur=S.cur,{ctx,w,h}=fitT(cv),{lam,flux}=cur.spec,L=40,R=12,Tp=42,B=42,fmin=Math.min(...flux)-0.05,fmax=Math.max(...flux)+0.05,X=l=>L+(l-370)/400*(w-L-R),Y=f=>Tp+(1-(f-fmin)/(fmax-fmin))*(h-Tp-B);
   for(let l=370;l<770;l+=2){ctx.fillStyle=wl2rgb(l);ctx.fillRect(X(l),h-B+2,X(l+2)-X(l)+0.5,6)}
   ctx.fillStyle=TXT2;ctx.strokeStyle=GRID;ctx.textAlign='center';for(let l=400;l<=750;l+=50){const x=X(l);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillText(l,x,h-B+22)}
@@ -572,6 +578,7 @@ function saveObj(ca){const cur=S.cur,o=cur.obj,was=[unlocked(2),unlocked(3)];
   else if(cur.kind==='host')S.st.hosts[o.id]={P:ca.P,Fc:ca.F,Fpk:ca.Fpk};
   else S.st.far[o.id]={Fpk:ca.Fpk,z:ca.z};
   saveSt();closePanel();renderAll();
+  sfx(cur.kind==='far'&&!S.st.done&&cnt('far')>=S.set.n3?'finish':((!was[0]&&unlocked(2))||(!was[1]&&unlocked(3)))?'unlock':'save');
   if(!was[0]&&unlocked(2))toast('Level 2 unlocked. Your period-luminosity relation is ready to use.');
   else if(!was[1]&&unlocked(3))toast('Level 3 unlocked. You know how luminous Type 1a supernovae are. Time to measure the expanding universe.');
   else if(cur.kind==='far'&&!S.st.done&&cnt('far')>=S.set.n3){S.st.done=true;saveSt();renderAll();showFinish()}
@@ -582,12 +589,12 @@ const LV=[null,{name:'Variable stars',title:'Build a period-luminosity relation'
 function renderTabs(){const nav=document.getElementById('levels');let h='';for(let lv=S.set.start;lv<=3;lv++){const un=unlocked(lv),prog=lv===1?`${cnt('vars')}/${S.set.n1}`:lv===2?`${cnt('hosts')}/${S.set.n2}`:`${cnt('far')}/${S.set.n3}`;
   h+=`<button class="lvl" data-lv="${lv}" aria-current="${S.view===lv}" ${un?'':'disabled'}><b>${lv}</b><span>${LV[lv].name}</span><small>${un?prog:'locked'}</small></button>`}
   nav.innerHTML=h;nav.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>setView(+b.dataset.lv))}
-function setView(lv){if(!unlocked(lv))return;closePanel();S.view=lv;const t=targets(),nx=t.find(o=>!recOf(o))||t[0];centerOn(nx);renderAll();if(!S.st.lessons['l'+lv])openTut('l'+lv)}
+function setView(lv){if(!unlocked(lv))return;closePanel();S.view=lv;const t=targets(),nx=t.find(o=>!recOf(o))||t[0];centerOn(nx);renderAll();sndLevel();if(!S.st.lessons['l'+lv])openTut('l'+lv)}
 function renderLP(){const lp=document.getElementById('lp'),lv=S.view,fl=isFlux();let goal,count,need,result='',extra='';
   if(lv===1){count=cnt('vars');need=S.set.n1;goal=`Measure nearby variable stars in our own galaxy. For each one, find its pulsation period, its ${fl?'flux':'brightness'}, and its distance from parallax. Then work out its ${fl?'luminosity':'absolute magnitude'} and plot it.`;
     const rl=plRel();if(rl&&rl.n>=2)result=eqHtml(relTex(rl,fl))+`<p class="note">Your best-fit line from ${rl.n} stars, with the period in days.</p>`}
   else if(lv===2){count=cnt('hosts');need=S.set.n2;goal='Find galaxies marked ★ that have both a variable star and a Type 1a supernova. Use the variable star to get the distance, then work out how luminous the supernova was.';
-    const cal=snCal();if(cal&&cal.n)result=eqHtml(fl?String.raw`\text{average } ${T.Lsn} = ${tx(cal.L)}\ L_\odot`:String.raw`\text{average } ${T.Msn} = ${t2(MOfL(cal.L))}`)+(cal.n>1?`<p class="note">Your ${cal.n} supernovae agree to within about ${fmt((Math.pow(10,cal.sd)-1)*100)}%.</p>`:'')}
+    const cal=snCal();if(cal&&cal.n)result=eqHtml(fl?String.raw`\text{average } ${T.Lsn} = ${cl('L',tx(cal.L))}\ L_\odot`:String.raw`\text{average } ${T.Msn} = ${cl('M',t2(MOfL(cal.L)))}`)+(cal.n>1?`<p class="note">Your ${cal.n} supernovae agree to within about ${fmt((Math.pow(10,cal.sd)-1)*100)}%.</p>`:'')}
   else{count=cnt('far');need=S.set.n3;goal=`Use supernovae to find distances to faraway galaxies and their spectra to find how fast they move. Plot velocity against distance. Measure ${S.set.n3} galaxies to finish.`;
     const f=hubbleFit();if(f)result=eqHtml(String.raw`H_0 = ${f.H.toFixed(1)} \pm ${f.err.toFixed(1)}\ \text{km/s/Mpc}`)+`<p class="note">That suggests the universe is about ${fmt(977.8/f.H,1)} billion years old.${S.showTrue||S.st.done?` True value for this sky: ${S.H0} km/s/Mpc.`:''}</p>`;else extra='<p class="note">Plot 3 galaxies to fit a line.</p>';
     if(S.st.done)extra+='<button class="btn" id="seeFinal">See your final results</button>'}
@@ -627,6 +634,10 @@ function renderMenu(){let name='';try{name=localStorage.getItem('redshift-hunt:n
   const hrows=Object.entries(S.st.hosts).map(([id,h])=>{const r=hostDist(h,rl);return`<tr><td>${id}</td><td>${r?sig3(r/1e6):'—'}</td><td>${r?(isFlux()?sci(FOURPI*r*r*h.Fpk):MOfL(FOURPI*r*r*h.Fpk).toFixed(2)):'—'}</td></tr>`}).join('');
   const frows=Object.entries(S.st.far).map(([id,f])=>{const r=farDist(f,cal);return`<tr><td>${id}</td><td>${r?sig3(r/1e6):'—'}</td><td>${f.z.toFixed(4)}</td><td>${fmt(f.z*C)}</td></tr>`}).join('');
   dbox.innerHTML=`<div class="dhead"><h2>Menu</h2><button class="x" id="dClose" aria-label="Close menu">×</button></div>
+  <section class="dsec"><h3>Sound</h3>
+    <div class="formrow"><label class="lbl" for="volMusic" style="min-width:7.5em">Music</label><input type="range" id="volMusic" min="0" max="100" value="${Math.round(SND.prefs.music*100)}" style="flex:1"></div>
+    <div class="formrow"><label class="lbl" for="volSfx" style="min-width:7.5em">Sound effects</label><input type="range" id="volSfx" min="0" max="100" value="${Math.round(SND.prefs.sfx*100)}" style="flex:1"></div>
+    <label class="formrow"><input type="checkbox" id="muteAll" ${SND.prefs.muted?'checked':''}> Mute all sound</label></section>
   <section class="dsec"><h3>Lessons</h3><div class="lessonlist">${lessonIds().map(id=>`<button data-les="${id}" ${unlocked(+id[1])?'':'disabled'}>${LESSON_NAMES[id]}${S.st.lessons[id]?' · done':''}</button>`).join('')}</div></section>
   <section class="dsec"><h3>Logbook</h3>
     ${S.set.start<=1?`<p class="eyebrow">Level 1 · variable stars</p>${vrows?`<div class="tablewrap"><table><thead><tr><th>Star</th><th>P (days)</th><th>d (pc)</th><th>${isFlux()?'L (L☉)':'M'}</th></tr></thead><tbody>${vrows}</tbody></table></div>`:'<p class="note">None yet.</p>'}`:''}
@@ -638,6 +649,10 @@ function renderMenu(){let name='';try{name=localStorage.getItem('redshift-hunt:n
     <div class="formrow"><label class="lbl" for="joinCode">Class code</label><input type="text" id="joinCode" autocomplete="off" value="${S.code}" style="width:11em"><button class="btn ghost" id="joinBtn">Join class</button></div><p class="note" id="joinMsg"></p>
     <div class="row"><button class="btn" id="repBtn">Copy report for your teacher</button><span class="note" id="repMsg"></span></div><textarea id="repText" rows="9" readonly hidden aria-label="Report text"></textarea></section>`;
   dbox.querySelector('#dClose').onclick=closeDrawer;
+  dbox.querySelector('#volMusic').oninput=e=>{SND.prefs.music=+e.target.value/100;saveSnd();startMusic();sndApply()};
+  dbox.querySelector('#volSfx').oninput=e=>{SND.prefs.sfx=+e.target.value/100;saveSnd();sndApply()};
+  dbox.querySelector('#volSfx').onchange=()=>sfx('right');
+  dbox.querySelector('#muteAll').onchange=e=>{SND.prefs.muted=e.target.checked;saveSnd();if(!SND.prefs.muted)startMusic();sndApply()};
   dbox.querySelectorAll('[data-les]').forEach(b=>b.onclick=()=>{closeDrawer();openTut(b.dataset.les)});
   dbox.querySelector('#stuName').oninput=e=>{try{localStorage.setItem('redshift-hunt:name',e.target.value)}catch(x){}};
   dbox.querySelector('#joinBtn').onclick=()=>{const p=parseCode(dbox.querySelector('#joinCode').value);if(!p){dbox.querySelector('#joinMsg').textContent='That code does not look right. Codes look like ORION-F1A53.';return}closeDrawer();applyCode(p.code);toast(`Joined class ${p.code}.`)};
@@ -701,7 +716,7 @@ function strip(ctx,x,y,w,h,l0,l1,lines){for(let px=0;px<w;px++){ctx.fillStyle=wl
   for(const ln of lines){if(ln.lo<l0||ln.lo>l1)continue;const cx=x+(ln.lo-l0)/(l1-l0)*w,lw=Math.max(2,ln.w*2.4/(l1-l0)*w);ctx.fillStyle=ln.amp>0?`rgba(255,255,255,${Math.min(.95,.45+ln.amp*.5)})`:`rgba(0,0,0,${Math.min(.92,.45+Math.abs(ln.amp)*1.4)})`;ctx.fillRect(cx-lw/2,y,lw,h)}}
 function quiz(root,lessonId,qs){const right=new Set(),box=root.querySelector('.quiz'),rec=S.st.quiz[lessonId]||(S.st.quiz[lessonId]={n:qs.length,items:{}});rec.n=qs.length;
   box.innerHTML=qs.map((q,qi)=>`<fieldset class="q"><legend>${qi+1}. ${q.q}</legend><div class="opts">${q.o.map((o,oi)=>`<button class="opt" data-q="${qi}" data-o="${oi}">${o}</button>`).join('')}</div><p class="fb" id="fb${qi}" aria-live="polite"></p></fieldset>`).join('');
-  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const qi=+b.dataset.q,oi=+b.dataset.o,q=qs[qi],ok=oi===q.a,fb=box.querySelector('#fb'+qi);b.classList.add(ok?'right':'wrong');fb.textContent=q.f[oi];fb.className='fb '+(ok?'good':'bad');
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const qi=+b.dataset.q,oi=+b.dataset.o,q=qs[qi],ok=oi===q.a,fb=box.querySelector('#fb'+qi);b.classList.add(ok?'right':'wrong');sfx(ok?'right':'wrong');fb.textContent=q.f[oi];fb.className='fb '+(ok?'good':'bad');
     const it=rec.items[qi]||(rec.items[qi]={tries:0,ok:false});if(!it.ok){it.tries++;if(ok)it.ok=true;saveSt()}if(ok){right.add(qi);b.parentNode.querySelectorAll('.opt').forEach(x=>x.disabled=true)}if(right.size===qs.length)setTutOk(true)})}
 const E=tex=>eqHtml(tex);
 const EQ={inv:E(String.raw`${T.F} = \frac{${T.L}}{4\pi ${T.r}^2}`),bal:E(String.raw`4\pi ${T.r}^2\, ${T.F} = ${T.L}`),par:E(String.raw`${T.d}\ [\text{pc}] = \frac{1\ [\text{AU}]}{${T.th}\ [\text{arcsec}]}`),
@@ -762,7 +777,7 @@ function lesson2(){const fl=isFlux(),g=S.set.start>=2;return{label:'Level 2 · S
 {title:'Distance to a variable star',html:`<p>${fl?'Once you know L from the period and measure F, solve the inverse square law for r:':'Once you know M from the period and measure m, solve for the distance:'}</p>
 ${fl?E(String.raw`\begin{aligned} 4\pi ${T.r}^2 ${T.F} &= ${T.L} \\ ${T.r}^2 &= \frac{${T.L}}{4\pi ${T.F}} \\ ${T.r} &= \sqrt{\frac{${T.L}}{4\pi ${T.F}}} \end{aligned}`):EQ.magd}
 <p>Worked example: a variable star in another galaxy has a pulsation period of 20 days. The period-luminosity relation says that means ${fl?'about 7,400 Suns':'an absolute magnitude of −4.85'}. Its average ${fl?'flux is tiny':'apparent magnitude is 26.20'}:</p>
-${fl?E(String.raw`${T.r} = \sqrt{\frac{7{,}400\ L_\odot}{4\pi\,(3.5\times10^{-12}\ ${FU})}} = 1.30\times10^{7}\ \text{pc} = 13.0\ \text{Mpc}`):E(String.raw`${T.d} = 10^{(26.20 - (-4.85) + 5)/5}\ \text{pc} = 1.62\times10^{7}\ \text{pc} = 16.2\ \text{Mpc}`)}
+${fl?E(String.raw`${T.r} = \sqrt{\frac{${cl('L','7{,}400')}\ L_\odot}{4\pi\,(${cl('F','3.5\\times10^{-12}')}\ ${FU})}} = ${cl('r','1.30\\times10^{7}')}\ \text{pc} = ${cl('r','13.0')}\ \text{Mpc}`):E(String.raw`${T.d} = 10^{(${cl('m','26.20')} - (${cl('M','-4.85')}) + 5)/5}\ \text{pc} = ${cl('d','1.62\\times10^{7}')}\ \text{pc} = ${cl('d','16.2')}\ \text{Mpc}`)}
 <p class="note">1 Mpc (megaparsec) is a million parsecs, about 3.26 million light-years. Beyond about 40 Mpc, single variable stars are too faint to see.</p>`},
 {title:'Type 1a supernovae',html:`<p>White dwarf stars cannot be larger than 1.4 solar masses. Any bigger, and the electron degeneracy pressure that supports them fails. If a white dwarf eats material from another star, it will exceed 1.4 solar masses and explode as a <b>Type 1a supernova</b>.</p>
 <p>Astronomers are pretty sure that all Type 1a supernovae explode with the same brightness. In other words, they all have the same ${fl?'luminosity':'absolute magnitude'}. And they are so bright that we can see them in galaxies far beyond the reach of variable stars. <b>In Level 2 you'll test that claim and find out how bright they are.</b></p>`},
@@ -779,7 +794,7 @@ ${fl?E(String.raw`${T.r} = \sqrt{\frac{7{,}400\ L_\odot}{4\pi\,(3.5\times10^{-12
    :{q:'A variable star and a supernova are in the same galaxy. At its peak, the supernova appears 14 magnitudes brighter than the variable star. How do their absolute magnitudes compare?',o:['The supernova is 14 magnitudes brighter','The supernova is 7 magnitudes brighter','They are the same','You need to know the distance first'],a:0,f:['Right. Same distance, so the difference in m equals the difference in M.','Not quite. No halving: both are at the same distance.','Not quite. One looks far brighter at the same distance, so it truly is brighter.',"You don't: at the same distance, the difference in m is the difference in M."]},
   {q:`Suppose your period-luminosity relation makes every variable star come out ${fl?'10% more luminous':'a little brighter'} than it really is. What happens to the supernova ${fl?'luminosities':'brightnesses'} you calculate?`,o:['They come out too high as well','They come out too low','Nothing, they are measured separately'],a:0,f:['Right. A too-bright standard candle makes the galaxy seem farther, which makes the supernova seem brighter too. Errors carry up the distance ladder.','Not quite. Think it through: brighter variable star, farther distance, brighter supernova.','Not quite. The supernova distance comes from the variable star, so errors carry over.']}])}}]}}
 
-function lesson3(){const fl=isFlux(),cal=snCal();const Ltxt=cal?(fl?String.raw`${T.Lsn} \approx ${tx(cal.L)}\ L_\odot`:String.raw`${T.Msn} \approx ${t2(MOfL(cal.L))}`):'';return{label:'Level 3 · Redshift and the Hubble diagram',finish:'Start Level 3',slides:[
+function lesson3(){const fl=isFlux(),cal=snCal();const Ltxt=cal?(fl?String.raw`${T.Lsn} \approx ${cl('L',tx(cal.L))}\ L_\odot`:String.raw`${T.Msn} \approx ${cl('M',t2(MOfL(cal.L)))}`):'';return{label:'Level 3 · Redshift and the Hubble diagram',finish:'Start Level 3',slides:[
 {title:'Supernovae as standard candles',html:`<p>${S.set.start>=3?'Type 1a supernovae all have about the same peak':'In Level 2 you found that Type 1a supernovae all have about the same peak'} ${fl?'luminosity':'absolute magnitude'}:</p>${Ltxt?E(Ltxt):''}
 <p>That makes every Type 1a supernova a standard candle. Catch one in a faraway galaxy, measure its peak ${fl?'flux':'apparent magnitude'}, and you have the distance to that galaxy, even hundreds of megaparsecs away:</p>${fl?E(String.raw`${T.r} = \sqrt{\frac{${T.Lsn}}{4\pi ${T.Fpk}}}`):E(String.raw`${T.d} = 10^{(${T.mpk} - ${T.Msn} + 5)/5}\ \text{pc}`)}
 <p>The ${fl?'inverse square law':'distance formula'} tells us about the distance to galaxies. The <b>Doppler effect</b> tells us about their motion.</p>`},
@@ -822,6 +837,84 @@ function renderTut(){TUT.stops.forEach(f=>f());TUT.stops=[];const Ls=TUT.L,s=Ls.
   const sk=tutBox.querySelector('#tSkip');if(sk)sk.onclick=()=>closeTut();if(s.mount)s.mount(tutBox);typeset(tutBox.querySelector('.tut-body'))}
 document.addEventListener('keydown',e=>{if(e.key!=='Escape'||!document.getElementById('welcome').hidden)return;if(TUT)closeTut();else if(!tutEl.hidden){tutEl.dataset.mode==='intro'?beginFromIntro():closeFinish()}else if(!drawer.hidden)closeDrawer();else if(S.cur)closePanel()});
 
+/* ================= sound: generated ambient music + effects ================= */
+const SND={ctx:null,master:null,music:null,sfx:null,hum:null,started:false,prefs:{music:0.4,sfx:0.6,muted:false}};
+try{Object.assign(SND.prefs,JSON.parse(localStorage.getItem('cosmic-ladder:audio')||'{}'))}catch(e){}
+function saveSnd(){try{localStorage.setItem('cosmic-ladder:audio',JSON.stringify(SND.prefs))}catch(e){}}
+const midi=n=>440*Math.pow(2,(n-69)/12);
+function sndInit(){if(SND.ctx)return true;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;
+  try{const c=new AC();SND.ctx=c;SND.master=c.createGain();SND.master.gain.value=0.9;SND.master.connect(c.destination);
+    const rev=c.createConvolver(),len=c.sampleRate*4,ir=c.createBuffer(2,len,c.sampleRate);for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.5)}
+    rev.buffer=ir;const revG=c.createGain();revG.gain.value=0.6;rev.connect(revG);revG.connect(SND.master);
+    SND.music=c.createGain();SND.music.gain.value=0;SND.music.connect(SND.master);SND.music.connect(rev);
+    SND.musicDry=c.createGain();SND.musicDry.gain.value=0;SND.musicDry.connect(SND.master);
+    SND.sfx=c.createGain();SND.sfx.gain.value=0;SND.sfx.connect(SND.master);const sr=c.createGain();sr.gain.value=0.35;SND.sfx.connect(sr);sr.connect(rev);
+    sndApply();return true}catch(e){return false}}
+function sndApply(){if(!SND.ctx)return;const t=SND.ctx.currentTime,on=SND.prefs.muted?0:1;const mv=SND.prefs.music*on*1.6;SND.music.gain.setTargetAtTime(mv,t,0.3);SND.musicDry.gain.setTargetAtTime(mv,t,0.3);SND.sfx.gain.setTargetAtTime(SND.prefs.sfx*on,t,0.05)}
+function sndLevel(){}
+/* "Starlight Synthwave": 64 bars at 96 bpm (about 2:40), then it repeats.
+   Intro → Bass → Kick → Full beat → Starlight (arpeggio + bells) → Breakdown → Drop → Outro */
+const STARLIGHT=(()=>{let C,out,dry,NB,seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  const mtof=n=>440*Math.pow(2,(n-69)/12);
+  const env=(g,t,a,pk,d)=>{g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(pk,t+a);g.gain.exponentialRampToValueAtTime(0.0001,t+a+d)};
+  const osc=(f,type='sine')=>{const o=C.createOscillator();o.type=type;o.frequency.value=f;return o};
+  const gain=v=>{const g=C.createGain();g.gain.value=v;return g};
+  const filter=(type,f,q=1)=>{const b=C.createBiquadFilter();b.type=type;b.frequency.value=f;b.Q.value=q;return b};
+  function mkDelay(dest,time,fbAmt,wet){const d=C.createDelay(2);d.delayTime.value=time;const fb=gain(fbAmt),w=gain(wet);d.connect(fb);fb.connect(d);d.connect(w);w.connect(dest);return d}
+  function noise(t,dur){const s=C.createBufferSource();s.buffer=NB;s.start(t,Math.random()*0.5);s.stop(t+dur);return s}
+  function pluck(f,t,vol,dl){const o=osc(f,'triangle'),g=C.createGain();env(g,t,0.005,vol,1.2);o.connect(g);g.connect(out);g.connect(dl);o.start(t);o.stop(t+1.3)}
+  function bell(f,t,vol,dur,soft){[[1,1],[4,soft?0.08:0.2],[2,0.18]].forEach(([m,a])=>{const o=osc(f*m),g=C.createGain();env(g,t,0.004,vol*a,m>1?dur/2.5:dur);o.connect(g);g.connect(out);o.start(t);o.stop(t+dur+0.1)})}
+  function hat(t,vol,open){const s=noise(t,open?0.35:0.08),f=filter('highpass',7000),g=C.createGain();env(g,t,0.001,vol,open?0.28:0.045);s.connect(f);f.connect(g);g.connect(dry)}
+  function kick(t,vol){const o=osc(150),g=C.createGain();o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(42,t+0.18);env(g,t,0.002,vol,0.32);o.connect(g);g.connect(dry);o.start(t);o.stop(t+0.4)}
+  function snare(t,vol){const s=noise(t,0.25),f=filter('bandpass',1800,0.8),g=C.createGain();env(g,t,0.002,vol,0.18);s.connect(f);f.connect(g);g.connect(dry);g.connect(out);
+    const o=osc(220),og=C.createGain();o.frequency.setValueAtTime(220,t);o.frequency.exponentialRampToValueAtTime(140,t+0.1);env(og,t,0.002,vol*0.6,0.1);o.connect(og);og.connect(dry);o.start(t);o.stop(t+0.15)}
+  function tom(t,f0,vol){const o=osc(f0),g=C.createGain();o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f0*0.6,t+0.25);env(g,t,0.002,vol,0.3);o.connect(g);g.connect(dry);o.start(t);o.stop(t+0.35)}
+  function bass(n,t,len){const o=osc(mtof(n),'sawtooth'),f=filter('lowpass',1100),g=C.createGain();f.frequency.setValueAtTime(1100,t);f.frequency.exponentialRampToValueAtTime(160,t+len);env(g,t,0.005,0.12,len);o.connect(f);f.connect(g);g.connect(dry);o.start(t);o.stop(t+len+0.05)}
+  function arpNote(bus,f,t,len,vol){const o=osc(f,'square'),g=C.createGain();env(g,t,0.003,vol,len*1.6);o.connect(g);g.connect(bus);o.start(t);o.stop(t+len*1.8)}
+  function riser(t,dur){const s=noise(t,Math.min(dur,2.9)),f=filter('bandpass',400,2),g=C.createGain();f.frequency.setValueAtTime(400,t);f.frequency.exponentialRampToValueAtTime(8000,t+dur);g.gain.setValueAtTime(0.001,t);g.gain.exponentialRampToValueAtTime(0.1,t+dur);g.gain.linearRampToValueAtTime(0,t+dur+0.05);s.connect(f);f.connect(g);g.connect(out)}
+  function crash(t){const s=noise(t,2.4),f=filter('highpass',5000),g=C.createGain();env(g,t,0.003,0.08,2.2);s.connect(f);f.connect(g);g.connect(dry)}
+  function start(ctx,musicBus,dryBus){C=ctx;out=musicBus;dry=dryBus;
+    NB=C.createBuffer(1,C.sampleRate*3,C.sampleRate);const nd=NB.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+    const V=[[45,57,60,64],[41,53,57,60],[48,55,60,64],[43,55,59,62]],BRK=[[41,53,57,60],[43,55,59,62],[40,52,55,59],[45,57,60,64]];
+    const BM1=[[[0,76,2],[2,72,2]],[[0,77,1],[1,76,1],[2,72,2]],[[0,79,2],[2,76,2]],[[0,74,4]],[[0,76,2],[2,81,2]],[[0,79,1],[1,77,1],[2,76,2]],[[0,76,2],[2,79,1],[3,84,1]],[[0,83,4]]];
+    const BM2=[[[0,81,2],[2,76,2]],[[0,84,1],[1,81,1],[2,77,2]],[[0,79,2],[2,84,2]],[[0,83,4]],[[0,88,2],[2,84,2]],[[0,86,1],[1,84,1],[2,81,2]],[[0,79,2],[2,84,1],[3,88,1]],[[0,86,4]]];
+    const pdl=mkDelay(out,0.469,0.35,0.45);
+    const pf=filter('lowpass',300),pg=gain(0.026);pf.connect(pg);pg.connect(out);
+    const pads=[];for(let k=0;k<3;k++)for(const d of [-9,9]){const o=osc(220,'sawtooth');o.detune.value=d;o.connect(pf);o.start();pads.push([o,k])}
+    const arpBus=filter('lowpass',2600);arpBus.connect(out);arpBus.connect(mkDelay(out,0.469,0.3,0.35));
+    const dt=60/96/4;let next=C.currentTime+0.15,s=0;
+    setInterval(()=>{const ahead=document.hidden?1.5:0.3;while(next<C.currentTime+ahead){step(s,next);next+=dt;s++}},30);
+    function step(s,t){const bar=Math.floor(s/16)%64,sec=Math.floor(bar/8),b8=bar%8,q=s%16,ch=(sec===5?BRK:V)[b8%4],beat=dt*4;
+      if(q===0){pads.forEach(([o,k])=>o.frequency.setTargetAtTime(mtof(ch[k+1]),t,0.05));
+        pf.frequency.setTargetAtTime(sec===0?300+b8*220:sec===5?900:sec===7?Math.max(350,1600-b8*160):1600,t,0.8);
+        pg.gain.setTargetAtTime(sec===7&&b8>=6?0.008:0.026,t,1.2);arpBus.frequency.setTargetAtTime(sec===5?1200:2600,t,0.5);
+        if((sec===3||sec===6)&&b8===0)crash(t);
+        if(sec===4||sec===6)(sec===4?BM1:BM2)[b8].forEach(([bt,n,len])=>bell(mtof(n),t+bt*beat,0.11,len*beat+1.5));
+        if(sec===5&&b8===6)riser(t,dt*32)}
+      const bassOn=(sec>=1&&sec<=4)||sec===6||(sec===7&&b8<2);
+      if(bassOn){if(sec===6){if([0,3,4,6,8,11,12,14].includes(q))bass(ch[0]-12+(q===6||q===14?12:0),t,dt*1.6)}else if(q%2===0)bass(ch[0]-12+(q%4===2?12:0),t,dt*1.8)}
+      if(((sec>=2&&sec<=4)||sec===6||(sec===7&&b8<4))&&q%4===0)kick(t,sec===2&&b8<2?0.32:0.45);
+      if((sec===3||sec===4||sec===6)&&(q===4||q===12))snare(t,0.22);
+      if(sec===2&&q%4===2)hat(t,0.05,false);
+      if((sec===3||sec===4||sec===6)&&q%2===0)hat(t,q%4===2?0.06:0.03,q===14&&b8%2===1);
+      if((sec===4||sec===6)&&b8===7&&q>=12)tom(t,[220,180,150,120][q-12],0.3);
+      if(sec===6&&q%4===2&&rnd()<0.3)bell(mtof([81,84,86,88,91][Math.floor(rnd()*5)]),t,0.05,2.5,true);
+      if(sec===4){if(q%2===0){const pat=[0,1,2,3,4,3,2,1],tones=[ch[1],ch[2],ch[3],ch[1]+12,ch[2]+12];pluck(mtof(tones[pat[q/2]]+12),t,0.1,pdl)}}
+      else if(((sec===2&&b8>=4)||sec>=3)&&!(sec===7&&b8>=6)){const pat=[0,1,2,3,2,1,0,2,0,1,2,3,2,3,1,2],tones=[ch[1],ch[2],ch[3],ch[1]+12];arpNote(arpBus,mtof(tones[pat[q]]+12),t,dt,sec===5?0.028:sec===7?0.022:0.04)}}}
+  return{start}})();
+function startMusic(){if(!sndInit())return;const c=SND.ctx;if(c.state==='suspended')c.resume();if(SND.started){sndApply();return}SND.started=true;
+  STARLIGHT.start(c,SND.music,SND.musicDry);sndApply()}
+function tone(f,t0,dur,vol,type='sine'){const c=SND.ctx,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.connect(g);g.connect(SND.sfx);o.start(t0);o.stop(t0+dur+0.05)}
+function sfx(kind){if(SND.prefs.muted||!SND.prefs.sfx||!sndInit())return;const c=SND.ctx;if(c.state==='suspended')c.resume();const t=c.currentTime+0.01;
+  if(kind==='tick')tone(1400,t,0.07,0.12,'triangle');
+  else if(kind==='step')tone(660,t,0.12,0.07);
+  else if(kind==='right'){tone(midi(76),t,0.5,0.18);tone(midi(83),t+0.09,0.7,0.16)}
+  else if(kind==='wrong'){tone(midi(50),t,0.25,0.16,'triangle');tone(midi(49),t+0.12,0.3,0.13,'triangle')}
+  else if(kind==='save')[72,76,79,84].forEach((n,i)=>tone(midi(n),t+i*0.08,0.9,0.12));
+  else if(kind==='unlock'){[60,64,67,72,76,79,84].forEach((n,i)=>tone(midi(n),t+i*0.11,2.2,0.1));tone(midi(36),t,3,0.15)}
+  else if(kind==='finish'){[60,67,72,76,79,84,88].forEach((n,i)=>tone(midi(n),t+i*0.14,2.8,0.11));[48,55,60].forEach(n=>tone(midi(n),t+0.9,3.5,0.1,'triangle'))}
+  else if(kind==='start'){const o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(440,t+1.2);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.14,t+0.4);g.gain.exponentialRampToValueAtTime(0.0001,t+1.8);o.connect(g);g.connect(SND.sfx);o.start(t);o.stop(t+2)}}
+
 /* ================= finish screen ================= */
 function closeFinish(){tutEl.hidden=true;tutBox.innerHTML='';delete tutEl.dataset.mode}
 function maybeLesson(){if(!document.getElementById('welcome').hidden)return;if(!S.st.lessons.intro){showIntro();return}if(!S.st.lessons['l'+S.view])openTut('l'+S.view)}
@@ -852,7 +945,7 @@ function showFinish(){if(TUT)closeTut(true);if(S.cur)closePanel();const f=hubble
     ${eqHtml(String.raw`H_0^\text{yours} = ${f.H.toFixed(1)} \pm ${f.err.toFixed(1)}\ \text{km/s/Mpc} \qquad H_0^\text{true} = ${S.H0.toFixed(1)}\ \text{km/s/Mpc}`)}
     <p><b>You were ${fmt(a,1)}% ${off>0?'too high':'too low'}.</b> ${verdict}</p>
     <p>Your value puts the age of the universe at about ${fmt(977.8/f.H,1)} billion years. The true value for this sky gives ${fmt(977.8/S.H0,1)} billion years. The true H₀ line now shows on your Hubble diagram.</p>
-    <ol class="recipe">${S.set.start<=1&&rl&&!rl.given?`<li><div><b>Parallax → variable stars.</b> From ${rl.n} nearby stars you found this period-luminosity relation:${eqHtml(relTex(rl,fl))}</div></li>`:''}${S.set.start<=2&&cal&&!cal.given?`<li><div><b>Variable stars → supernovae.</b> From ${cal.n} ★ galaxies you found:${eqHtml(fl?String.raw`${T.Lsn} = ${tx(cal.L)}\ L_\odot`:String.raw`${T.Msn} = ${t2(MOfL(cal.L))}`)}</div></li>`:''}<li><div><b>Supernovae → the Hubble law.</b> ${cnt('far')} galaxies gave you your value of H₀.</div></li></ol>
+    <ol class="recipe">${S.set.start<=1&&rl&&!rl.given?`<li><div><b>Parallax → variable stars.</b> From ${rl.n} nearby stars you found this period-luminosity relation:${eqHtml(relTex(rl,fl))}</div></li>`:''}${S.set.start<=2&&cal&&!cal.given?`<li><div><b>Variable stars → supernovae.</b> From ${cal.n} ★ galaxies you found:${eqHtml(fl?String.raw`${T.Lsn} = ${cl('L',tx(cal.L))}\ L_\odot`:String.raw`${T.Msn} = ${cl('M',t2(MOfL(cal.L)))}`)}</div></li>`:''}<li><div><b>Supernovae → the Hubble law.</b> ${cnt('far')} galaxies gave you your value of H₀.</div></li></ol>
     <div class="formrow"><label class="lbl" for="finName">Your name</label><input type="text" id="finName" autocomplete="off" value="${name.replace(/"/g,'&quot;')}" style="flex:1;min-width:9em"></div>
     <textarea id="finRep" rows="10" readonly hidden aria-label="Report text"></textarea><p class="note" id="finMsg" role="status"></p></div>
     <div class="tut-foot"><button class="btn ghost" id="finReset">Start over</button><span class="sp"></span><button class="btn ghost" id="finKeep">Keep exploring</button><button class="btn" id="finExp">Export results for teacher</button></div>`;
@@ -915,7 +1008,7 @@ applyCode(startCode||DEFAULT_CODE);
     ctx.restore();
     if(!reduce)requestAnimationFrame(frame)}
   requestAnimationFrame(frame);if(reduce)window.addEventListener('resize',()=>requestAnimationFrame(frame));
-  btn.onclick=()=>{wel.hidden=true;maybeLesson();if(!TUT&&tutEl.hidden)sky.focus({preventScroll:true})};
+  btn.onclick=()=>{startMusic();sfx('start');wel.hidden=true;maybeLesson();if(!TUT&&tutEl.hidden)sky.focus({preventScroll:true})};
   setTimeout(()=>btn.focus({preventScroll:true}),50);
 })();
 </script>
