@@ -2,7 +2,7 @@
 
 A browser game for introductory astronomy students. They climb the cosmic distance ladder one rung at a time, from parallax to variable stars to Type 1a supernovae, and finish by building their own Hubble diagram and measuring H₀.
 
-**Play it:** `https://YOUR-USERNAME.github.io/cosmic-ladder/`
+**Play it:** `https://alexsobotka.github.io/cosmic-ladder/`
 
 The whole game is one self-contained file, `index.html`. There's nothing to install, no accounts, and no server. It runs in any modern browser, Chromebooks included.
 
@@ -41,7 +41,7 @@ Example: `ORION-F1A53-10`
 | `10` | Galaxies needed to finish Level 3 | 5 to 20 |
 
 **Sharing a code with students.** Either:
-- add it to the end of the link: `https://YOUR-USERNAME.github.io/cosmic-ladder/#ORION-F1A53-10`, or
+- add it to the end of the link: `https://alexsobotka.github.io/cosmic-ladder/#ORION-F1A53-10`, or
 - have students open **Menu → Your class**, type the code, and click **Join class**.
 
 With no code, the game uses `ORION-F1A53-10`.

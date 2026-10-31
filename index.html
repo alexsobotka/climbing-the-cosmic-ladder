@@ -839,8 +839,9 @@ document.addEventListener('keydown',e=>{if(e.key!=='Escape'||!document.getElemen
 
 /* ================= sound: generated ambient music + effects ================= */
 const SND={ctx:null,master:null,music:null,sfx:null,hum:null,started:false,prefs:{music:0.4,sfx:0.6,muted:false}};
-try{Object.assign(SND.prefs,JSON.parse(localStorage.getItem('cosmic-ladder:audio')||'{}'))}catch(e){}
-function saveSnd(){try{localStorage.setItem('cosmic-ladder:audio',JSON.stringify(SND.prefs))}catch(e){}}
+/* v2 key: sound choices saved by earlier versions are ignored, so everyone starts with sound on */
+try{Object.assign(SND.prefs,JSON.parse(localStorage.getItem('cosmic-ladder:audio2')||'{}'))}catch(e){}
+function saveSnd(){try{localStorage.setItem('cosmic-ladder:audio2',JSON.stringify(SND.prefs))}catch(e){}}
 const midi=n=>440*Math.pow(2,(n-69)/12);
 function sndInit(){if(SND.ctx)return true;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;
   try{const c=new AC();SND.ctx=c;SND.master=c.createGain();SND.master.gain.value=0.9;SND.master.connect(c.destination);
