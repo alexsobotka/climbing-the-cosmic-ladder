@@ -150,7 +150,8 @@ td{padding:5px 6px;text-align:right;font-family:var(--mono);font-variant-numeric
 .defs li{padding:8px 12px;background:var(--panel-2);border-radius:4px}
 .recipe{counter-reset:s;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
 .recipe li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:baseline}
-.recipe li>div{display:flex;flex-direction:column;gap:8px;min-width:0}
+.recipe li>div,.recipe li>span{display:block;min-width:0}
+.recipe li .eq{margin-top:8px}
 .recipe li::before{counter-increment:s;content:counter(s);font-family:var(--display);font-size:24px;font-weight:800;color:var(--redlight);line-height:1}
 .toggle{display:flex;flex-wrap:wrap;gap:6px}
 .quiz{display:flex;flex-direction:column;gap:12px}
@@ -162,6 +163,25 @@ td{padding:5px 6px;text-align:right;font-family:var(--mono);font-variant-numeric
 .opt.right{border-color:var(--good);color:var(--good)}
 .opt.wrong{border-color:var(--redlight);color:var(--redlight)}
 .opt:disabled{cursor:default}
+
+/* Welcome screen */
+.welcome{position:fixed;inset:0;z-index:85;background:#000;display:flex;justify-content:center;align-items:flex-start;overflow:hidden}
+#wcv{position:absolute;inset:0;width:100%;height:100%;display:block}
+.wel-inner{position:relative;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:max(7vh,calc(env(safe-area-inset-top,0px) + 32px));padding:28px max(20px,env(safe-area-inset-right,0px)) 36px max(20px,env(safe-area-inset-left,0px));background:radial-gradient(closest-side,rgba(0,0,0,.72),rgba(0,0,0,.35) 70%,rgba(0,0,0,0));max-width:100%}
+.wel-title{display:flex;flex-direction:column;align-items:center;line-height:.9;text-transform:uppercase;margin:0}
+.wel-title span{font-size:clamp(26px,4.6vw,54px);font-weight:600;letter-spacing:.14em;color:var(--ink)}
+.wel-title b{font-size:clamp(54px,11vw,138px);font-weight:800;color:var(--redlight);letter-spacing:.01em;text-shadow:0 0 40px rgba(255,106,85,.35)}
+.wel-sub{font-family:var(--mono);font-size:clamp(13px,1.6vw,16px);color:var(--ink);letter-spacing:.04em;max-width:46ch}
+.btn.big{font-size:20px;padding:14px 36px;border-radius:6px;margin-top:6px;box-shadow:0 0 30px rgba(255,106,85,.35)}
+.wel-class{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.intro-levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.intro-levels{grid-template-columns:minmax(0,1fr)}}
+.lvcard{background:var(--panel-2);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.lvcard .num{font-family:var(--display);font-size:30px;font-weight:800;color:var(--amber);line-height:1}
+.lvcard h3{font-size:20px;text-transform:uppercase}
+.lvcard p{font-size:14px}
+.lvcard .goal{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:auto}
+.lvcard.given{opacity:.55}
 </style>
 
 </head>
@@ -183,6 +203,16 @@ td{padding:5px 6px;text-align:right;font-family:var(--mono);font-variant-numeric
 <div class="drawer" id="drawer" hidden><div class="drawer-box" id="drawerBox" tabindex="-1"></div></div>
 <div class="toast" id="toast" hidden></div>
 <div class="tut" id="tut" hidden role="dialog" aria-modal="true" aria-labelledby="tutTitle"><div class="tut-box" id="tutBox" tabindex="-1"></div></div>
+<div class="welcome" id="welcome" role="dialog" aria-modal="true" aria-labelledby="welTitle">
+  <canvas id="wcv" aria-hidden="true"></canvas>
+  <div class="wel-inner">
+    <span class="eyebrow">An astronomy game about the distance ladder</span>
+    <h1 class="wel-title" id="welTitle"><span>Climbing the</span><b>Cosmic Ladder</b></h1>
+    <p class="wel-sub">Parallax → variable stars → Type 1a supernovae → the expanding universe</p>
+    <button class="btn big" id="startBtn">Start game</button>
+    <p class="wel-class" id="welClass"></p>
+  </div>
+</div>
 
 <script>
 /* ================= constants ================= */
@@ -227,6 +257,14 @@ function axisLabelY(ctx,txt,x,y){ctx.save();ctx.translate(x,y);ctx.rotate(-Math.
 function parseNum(s){s=String(s).trim().replace(/,/g,'').replace(/\s/g,'').replace(/−/g,'-').replace(/[×x*]10\^?/i,'e');if(!s)return null;const v=Number(s);return isFinite(v)?v:null}
 const rel=(ans,tol)=>x=>Math.abs(x-ans)<=Math.abs(ans)*tol;
 const absTol=(ans,t)=>x=>Math.abs(x-ans)<=t;
+const SHIFT_GREEN='#6ee07a';
+function arrowHead(ctx,x,y,ang,s=8){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-s*Math.cos(ang-0.45),y-s*Math.sin(ang-0.45));ctx.lineTo(x-s*Math.cos(ang+0.45),y-s*Math.sin(ang+0.45));ctx.closePath();ctx.fill()}
+function arrowLine(ctx,x1,y1,x2,y2,both){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();const a=Math.atan2(y2-y1,x2-x1);arrowHead(ctx,x2,y2,a);if(both)arrowHead(ctx,x1,y1,a+Math.PI)}
+function hiMark(ctx,x,y,t){const k=t==null?0:0.5+0.5*Math.sin(t*5);ctx.strokeStyle=`rgba(246,189,95,${1-0.6*k})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,8+9*k,0,7);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle='#f6bd5f';ctx.beginPath();ctx.arc(x,y,4.5+1.5*k,0,7);ctx.fill()}
+const HAND_STEPS=[{k:'P',bit:1},{k:'th',bit:2},{k:'d',bit:4},{k:'L',bit:8},{k:'Lc',bit:16},{k:'rc',bit:32},{k:'Lsn',bit:64},{k:'rs',bit:128}];
+const handOn=k=>{const s=HAND_STEPS.find(x=>x.k===k);return !!(s&&(S.set.hand&s.bit))};
+function handLabels(fl){return{P:'Pulsation period from the marked peaks (Levels 1 and 2)',th:'Parallax angle from the total shift (Level 1)',d:'Distance from the parallax angle (Level 1)',L:fl?'Luminosity from flux and distance (Level 1)':'Absolute magnitude from m and distance (Level 1)',
+  Lc:fl?'Luminosity from the period-luminosity relation (Level 2)':'M from the period-luminosity relation (Level 2)',rc:'Distance to a variable star in another galaxy (Level 2)',Lsn:fl?'Supernova luminosity (Level 2)':'Supernova absolute magnitude (Level 2)',rs:'Distance to a galaxy from its supernova (Level 3)'}}
 const isFlux=()=>S.set.units==='flux';
 
 /* ================= settings / class code ================= */
@@ -235,12 +273,12 @@ const DEFAULT_CODE='ORION-F1A53-10';
 const TEACHER_PASSCODE='ladder';
 const teacherOK=()=>{try{return localStorage.getItem('cosmic-ladder:teacher')===TEACHER_PASSCODE||sessionStorage.getItem('cosmic-ladder:teacher')===TEACHER_PASSCODE}catch(e){return false}};
 function cleanSeed(s){return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,16)||'ORION'}
-function parseCode(c){c=(c||'').trim().toUpperCase().replace(/[^A-Z0-9-]/g,'');const m=c.match(/^([A-Z0-9]{1,16})-([FM])([123])([AH])([3-9])([2-9])(?:-(\d{1,2}))?$/);if(!m)return null;
-  const o={seed:m[1],units:m[2]==='F'?'flux':'mag',start:+m[3],hand:m[4]==='H',n1:+m[5],n2:+m[6],n3:m[7]?Math.max(5,Math.min(30,+m[7])):10};o.code=makeCode(o.seed,o.units,o.start,o.hand,o.n1,o.n2,o.n3);return o}
-const makeCode=(seed,units,start,hand,n1,n2,n3=10)=>`${cleanSeed(seed)}-${units==='flux'?'F':'M'}${start}${hand?'H':'A'}${n1}${n2}-${n3}`;
-function settingsText(s){return [s.units==='flux'?'Flux and luminosity':'Magnitudes',['starts at Level 1 (full distance ladder)','starts at Level 2 (period-luminosity relation given)','starts at Level 3 (supernova luminosity given)'][s.start-1],s.hand?'students compute each step':'the game does the arithmetic',`${s.n1} variable stars and ${s.n2} supernova galaxies to unlock`,`${s.n3} galaxies to finish Level 3`].join(' · ')}
+function parseCode(c){c=(c||'').trim().toUpperCase().replace(/[^A-Z0-9-]/g,'');const m=c.match(/^([A-Z0-9]{1,16})-([FM])([123])([AH]|X[0-9A-F]{2})([3-9])([2-9])(?:-(\d{1,2}))?$/);if(!m)return null;
+  const o={seed:m[1],units:m[2]==='F'?'flux':'mag',start:+m[3],hand:m[4]==='H'?255:m[4]==='A'?0:parseInt(m[4].slice(1),16),n1:+m[5],n2:+m[6],n3:m[7]?Math.max(5,Math.min(30,+m[7])):10};o.code=makeCode(o.seed,o.units,o.start,o.hand,o.n1,o.n2,o.n3);return o}
+const makeCode=(seed,units,start,hand,n1,n2,n3=10)=>`${cleanSeed(seed)}-${units==='flux'?'F':'M'}${start}${hand===255?'H':!hand?'A':'X'+hand.toString(16).toUpperCase().padStart(2,'0')}${n1}${n2}-${n3}`;
+function settingsText(s){return [s.units==='flux'?'Flux and luminosity':'Magnitudes',['starts at Level 1 (full distance ladder)','starts at Level 2 (period-luminosity relation given)','starts at Level 3 (supernova luminosity given)'][s.start-1],s.hand===255?'students compute every step':!s.hand?'the game does the arithmetic':'students compute some steps',`${s.n1} variable stars and ${s.n2} supernova galaxies to unlock`,`${s.n3} galaxies to finish Level 3`].join(' · ')}
 
-const S={code:'',seed:'',set:{units:'flux',start:1,hand:false,n1:5,n2:3,n3:10},H0:0,U:null,st:null,view:1,cam:{x:0,y:0},cur:null,hover:null,showTrue:false};
+const S={code:'',seed:'',set:{units:'flux',start:1,hand:0,n1:5,n2:3,n3:10},H0:0,U:null,st:null,view:1,cam:{x:0,y:0},cur:null,hover:null,showTrue:false};
 const blankSt=()=>({vars:{},hosts:{},far:{},lessons:{},quiz:{}});
 function saveSt(){try{localStorage.setItem('redshift-hunt:v3:'+S.code,JSON.stringify(S.st));localStorage.setItem('redshift-hunt:v3:code',S.code)}catch(e){}}
 function loadSt(){let o=null;try{o=JSON.parse(localStorage.getItem('redshift-hunt:v3:'+S.code)||'null')}catch(e){}S.st=Object.assign(blankSt(),o||{})}
@@ -342,7 +380,7 @@ function drawPL(cv,hi){const {ctx,w,h}=fitT(cv),fl=isFlux(),L=fl?66:52,R=14,Tp=1
     ctx.fillStyle='#ff7a6b';ctx.textAlign='left';ctx.fillText(rl.given?'period-luminosity relation (given)':`your relation (${rl.n} stars)`,L+8,Tp+14)}
   for(const v of Object.values(S.st.vars)){ctx.fillStyle='#ff9a8a';ctx.beginPath();ctx.arc(X(v.P),Y(v.L),4.5,0,7);ctx.fill()}
   if(hi){const x=X(hi.P),y=Y(hi.L);if(hi.read){ctx.setLineDash([6,5]);ctx.lineWidth=2;ctx.strokeStyle=CL.P;ctx.beginPath();ctx.moveTo(x,h-B);ctx.lineTo(x,y);ctx.stroke();ctx.strokeStyle=CL.L;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(L,y);ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1}
-    ctx.strokeStyle='#f6bd5f';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle='#f6bd5f';ctx.beginPath();ctx.arc(x,y,4.5,0,7);ctx.fill()}
+    hiMark(ctx,x,y,hi.pulse)}
   if(!rl&&!Object.keys(S.st.vars).length&&!hi){ctx.fillStyle=TXT;ctx.font='14px "IBM Plex Sans", sans-serif';ctx.textAlign='center';ctx.fillText('Your measured variable stars will appear here.',L+(w-L-R)/2,Tp+(h-Tp-B)/2)}}
 function drawSNL(cv,hi){const {ctx,w,h}=fitT(cv),fl=isFlux(),L=20,R=20,Tp=30,B=46,cal=snCal(),rl=plRel();
   const lo=9.2,hiL=10.2,M0=MOfL(Math.pow(10,lo)),M1=MOfL(Math.pow(10,hiL)),X=fl?l=>L+(Math.log10(l)-lo)/(hiL-lo)*(w-L-R):l=>L+(MOfL(l)-M0)/(M1-M0)*(w-L-R);
@@ -350,11 +388,11 @@ function drawSNL(cv,hi){const {ctx,w,h}=fitT(cv),fl=isFlux(),L=20,R=20,Tp=30,B=4
   if(fl)[2e9,3e9,5e9,7e9,1e10,1.5e10].forEach(l=>{const x=X(l);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillText(sci(l,2).replace('.0×','×'),x,h-B+15)});
   else for(let M=-18.5;M>=-20.5;M-=0.5){const x=L+(M-M0)/(M1-M0)*(w-L-R);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillText(M.toFixed(1),x,h-B+15)}
   ctx.fillText(fl?'Type 1a supernova peak luminosity (Solar Units)':'Type 1a supernova peak absolute magnitude M',L+(w-L-R)/2,h-6);
-  const pts=Object.entries(S.st.hosts).map(([id,hh])=>{const r=hostDist(hh,rl);return{id,L:FOURPI*r*r*hh.Fpk}});if(hi)pts.push({id:'this galaxy',L:hi.L,hi:true});
+  const pts=Object.entries(S.st.hosts).map(([id,hh])=>{const r=hostDist(hh,rl);return{id,L:FOURPI*r*r*hh.Fpk}});if(hi)pts.push({id:'this galaxy',L:hi.L,hi:true,pulse:hi.pulse});
   if(cal&&!cal.given&&cal.n){const x=X(cal.L);ctx.strokeStyle='#4fd67a';ctx.setLineDash([6,5]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,Tp-8);ctx.lineTo(x,h-B);ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1;ctx.fillStyle='#4fd67a';ctx.fillText('average',x,Tp-12)}
   if(cal&&cal.given){const x=X(cal.L);ctx.strokeStyle='#4fd67a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle='#4fd67a';ctx.fillText('given',x,Tp-10)}
   const rowH=Math.min(26,(h-Tp-B-10)/Math.max(1,pts.length));
-  pts.forEach((p,i)=>{const x=Math.max(L,Math.min(w-R,X(p.L))),y=Tp+10+i*rowH;ctx.fillStyle=p.hi?'#f6bd5f':'#86c9f2';ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x+6,y);ctx.lineTo(x,y+6);ctx.lineTo(x-6,y);ctx.closePath();ctx.fill();ctx.fillStyle=TXT;ctx.textAlign=x>w/2?'right':'left';ctx.fillText(p.id,x+(x>w/2?-11:11),y+4)});
+  pts.forEach((p,i)=>{const x=Math.max(L,Math.min(w-R,X(p.L))),y=Tp+10+i*rowH;ctx.fillStyle=p.hi?'#f6bd5f':'#86c9f2';ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x+6,y);ctx.lineTo(x,y+6);ctx.lineTo(x-6,y);ctx.closePath();ctx.fill();if(p.hi)hiMark(ctx,x,y,p.pulse);ctx.fillStyle=TXT;ctx.textAlign=x>w/2?'right':'left';ctx.fillText(p.id,x+(x>w/2?-11:11),y+4)});
   if(!pts.length&&!cal){ctx.fillStyle=TXT;ctx.font='14px "IBM Plex Sans", sans-serif';ctx.textAlign='center';ctx.fillText('Each ★ galaxy you measure adds a supernova here.',w/2,Tp+(h-Tp-B)/2)}}
 function drawHub(cv,hi){const {ctx,w,h}=fitT(cv),L=62,R=14,Tp=14,B=44,cal=snCal();
   const pts=Object.values(S.st.far).map(f=>({d:farDist(f,cal)/1e6,v:f.z*C})).filter(p=>p.d);if(hi)pts.push({...hi,hi:true});
@@ -364,9 +402,9 @@ function drawHub(cv,hi){const {ctx,w,h}=fitT(cv),L=62,R=14,Tp=14,B=44,cal=snCal(
   ctx.textAlign='center';ctx.fillText('distance r (Mpc)',L+(w-L-R)/2,h-6);axisLabelY(ctx,'velocity v (km/s)',12,Tp+(h-Tp-B)/2);
   const line=(Hv,col,dash)=>{const dEnd=Math.min(dmax,vmax/Hv);ctx.strokeStyle=col;ctx.setLineDash(dash);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(0),Y(0));ctx.lineTo(X(dEnd),Y(Hv*dEnd));ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1};
   if(S.showTrue||S.st.done)line(S.H0,'rgba(134,220,174,.7)',[2,4]);const f=hubbleFit();if(f)line(f.H,'#ff6a55',[7,5]);
-  for(const p of pts){const x=X(p.d),y=Y(p.v);ctx.strokeStyle='rgba(134,201,242,.6)';ctx.beginPath();ctx.moveTo(X(p.d*0.93),y);ctx.lineTo(X(p.d*1.07),y);ctx.stroke();ctx.fillStyle=p.hi?'#f6bd5f':'#86c9f2';ctx.beginPath();ctx.moveTo(x,y-5.5);ctx.lineTo(x+5.5,y);ctx.lineTo(x,y+5.5);ctx.lineTo(x-5.5,y);ctx.closePath();ctx.fill();if(p.hi){ctx.strokeStyle='#f6bd5f';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,9,0,7);ctx.stroke();ctx.lineWidth=1}}
+  for(const p of pts){const x=X(p.d),y=Y(p.v);ctx.strokeStyle='rgba(134,201,242,.6)';ctx.beginPath();ctx.moveTo(X(p.d*0.93),y);ctx.lineTo(X(p.d*1.07),y);ctx.stroke();ctx.fillStyle=p.hi?'#f6bd5f':'#86c9f2';ctx.beginPath();ctx.moveTo(x,y-5.5);ctx.lineTo(x+5.5,y);ctx.lineTo(x,y+5.5);ctx.lineTo(x-5.5,y);ctx.closePath();ctx.fill();if(p.hi)hiMark(ctx,x,y,p.pulse)}
   if(!pts.length){ctx.fillStyle=TXT;ctx.font='14px "IBM Plex Sans", sans-serif';ctx.textAlign='center';ctx.fillText('Galaxies you measure will appear here.',L+(w-L-R)/2,Tp+(h-Tp-B)/2)}}
-function drawCurve(cv,lc,marked,color,avg){const {ctx,w,h}=fitT(cv),L=58,R=12,Tp=16,B=40,fl=isFlux();
+function drawCurve(cv,lc,marked,color,avg,arrows){const {ctx,w,h}=fitT(cv),L=58,R=12,Tp=arrows?54:16,B=40,fl=isFlux();
   const t1=Math.max(...lc.map(p=>p.t));let vals,k=0;if(fl){k=Math.floor(Math.log10(Math.max(...lc.map(p=>p.F))));vals=lc.map(p=>p.F/Math.pow(10,k))}else vals=lc.map(p=>mOf(p.F));
   let v0=Math.min(...vals),v1=Math.max(...vals);const pad=(v1-v0)*0.12||0.1;v0-=pad;v1+=pad;
   const X=t=>L+t/t1*(w-L-R),Y=fl?v=>Tp+(1-(v-v0)/(v1-v0))*(h-Tp-B):v=>Tp+(v-v0)/(v1-v0)*(h-Tp-B);
@@ -374,8 +412,13 @@ function drawCurve(cv,lc,marked,color,avg){const {ctx,w,h}=fitT(cv),L=58,R=12,Tp
   const vs=niceStep(v1-v0,4),dec=vs<0.1?2:vs<1?1:0;for(let v=Math.ceil(v0/vs)*vs;v<=v1;v+=vs){const y=Y(v);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.textAlign='right';ctx.fillText(v.toFixed(dec),L-6,y+4)}
   ctx.textAlign='center';ctx.fillText('Time (days)',L+(w-L-R)/2,h-6);axisLabelY(ctx,fl?`Flux (10${sup(k)} L☉/pc²)`:'magnitude m (brighter ↑)',13,Tp+(h-Tp-B)/2);
   if(avg){const av=fl?avgFlux(lc)/Math.pow(10,k):mOf(avgFlux(lc));ctx.strokeStyle='#5ab8ff';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(L,Y(av));ctx.lineTo(w-R,Y(av));ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1;ctx.fillStyle='#5ab8ff';ctx.textAlign='right';ctx.fillText('average',w-R-4,Y(av)-6)}
-  return lc.map((p,i)=>{const x=X(p.t),y=Y(vals[i]);if(marked.has(i)){ctx.strokeStyle='rgba(181,140,255,.7)';ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillStyle='#b58cff';ctx.beginPath();ctx.arc(x,y,6,0,7);ctx.fill();ctx.fillStyle=TXT;ctx.textAlign='center';ctx.fillText('day '+p.t,x,Tp+11)}
-    else{ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,3,0,7);ctx.fill()}return{x,y,i}})}
+  const pts=lc.map((p,i)=>{const x=X(p.t),y=Y(vals[i]);if(marked.has(i)){ctx.strokeStyle='rgba(181,140,255,.7)';ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillStyle='#b58cff';ctx.beginPath();ctx.arc(x,y,6,0,7);ctx.fill();ctx.fillStyle=TXT;ctx.textAlign='center';ctx.fillText('day '+p.t,x,Tp+11)}
+    else{ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,3,0,7);ctx.fill()}return{x,y,i}});
+  if(arrows&&marked.size>=2){const ms=[...marked].map(i=>({t:lc[i].t,x:X(lc[i].t)})).sort((a,b)=>a.t-b.t),ay=16;ctx.strokeStyle=CL.P;ctx.fillStyle=CL.P;ctx.lineWidth=2;
+    ms.forEach(m=>{ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(m.x,ay);ctx.lineTo(m.x,Tp);ctx.stroke();ctx.setLineDash([])});
+    for(let k=1;k<ms.length;k++){const a=ms[k-1],b=ms[k];arrowLine(ctx,a.x+2,ay,b.x-2,ay,true);ctx.textAlign='center';ctx.font='600 12px "IBM Plex Mono", monospace';ctx.fillText(`${fmt(b.t-a.t,2).replace(/\.?0+$/,'')} days`,(a.x+b.x)/2,ay+18);ctx.font=FONT}
+    ctx.lineWidth=1}
+  return pts}
 function nearestPt(pts,e){const r=e.currentTarget.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;let best=null,bd=20;for(const p of pts){const d=Math.hypot(p.x-px,(p.y-py)*0.6);if(d<bd){bd=d;best=p}}return best}
 
 /* ================= measurement cards ================= */
@@ -403,7 +446,7 @@ function cardsFor(cur){const k=cur.kind,fl=isFlux(),given1=S.set.start>=2,cs=[];
   if(k==='var'){
     cs.push(cP,cF,
       {id:'th',t:'Parallax angle',w:'par',text:"These two images were taken six months apart, from opposite sides of Earth's orbit. Click the center of the variable star in the January image, then in the July image. Use Blink to see it shift against the background stars.",
-        ready:o=>!!o.th,wait:'Click the star in both images to measure its shift.',eq:(o,a)=>String.raw`${T.th} = \frac{\text{total shift}}{2} = \frac{${o.shift.toFixed(5)}''}{2} = ${a}''`,ans:o=>o.th.toFixed(5),
+        ready:o=>!!o.th,wait:'Click the star in both images to measure its shift.',eq:(o,a)=>String.raw`${T.th} = \frac{{\color{#6ee07a}\text{total shift}}}{2} = \frac{{\color{#6ee07a}${o.shift.toFixed(5)}''}}{2} = ${a}''`,ans:o=>o.th.toFixed(5),
         hand:o=>({ans:o.th,ok:rel(o.th,.02),unit:'arcsec',hint:'The parallax angle is half of the total shift.'})},
       {id:'d',t:'Distance',text:'Turn the parallax angle into a distance.',ready:()=>true,eq:(o,a)=>String.raw`${T.d}\ [\text{pc}] = \frac{1\ [\text{AU}]}{${T.th}\ [\text{arcsec}]} = \frac{1}{${o.th.toFixed(5)}} = ${a}\ \text{pc}`,ans:o=>tx(o.d),
         hand:o=>({ans:o.d,ok:rel(o.d,.03),unit:'pc',hint:'Divide 1 by the parallax angle in arcseconds.'})},
@@ -421,10 +464,10 @@ function cardsFor(cur){const k=cur.kind,fl=isFlux(),given1=S.set.start>=2,cs=[];
           :String.raw`\begin{aligned} ${T.M} &= ${o.relM.a.toFixed(2)} - ${Math.abs(o.relM.b).toFixed(2)}\log_{10}${T.P} \\ &= ${o.relM.a.toFixed(2)} - ${Math.abs(o.relM.b).toFixed(2)}\log_{10}(${tx(o.P)}) \\ &= ${a} \end{aligned}`,
         ans:o=>fl?tx(o.Lc):t2(o.Mc),hand:o=>fl?{ans:o.Lc,ok:rel(o.Lc,.04),unit:'L☉',hint:'Raise the period to the power shown, then multiply by the number in front.'}:{ans:o.Mc,ok:absTol(o.Mc,.05),unit:'',hint:'Take log base 10 of the period, multiply by the number in front of it, and subtract from the first number.'}},
       cF,
-      fl?{id:'r',t:'Distance',text:"You know the variable star's luminosity and its flux. Solve the inverse square law for the distance r.",ready:()=>true,
+      fl?{id:'rc',t:'Distance',text:"You know the variable star's luminosity and its flux. Solve the inverse square law for the distance r.",ready:()=>true,
         eq:(o,a)=>String.raw`\begin{aligned} 4\pi ${T.r}^2 ${T.F} &= ${T.L} \\ ${T.r} &= \sqrt{\frac{${T.L}}{4\pi ${T.F}}} = \sqrt{\frac{${tx(o.Lc)}}{4\pi\,(${tx(o.F)})}} \\ &= ${tx(o.r)}\ \text{pc} = ${a}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
         hand:o=>({ans:o.r/1e6,ok:rel(o.r/1e6,.05),unit:'Mpc',hint:'Divide L by 4π times F, take the square root to get parsecs, then divide by 1,000,000 for Mpc.'})}
-      :{id:'r',t:'Distance',text:'You know how bright the variable star truly is (M) and how bright it looks (m). Their difference gives the distance.',ready:()=>true,
+      :{id:'rc',t:'Distance',text:'You know how bright the variable star truly is (M) and how bright it looks (m). Their difference gives the distance.',ready:()=>true,
         eq:(o,a)=>String.raw`\begin{aligned} ${T.d} &= 10^{(${T.m} - ${T.M} + 5)/5}\ \text{pc} \\ &= 10^{(${t2(o.m)} - (${t2(o.Mc)}) + 5)/5}\ \text{pc} \\ &= ${tx(o.r)}\ \text{pc} = ${a}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
         hand:o=>({ans:o.r/1e6,ok:rel(o.r/1e6,.05),unit:'Mpc',hint:'Work out m − M, add 5, divide by 5, raise 10 to that power for parsecs, then divide by 1,000,000.'})},
       {id:'Fpk',t:'Supernova peak',w:'sn',text:'A Type 1a supernova exploded in this same galaxy. Click the brightest point of its light curve.',ready:o=>o.Fpk!=null,wait:'Click the peak of the supernova light curve.',
@@ -439,10 +482,10 @@ function cardsFor(cur){const k=cur.kind,fl=isFlux(),given1=S.set.start>=2,cs=[];
   else{
     cs.push({id:'Fpk',t:'Supernova peak',w:'sn',text:'You caught a Type 1a supernova in this distant galaxy. Click the brightest point of its light curve.',ready:o=>o.Fpk!=null,wait:'Click the peak of the supernova light curve.',
         eq:o=>fl?String.raw`${T.Fpk} = ${tx(o.Fpk)}\ ${FU}`:String.raw`${T.mpk} = ${t2(o.mpk)}`},
-      fl?{id:'r',t:'Distance',text:S.set.start>=3?'Type 1a supernovae all have about the same peak luminosity, so this one is a standard candle.':'You found in Level 2 that Type 1a supernovae all have about the same peak luminosity. Use your average value.',ready:()=>true,
+      fl?{id:'rs',t:'Distance',text:S.set.start>=3?'Type 1a supernovae all have about the same peak luminosity, so this one is a standard candle.':'You found in Level 2 that Type 1a supernovae all have about the same peak luminosity. Use your average value.',ready:()=>true,
         eq:(o,a)=>String.raw`\begin{aligned} ${T.r} &= \sqrt{\frac{${T.Lsn}}{4\pi ${T.Fpk}}} = \sqrt{\frac{${tx(o.cal.L)}}{4\pi\,(${tx(o.Fpk)})}} \\ &= ${tx(o.r)}\ \text{pc} = ${a}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
         hand:o=>({ans:o.r/1e6,ok:rel(o.r/1e6,.05),unit:'Mpc',hint:'Divide L by 4π times the peak flux, take the square root for parsecs, then divide by 1,000,000.'})}
-      :{id:'r',t:'Distance',text:S.set.start>=3?'Type 1a supernovae all reach about the same peak absolute magnitude, so this one is a standard candle.':'You found in Level 2 that Type 1a supernovae all reach about the same peak absolute magnitude. Use your average value.',ready:()=>true,
+      :{id:'rs',t:'Distance',text:S.set.start>=3?'Type 1a supernovae all reach about the same peak absolute magnitude, so this one is a standard candle.':'You found in Level 2 that Type 1a supernovae all reach about the same peak absolute magnitude. Use your average value.',ready:()=>true,
         eq:(o,a)=>String.raw`\begin{aligned} ${T.d} &= 10^{(${T.mpk} - ${T.Msn} + 5)/5}\ \text{pc} \\ &= 10^{(${t2(o.mpk)} - (${t2(MOfL(o.cal.L))}) + 5)/5}\ \text{pc} \\ &= ${tx(o.r)}\ \text{pc} = ${a}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
         hand:o=>({ans:o.r/1e6,ok:rel(o.r/1e6,.05),unit:'Mpc',hint:'Work out m − M, add 5, divide by 5, raise 10 to that power for parsecs, then divide by 1,000,000.'})},
       {id:'spec',t:'Spectrum and speed',w:'spec',text:`Now the spectrograph. The dashed lines show where familiar lines sit when the galaxy is not moving. Slide them until they line up with the dips${cur.obj.type==='spiral'?' and spikes':''} in this galaxy's spectrum. The more the lines are shifted toward the red, the faster the galaxy is moving away. The game turns the shift into a speed for you.`,ready:()=>true,
@@ -462,7 +505,7 @@ function renderPanel(){
     obsEl.innerHTML=`<div class="obs-head"><div><span class="eyebrow">${kindTxt}</span><h2>${title}</h2></div><button class="x" id="closeObs" aria-label="Close">×</button></div>
       <div class="obs-body"><p>You already measured this one.</p>${rows?eqHtml(rows):''}</div><div class="obs-foot"><span class="sp"></span><button class="btn ghost" id="redo">Measure again</button></div>`;
     obsEl.querySelector('#closeObs').onclick=closePanel;obsEl.querySelector('#redo').onclick=()=>{cur.review=false;renderPanel()};typeset(obsEl);return}
-  const cards=cardsFor(cur),c=cards[cur.i],ca=calc(cur),hand=S.set.hand&&!!c.hand,ready=c.ready(ca);
+  const cards=cardsFor(cur),c=cards[cur.i],ca=calc(cur),hand=!!c.hand&&handOn(c.id),ready=c.ready(ca);
   const hd=hand&&ready?c.hand(ca):null,solved=!hand||cur.hand[c.id]!=null;
   let eqBlock='';
   if(c.eq){if(!ready)eqBlock=`<p class="waiting">${c.wait||''}</p>`;
@@ -486,8 +529,8 @@ function renderPanel(){
   mountWidget(c,ca);typeset(obsEl.querySelector('#eqZone'))}
 function refreshEq(){const top=obsEl.scrollTop;renderPanel();obsEl.scrollTop=top}
 function mountWidget(c,ca){const cur=S.cur,cv=obsEl.querySelector('#wv');if(!cv)return;
-  const resetHand=()=>{for(const k of ['P','th','d','L','Lc','r','Lsn','z','v'])delete cur.hand[k];cur.msg=null};
-  if(c.w==='lc'||c.w==='lcAvg'){const draw=()=>{cur.pts=drawCurve(cv,cur.lc,new Set(c.w==='lc'?cur.marks:[]),'#f6bd5f',c.w==='lcAvg')};draw();cur.redraw=draw;
+  const resetHand=()=>{for(const k of ['P','th','d','L','Lc','rc','rs','Lsn'])delete cur.hand[k];cur.msg=null};
+  if(c.w==='lc'||c.w==='lcAvg'){const draw=()=>{cur.pts=drawCurve(cv,cur.lc,new Set(c.w==='lc'?cur.marks:[]),'#f6bd5f',c.w==='lcAvg',c.w==='lc')};draw();cur.redraw=draw;
     if(c.w==='lc')cv.onclick=e=>{const p=nearestPt(cur.pts,e);if(!p)return;const k=cur.marks.indexOf(p.i);k>=0?cur.marks.splice(k,1):cur.marks.push(p.i);resetHand();refreshEq()}}
   else if(c.w==='sn'){const draw=()=>{cur.pts=drawCurve(cv,cur.snlc,new Set(cur.snPick!=null?[cur.snPick]:[]),'#86c9f2',false)};draw();cur.redraw=draw;cv.onclick=e=>{const p=nearestPt(cur.pts,e);if(!p)return;cur.snPick=p.i;resetHand();refreshEq()}}
   else if(c.w==='par'){const draw=()=>drawPar(cv);draw();cur.redraw=draw;
@@ -499,10 +542,10 @@ function mountWidget(c,ca){const cur=S.cur,cv=obsEl.querySelector('#wv');if(!cv)
     const setZ=z=>{cur.zGuess=z;resetHand();upd();const ez=obsEl.querySelector('#eqZone'),op=ez.querySelector('details')?.open,cc=calc(cur);ez.innerHTML=eqHtml(c.eq(cc))+(c.more?c.more(cc):'');if(op)ez.querySelector('details').open=true;typeset(ez)};
     obsEl.querySelector('#zr').oninput=e=>setZ(+e.target.value);
     obsEl.querySelectorAll('[data-nz]').forEach(b=>b.onclick=()=>{const z=Math.max(-0.004,Math.min(0.11,+(cur.zGuess+ +b.dataset.nz).toFixed(4)));obsEl.querySelector('#zr').value=z;setZ(z)})}
-  else if(c.w==='plPrev'){const d=()=>drawPL(cv,{P:ca.P,L:ca.L});d();cur.redraw=d}
   else if(c.w==='plRead'){const d=()=>drawPL(cv,ca.Lc?{P:ca.P,L:ca.Lc,read:true}:null);d();cur.redraw=d}
-  else if(c.w==='snPrev'){const d=()=>drawSNL(cv,{L:ca.Lsn});d();cur.redraw=d}
-  else if(c.w==='hubPrev'){const d=()=>drawHub(cv,{d:ca.r/1e6,v:ca.v});d();cur.redraw=d}}
+  else if(c.w==='plPrev'||c.w==='snPrev'||c.w==='hubPrev'){const hi=c.w==='plPrev'?{P:ca.P,L:ca.L}:c.w==='snPrev'?{L:ca.Lsn}:{d:ca.r/1e6,v:ca.v},fn=c.w==='plPrev'?drawPL:c.w==='snPrev'?drawSNL:drawHub;
+    const d=t=>fn(cv,{...hi,pulse:t});d(null);cur.redraw=()=>d(null);
+    if(!matchMedia('(prefers-reduced-motion: reduce)').matches){const loop=t=>{if(!cv.isConnected)return;d(t/1000);requestAnimationFrame(loop)};requestAnimationFrame(loop)}}}
 function parView(w,h){return{sc:Math.min(w/26,h/17),cx:w/2,cy:h/2}}
 function drawPar(cv){const cur=S.cur;if(!cur||!cur.par)return;const {ctx,w,h}=fitT(cv),{sc,cx,cy}=parView(w,h),X=x=>cx+x*sc,Y=y=>cy-y*sc,ep=cur.blink?cur.blinkShow:cur.epoch,pd=cur.par;
   ctx.fillStyle='#020202';ctx.fillRect(0,0,w,h);
@@ -512,6 +555,10 @@ function drawPar(cv){const cur=S.cur;if(!cur||!cur.par)return;const {ctx,w,h}=fi
   for(const s of pd.bg){const gl=ctx.createRadialGradient(X(s.x),Y(s.y),0,X(s.x),Y(s.y),s.s*sc);gl.addColorStop(0,'rgba(235,235,245,.9)');gl.addColorStop(1,'rgba(235,235,245,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(X(s.x),Y(s.y),s.s*sc,0,7);ctx.fill()}
   const st=pd[ep],R=1.5*sc,gl=ctx.createRadialGradient(X(st.x),Y(st.y),0,X(st.x),Y(st.y),R);gl.addColorStop(0,'rgba(255,248,225,1)');gl.addColorStop(.35,'rgba(255,220,160,.8)');gl.addColorStop(1,'rgba(255,200,120,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(X(st.x),Y(st.y),R,0,7);ctx.fill();
   for(const [k,col,lab] of [['jan','#f6bd5f','Jan'],['jul','#86c9f2','Jul']]){const m=cur.pm[k];if(!m)continue;const x=X(m.x),y=Y(m.y);ctx.strokeStyle=col;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(x-9,y);ctx.lineTo(x-3,y);ctx.moveTo(x+3,y);ctx.lineTo(x+9,y);ctx.moveTo(x,y-9);ctx.lineTo(x,y-3);ctx.moveTo(x,y+3);ctx.lineTo(x,y+9);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle=col;ctx.textAlign='center';ctx.fillText(lab,x,y-13)}
+  if(cur.pm.jan&&cur.pm.jul){const a=cur.pm.jan,b=cur.pm.jul,x1=X(a.x),y1=Y(a.y),x2=X(b.x),y2=Y(b.y),len=Math.hypot(x2-x1,y2-y1);
+    if(len>20){const ux=(x2-x1)/len,uy=(y2-y1)/len;ctx.strokeStyle=SHIFT_GREEN;ctx.fillStyle=SHIFT_GREEN;ctx.lineWidth=2.5;arrowLine(ctx,x1+ux*11,y1+uy*11,x2-ux*11,y2-uy*11,false);ctx.lineWidth=1}
+    const lab=`${(Math.hypot(b.x-a.x,b.y-a.y)*0.001).toFixed(5)}″`,mx=(x1+x2)/2,my=(y1+y2)/2+26;ctx.font='600 14px "IBM Plex Mono", monospace';const tw=ctx.measureText(lab).width;
+    ctx.fillStyle='rgba(0,0,0,.8)';ctx.fillRect(mx-tw/2-6,my-15,tw+12,21);ctx.fillStyle=SHIFT_GREEN;ctx.textAlign='center';ctx.fillText(lab,mx,my);ctx.font=FONT}
   ctx.font='600 15px "IBM Plex Sans", sans-serif';ctx.fillStyle=TXT;ctx.textAlign='left';ctx.fillText(ep==='jan'?'January':'July',10,22);ctx.font=FONT;if(cur.blink){ctx.fillStyle='#ff6a55';ctx.textAlign='right';ctx.fillText('BLINKING',w-10,22)}}
 function drawSpec(cv){const cur=S.cur,{ctx,w,h}=fitT(cv),{lam,flux}=cur.spec,L=40,R=12,Tp=42,B=42,fmin=Math.min(...flux)-0.05,fmax=Math.max(...flux)+0.05,X=l=>L+(l-370)/400*(w-L-R),Y=f=>Tp+(1-(f-fmin)/(fmax-fmin))*(h-Tp-B);
   for(let l=370;l<770;l+=2){ctx.fillStyle=wl2rgb(l);ctx.fillRect(X(l),h-B+2,X(l+2)-X(l)+0.5,6)}
@@ -545,12 +592,12 @@ function renderLP(){const lp=document.getElementById('lp'),lv=S.view,fl=isFlux()
     const f=hubbleFit();if(f)result=eqHtml(String.raw`H_0 = ${f.H.toFixed(1)} \pm ${f.err.toFixed(1)}\ \text{km/s/Mpc}`)+`<p class="note">That suggests the universe is about ${fmt(977.8/f.H,1)} billion years old.${S.showTrue||S.st.done?` True value for this sky: ${S.H0} km/s/Mpc.`:''}</p>`;else extra='<p class="note">Plot 3 galaxies to fit a line.</p>';
     if(S.st.done)extra+='<button class="btn" id="seeFinal">See your final results</button>'}
   const pct=need?Math.min(100,count/need*100):Math.min(100,count/12*100),nextUn=lv<3&&unlocked(lv+1);
-  lp.innerHTML=`<span class="eyebrow">Level ${lv} of 3</span><h2>${LV[lv].title}</h2><p>${goal}</p>
+  lp.innerHTML=`<span class="eyebrow">Level ${lv} of 3</span><h2>${LV[lv].title}</h2><p>${goal}</p><div class="row"><button class="btn ghost sm" id="lpLesson">${S.st.lessons['l'+lv]?'Replay':'Open'} the Level ${lv} lesson</button></div>
     <div class="prog" aria-hidden="true"><i style="width:${pct}%"></i></div><p class="mono">${need?`${count} of ${need} ${lv===1?'variable stars':lv===2?'★ galaxies':'galaxies'} measured${count>=need?' · level complete':''}`:`${count} galaxies on your diagram`}</p>
     <canvas class="chart" id="lpc" aria-label="${LV[lv].title} chart"></canvas>${result}${extra}
     ${nextUn?`<button class="btn" id="goNext">Go to Level ${lv+1}</button>`:''}`;
   const cv=lp.querySelector('#lpc');(lv===1?drawPL:lv===2?drawSNL:drawHub)(cv,null);
-  const gn=lp.querySelector('#goNext');if(gn)gn.onclick=()=>setView(lv+1);const sf=lp.querySelector('#seeFinal');if(sf)sf.onclick=showFinish;typeset(lp)}
+  const gn=lp.querySelector('#goNext');if(gn)gn.onclick=()=>setView(lv+1);const sf=lp.querySelector('#seeFinal');if(sf)sf.onclick=showFinish;lp.querySelector('#lpLesson').onclick=()=>{closePanel();openTut('l'+lv)};typeset(lp)}
 function renderHint(){document.getElementById('skyhint').textContent=S.view===1?'Click a circled variable star to observe it':S.view===2?'Click a galaxy marked ★ to observe it':'Click a circled galaxy to observe it'}
 function renderAll(){renderTabs();renderLP();renderHint();requestDraw()}
 
@@ -559,14 +606,15 @@ const drawer=document.getElementById('drawer'),dbox=document.getElementById('dra
 function openDrawer(kind){drawer.hidden=false;kind==='menu'?renderMenu():kind==='lock'?renderLock():renderSettings();dbox.focus({preventScroll:true})}
 function renderLock(){dbox.innerHTML=`<div class="dhead"><h2>Instructor settings</h2><button class="x" id="dClose" aria-label="Close">×</button></div>
   <p>Enter the teacher passcode to change class settings.</p>
-  <form id="lockForm" class="inst"><div class="formrow"><label class="lbl" for="pass">Passcode</label><input type="password" id="pass" autocomplete="off" style="flex:1;min-width:9em"></div>
+  <div id="lockForm" class="inst"><div class="formrow"><label class="lbl" for="pass">Passcode</label><input type="password" id="pass" autocomplete="off" style="flex:1;min-width:9em"></div>
   <label class="formrow"><input type="checkbox" id="remember"> Remember on this device</label>
-  <div class="row"><button class="btn" type="submit">Unlock</button><span class="fb bad" id="lockMsg" role="status"></span></div></form>
+  <div class="row"><button class="btn" type="button" id="unlockBtn">Unlock</button><span class="fb bad" id="lockMsg" role="status"></span></div></div>
   <p class="note">Students: you don't need this. Enter your teacher's class code under Menu, then Your class.</p>`;
   dbox.querySelector('#dClose').onclick=closeDrawer;
-  dbox.querySelector('#lockForm').onsubmit=e=>{e.preventDefault();const v=dbox.querySelector('#pass').value;
+  const tryUnlock=()=>{const v=dbox.querySelector('#pass').value.trim();
     if(v===TEACHER_PASSCODE){try{(dbox.querySelector('#remember').checked?localStorage:sessionStorage).setItem('cosmic-ladder:teacher',v)}catch(x){}renderSettings()}
     else{dbox.querySelector('#lockMsg').textContent='That passcode is not right.';dbox.querySelector('#pass').select()}};
+  dbox.querySelector('#unlockBtn').onclick=tryUnlock;dbox.querySelector('#pass').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();tryUnlock()}};
   setTimeout(()=>dbox.querySelector('#pass')?.focus(),0)}
 function closeDrawer(){drawer.hidden=true;dbox.innerHTML=''}
 drawer.addEventListener('click',e=>{if(e.target===drawer)closeDrawer()});
@@ -601,7 +649,9 @@ function renderSettings(){const s=S.set,opt=(lo,hi,v)=>Array.from({length:hi-lo+
   <div class="formrow"><label class="lbl" for="seed">Sky seed</label><input type="text" id="seed" value="${S.seed}" maxlength="16" style="width:11em"></div>
   <fieldset class="seg"><legend>Brightness language</legend><label><input type="radio" name="units" value="flux" ${s.units==='flux'?'checked':''}> Flux and luminosity (inverse square law)</label><label><input type="radio" name="units" value="mag" ${s.units==='mag'?'checked':''}> Magnitudes</label></fieldset>
   <fieldset class="seg"><legend>Starting level</legend><label><input type="radio" name="start" value="1" ${s.start===1?'checked':''}> Level 1: build the period-luminosity relation from parallax</label><label><input type="radio" name="start" value="2" ${s.start===2?'checked':''}> Level 2: period-luminosity relation is given</label><label><input type="radio" name="start" value="3" ${s.start===3?'checked':''}> Level 3: supernova luminosity is given</label></fieldset>
-  <fieldset class="seg"><legend>Arithmetic</legend><label><input type="radio" name="hand" value="0" ${!s.hand?'checked':''}> The game fills in each equation</label><label><input type="radio" name="hand" value="1" ${s.hand?'checked':''}> Students compute each result, and the game checks it</label></fieldset>
+  <fieldset class="seg"><legend>Steps students calculate themselves</legend><p class="note">Checked steps show the equation with a blank answer that students must fill in. Unchecked steps are filled in by the game.</p>
+    ${(()=>{const lb=handLabels(s.units==='flux');return HAND_STEPS.map(h=>`<label><input type="checkbox" class="hstep" value="${h.bit}" ${s.hand&h.bit?'checked':''}> ${lb[h.k]}</label>`).join('')})()}
+    <div class="row"><button type="button" class="btn ghost sm" id="hAll">Check all</button><button type="button" class="btn ghost sm" id="hNone">Uncheck all</button></div></fieldset>
   <fieldset class="seg"><legend>Goals</legend><label>Variable stars needed to unlock Level 2 <select id="n1">${opt(3,9,s.n1)}</select></label><label>★ galaxies needed to unlock Level 3 <select id="n2">${opt(2,9,s.n2)}</select></label><label>Galaxies needed to finish Level 3 <select id="n3">${opt(5,20,s.n3)}</select></label></fieldset>
   <div class="row"><span>Class code: <span class="code" id="newCode"></span></span></div>
   <div class="row"><button class="btn" id="applyCode">Use these settings here</button><button class="btn ghost" id="copyCode">Copy code</button><span class="note" id="instMsg"></span></div>
@@ -609,8 +659,9 @@ function renderSettings(){const s=S.set,opt=(lo,hi,v)=>Array.from({length:hi-lo+
     <div class="row"><button class="btn ghost" id="copyCsv">Copy data as CSV</button><button class="btn ghost" id="clearAll">Clear progress on this device</button><button class="btn ghost" id="lockBtn">Lock settings</button></div></section>
   <section class="dsec"><h3>Check a student report</h3><textarea id="verifyIn" rows="6" placeholder="Paste a student's report here" aria-label="Student report"></textarea><div class="row"><button class="btn ghost" id="verifyBtn">Check report</button><span id="verifyOut"></span></div></section>`;
   const q=s=>dbox.querySelector(s),val=n=>(dbox.querySelector(`input[name="${n}"]:checked`)||{}).value;
-  const nc=()=>makeCode(q('#seed').value,val('units'),+val('start'),val('hand')==='1',+q('#n1').value,+q('#n2').value,+q('#n3').value);const upd=()=>q('#newCode').textContent=nc();upd();
+  const nc=()=>makeCode(q('#seed').value,val('units'),+val('start'),[...dbox.querySelectorAll('.hstep:checked')].reduce((a,x)=>a|+x.value,0),+q('#n1').value,+q('#n2').value,+q('#n3').value);const upd=()=>q('#newCode').textContent=nc();upd();
   dbox.querySelectorAll('input,select').forEach(i=>i.addEventListener(i.type==='text'?'input':'change',upd));
+  q('#hAll').onclick=()=>{dbox.querySelectorAll('.hstep').forEach(x=>x.checked=true);upd()};q('#hNone').onclick=()=>{dbox.querySelectorAll('.hstep').forEach(x=>x.checked=false);upd()};
   const msg=t=>{q('#instMsg').textContent=t};
   q('#dClose').onclick=closeDrawer;q('#applyCode').onclick=()=>{const c=nc();closeDrawer();applyCode(c);toast(`This device now uses class ${c}.`)};
   q('#copyCode').onclick=()=>navigator.clipboard?.writeText(q('#newCode').textContent).then(()=>msg('Copied.'),()=>msg('Copy blocked. Select the code instead.'));
@@ -769,13 +820,34 @@ function renderTut(){TUT.stops.forEach(f=>f());TUT.stops=[];const Ls=TUT.L,s=Ls.
   <div class="tut-body">${s.html}</div><div class="tut-foot"><button class="btn ghost" id="tBack" ${TUT.i?'':'disabled'}>Back</button><span class="sp" id="tHint">${s.gate?'Answer every question to continue.':''}</span>${last?'':'<button class="btn ghost" id="tSkip">Skip lesson</button>'}<button class="btn" id="tNext" ${TUT.ok?'':'disabled'}>${last?Ls.finish:'Next'}</button></div>`;
   tutBox.scrollTop=0;tutBox.querySelector('#tBack').onclick=()=>{TUT.i--;renderTut()};tutBox.querySelector('#tNext').onclick=()=>{if(last)closeTut();else{TUT.i++;renderTut()}};
   const sk=tutBox.querySelector('#tSkip');if(sk)sk.onclick=()=>closeTut();if(s.mount)s.mount(tutBox);typeset(tutBox.querySelector('.tut-body'))}
-document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(TUT)closeTut();else if(!tutEl.hidden)closeFinish();else if(!drawer.hidden)closeDrawer();else if(S.cur)closePanel()});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape'||!document.getElementById('welcome').hidden)return;if(TUT)closeTut();else if(!tutEl.hidden){tutEl.dataset.mode==='intro'?beginFromIntro():closeFinish()}else if(!drawer.hidden)closeDrawer();else if(S.cur)closePanel()});
 
 /* ================= finish screen ================= */
-function closeFinish(){tutEl.hidden=true;tutBox.innerHTML=''}
+function closeFinish(){tutEl.hidden=true;tutBox.innerHTML='';delete tutEl.dataset.mode}
+function maybeLesson(){if(!document.getElementById('welcome').hidden)return;if(!S.st.lessons.intro){showIntro();return}if(!S.st.lessons['l'+S.view])openTut('l'+S.view)}
+function beginFromIntro(){S.st.lessons.intro=1;saveSt();closeFinish();openTut('l'+S.view)}
+function showIntro(){if(TUT)closeTut(true);const st=S.set.start,fl=isFlux();
+  const cards=[
+    {n:1,t:'Variable stars',p:`Measure the parallax and ${fl?'flux':'brightness'} of nearby variable stars to find how bright they truly are. Use them to build your own period-luminosity relation.`,g:`Goal: ${S.set.n1} variable stars`},
+    {n:2,t:'Supernovae',p:'Use your variable stars as standard candles to find distances to other galaxies. Then find out how bright Type 1a supernovae truly are.',g:`Goal: ${S.set.n2} ★ galaxies`},
+    {n:3,t:'Hubble diagram',p:'Use supernovae to find distances to faraway galaxies, measure their speeds from their spectra, and plot speed against distance.',g:`Goal: ${S.set.n3} galaxies, then see the true H₀`}];
+  tutEl.dataset.mode='intro';tutEl.hidden=false;
+  tutBox.innerHTML=`<div class="tut-head"><span class="eyebrow">Welcome, astronomer</span><h2 id="tutTitle">How the game works</h2></div><div class="tut-body">
+    <p>Astronomers can't measure the distance to a faraway galaxy directly. Instead they climb a <b>distance ladder</b>: each method is checked against the one before it. In this game you'll climb that ladder yourself, from stars in our own galaxy out to galaxies hundreds of millions of light-years away, and use it to measure how fast the universe is expanding.</p>
+    <div class="intro-levels">${cards.map(c=>`<div class="lvcard${c.n<st?' given':''}"><span class="num">${c.n}</span><h3>${c.t}</h3><p>${c.p}</p><span class="goal">${c.n<st?'Already done for you in this class':c.g}</span></div>`).join('')}</div>
+    <p><b>Every level works the same way:</b></p>
+    <ol class="recipe">
+      <li><span>A short <b>lesson</b> explains the idea, then asks a few check-yourself questions.</span></li>
+      <li><span><b>Explore the sky.</b> Drag to look around and click a circled object to observe it.</span></li>
+      <li><span><b>Measure it one step at a time.</b> Each step shows the equation filled in with your numbers. For some steps you'll do the calculation yourself.</span></li>
+      <li><span><b>Watch your chart fill in.</b> Reach the level's goal to unlock the next one.</span></li>
+    </ol>
+    <p class="note">Lessons, your logbook and your class code are under <b>Menu</b>. Your progress saves automatically in this browser.</p></div>
+    <div class="tut-foot"><span class="sp"></span><button class="btn" id="introGo">Begin Level ${st}</button></div>`;
+  tutBox.querySelector('#introGo').onclick=beginFromIntro;tutBox.scrollTop=0;setTimeout(()=>tutBox.querySelector('#introGo')?.focus({preventScroll:true}),30)}
 function showFinish(){if(TUT)closeTut(true);if(S.cur)closePanel();const f=hubbleFit();if(!f)return;const off=(f.H-S.H0)/S.H0*100,fl=isFlux(),rl=plRel(),cal=snCal();let name='';try{name=localStorage.getItem('redshift-hunt:name')||''}catch(e){}
   const a=Math.abs(off),verdict=a<5?'Excellent work. Your ladder held up beautifully.':a<10?'Very good. Your ladder held up well.':a<20?'Not bad. Small measurement errors added up as you climbed the ladder.':'Your value is fairly far off. Errors at each rung of the ladder add up. Look back at your period-luminosity relation and your supernovae to see where they crept in.';
-  tutEl.hidden=false;tutBox.innerHTML=`<div class="tut-head"><span class="eyebrow">Game complete</span><h2 id="tutTitle">You climbed the cosmic ladder</h2></div><div class="tut-body">
+  tutEl.dataset.mode='finish';tutEl.hidden=false;tutBox.innerHTML=`<div class="tut-head"><span class="eyebrow">Game complete</span><h2 id="tutTitle">You climbed the cosmic ladder</h2></div><div class="tut-body">
     <p>You measured ${cnt('far')} faraway galaxies and found how fast the universe is expanding.</p>
     ${eqHtml(String.raw`H_0^\text{yours} = ${f.H.toFixed(1)} \pm ${f.err.toFixed(1)}\ \text{km/s/Mpc} \qquad H_0^\text{true} = ${S.H0.toFixed(1)}\ \text{km/s/Mpc}`)}
     <p><b>You were ${fmt(a,1)}% ${off>0?'too high':'too low'}.</b> ${verdict}</p>
@@ -796,12 +868,56 @@ function showFinish(){if(TUT)closeTut(true);if(S.cur)closePanel();const f=hubble
 function applyCode(code){const p=parseCode(code)||parseCode(DEFAULT_CODE);if(S.cur)closePanel();if(TUT)closeTut(true);
   S.code=p.code;S.seed=p.seed;S.set={units:p.units,start:p.start,hand:p.hand,n1:p.n1,n2:p.n2,n3:p.n3};buildUniverse(S.seed);loadSt();S.view=topLevel();
   const t=targets();centerOn(t.find(o=>!recOf(o))||t[0]);try{localStorage.setItem('redshift-hunt:v3:code',S.code)}catch(e){}
-  renderAll();if(!S.st.lessons['l'+S.view])openTut('l'+S.view)}
+  renderAll();maybeLesson()}
 window.addEventListener('resize',()=>{requestDraw();renderLP();if(S.cur&&S.cur.redraw)S.cur.redraw()});
 window.addEventListener('hashchange',()=>{const p=parseCode(location.hash.slice(1));if(p&&p.code!==S.code)applyCode(p.code)});
 document.fonts&&document.fonts.ready.then(()=>{requestDraw();renderLP()});
 let startCode=parseCode(location.hash.slice(1))?.code;if(!startCode){try{startCode=localStorage.getItem('redshift-hunt:v3:code')}catch(e){}}
 applyCode(startCode||DEFAULT_CODE);
+
+/* ================= welcome screen ================= */
+(function(){
+  const wel=document.getElementById('welcome'),cv=document.getElementById('wcv'),ctx=cv.getContext('2d'),btn=document.getElementById('startBtn');
+  const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches,R=mulberry32(1929);
+  const prog=cnt('vars')+cnt('hosts')+cnt('far');btn.textContent=prog?'Continue climbing':'Start game';
+  document.getElementById('welClass').textContent=`Class ${S.code}`;
+  const spawn=z=>({x:(R()-.5)*7,y:(R()-.5)*4.2,z:z??(0.8+R()*1.6),rot:R()*Math.PI,q:.3+.6*R(),s:.6+R()*.9,arms:R()<.6});
+  const gal=[];for(let i=0;i<90;i++)gal.push(spawn(1+R()*40));
+  const bg=[];for(let i=0;i<280;i++)bg.push([R(),R(),R()]);
+  let phase=0,last=null;
+  function frame(now){
+    if(wel.hidden)return;
+    const r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1,w=r.width,h=r.height,W2=Math.round(w*dpr),H2=Math.round(h*dpr);
+    if(cv.width!==W2||cv.height!==H2){cv.width=W2;cv.height=H2}
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const dt=last==null||reduce?0:Math.min(0.05,(now-last)/1000);last=now;
+    const cx=w/2,vy=h*0.6,F=Math.min(w,h)*0.55;
+    ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);
+    for(const [a,b,c] of bg){ctx.fillStyle=`rgba(230,230,245,${0.12+c*0.45})`;ctx.fillRect(a*w,b*h,c>0.9?1.8:1.1,c>0.9?1.8:1.1)}
+    const glow=ctx.createRadialGradient(cx,vy,0,cx,vy,Math.max(w,h)*0.45);glow.addColorStop(0,'rgba(150,45,30,.38)');glow.addColorStop(.4,'rgba(60,20,30,.15)');glow.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
+    /* galaxies recede: speed proportional to distance (Hubble's law) */
+    for(const g of gal){g.z*=1+0.16*dt;if(g.z>45)Object.assign(g,spawn())}
+    gal.sort((a,b)=>b.z-a.z);
+    for(const g of gal){const sx=cx+g.x/g.z*F,sy=vy+g.y/g.z*F,size=g.s*F*0.1/g.z;if(size<0.35||sx<-200||sx>w+200||sy<-200||sy>h+200)continue;
+      const k=Math.min(1,Math.log(g.z)/Math.log(45)),col=`${Math.round(195+60*k)},${Math.round(215-120*k)},${Math.round(255-205*k)}`,al=Math.min(1,(1-k)*1.6)*Math.min(1,(g.z-0.8)*2.5);
+      ctx.save();ctx.translate(sx,sy);ctx.rotate(g.rot);ctx.scale(1,g.q);
+      const gr=ctx.createRadialGradient(0,0,0,0,0,size);gr.addColorStop(0,`rgba(255,246,232,${al})`);gr.addColorStop(.22,`rgba(${col},${al*.65})`);gr.addColorStop(1,`rgba(${col},0)`);ctx.fillStyle=gr;ctx.beginPath();ctx.arc(0,0,size,0,7);ctx.fill();
+      if(g.arms&&size>14){ctx.fillStyle=`rgba(${col},${al*.35})`;for(let arm=0;arm<2;arm++)for(let t=0;t<1;t+=0.03){const th=t*4.2+arm*Math.PI,rr=size*(0.15+0.75*t);ctx.beginPath();ctx.arc(Math.cos(th)*rr,Math.sin(th)*rr,Math.max(.6,size*.045),0,7);ctx.fill()}}
+      ctx.restore()}
+    /* the ladder, receding to the vanishing point */
+    const halfW=Math.min(w*0.17,190),base=h+10,P=(side,z)=>{const s=1/(1+z);return[cx+side*halfW*s,vy+(base-vy)*s]};
+    ctx.save();ctx.shadowColor='rgba(246,189,95,.6)';ctx.shadowBlur=14;ctx.lineCap='round';
+    for(const side of [-1,1]){const a=P(side,0),b=P(side,80),grd=ctx.createLinearGradient(0,base,0,vy);grd.addColorStop(0,'rgba(246,189,95,.95)');grd.addColorStop(.75,'rgba(246,189,95,.35)');grd.addColorStop(1,'rgba(246,189,95,0)');
+      ctx.strokeStyle=grd;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke()}
+    phase=(phase+dt*0.5)%1;
+    for(let i=0;i<70;i++){const z=(i+1-phase)*0.5;if(z<=0)continue;const s=1/(1+z),l=P(-1,z),rr=P(1,z),a=Math.max(0,1-z/22);if(a<=0)break;
+      ctx.strokeStyle=`rgba(246,189,95,${a})`;ctx.lineWidth=Math.max(0.6,7*s);ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(rr[0],rr[1]);ctx.stroke()}
+    ctx.restore();
+    if(!reduce)requestAnimationFrame(frame)}
+  requestAnimationFrame(frame);if(reduce)window.addEventListener('resize',()=>requestAnimationFrame(frame));
+  btn.onclick=()=>{wel.hidden=true;maybeLesson();if(!TUT&&tutEl.hidden)sky.focus({preventScroll:true})};
+  setTimeout(()=>btn.focus({preventScroll:true}),50);
+})();
 </script>
 
 </body>

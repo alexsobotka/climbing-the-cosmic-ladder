@@ -35,7 +35,7 @@ Example: `ORION-F1A53-10`
 | `ORION` | Sky seed. Sets the positions, distances and speeds of everything, including the hidden true H₀ (between 62 and 78 km/s/Mpc). | Up to 16 letters or numbers |
 | `F` | Brightness language | `F` flux and luminosity · `M` magnitudes |
 | `1` | Starting level | `1` full ladder · `2` period-luminosity relation given · `3` supernova luminosity given |
-| `A` | Arithmetic | `A` the game fills in each equation · `H` students compute each result and the game checks it |
+| `A` | Which steps students calculate themselves | `A` none (the game fills in every equation) · `H` all of them · `X` plus two characters for a custom mix chosen with the checkboxes in ⚙ settings (for example `X04` means students only calculate the distance from the parallax angle) |
 | `5` | Variable stars needed to unlock Level 2 | 3 to 9 |
 | `3` | ★ galaxies needed to unlock Level 3 | 2 to 9 |
 | `10` | Galaxies needed to finish Level 3 | 5 to 20 |
@@ -55,6 +55,7 @@ You never need to build a code by hand. Open the ⚙ settings, choose your optio
 The gear button is protected by a passcode. **The default passcode is `ladder`.** From the settings you can:
 
 - choose the sky seed and every option above, and copy the resulting class code
+- tick exactly which calculation steps students must do themselves (period, parallax angle, distance from parallax, luminosity, and so on); checked steps show the equation with a blank answer that the game checks
 - show the true H₀ line on the Hubble diagram
 - copy all of the current device's measurements as CSV
 - clear progress on the current device
