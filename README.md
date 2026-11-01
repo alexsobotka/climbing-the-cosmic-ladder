@@ -10,13 +10,13 @@ The whole game is one self-contained file, `index.html`. There's nothing to inst
 
 ## What students do
 
-Each level opens with a short interactive lesson that ends in a few concept-check questions. Students measure each object one step at a time. Every step shows one displayed equation filled in with their own numbers.
+Each level opens with a short interactive lesson that ends in a few concept-check questions. Students measure each object one step at a time. Before a key equation appears, students build it by dragging its pieces (L, r, F, P, θ…) into place. Then the equation is shown filled in with their own numbers. Luminosity, distance, flux and pulsation period keep the same colors everywhere (green, pink, blue and purple), in equations, text and charts. The parallax angle θ is orange.
 
 | Level | Goal | What students measure |
 |---|---|---|
-| **1 · Variable stars** | Build a period-luminosity relation | For nearby variable stars: pulsation period (by clicking peaks on a light curve), average flux, and parallax angle θ (by blinking between January and July images). From these they get the distance d [pc] = 1 [AU] / θ [arcsec] and then L = 4πr²F. Each star is plotted on a log-log L vs. P chart, and the game fits the line. |
-| **2 · Supernovae** | Find out whether Type 1a supernovae all have the same luminosity | In galaxies marked ★ that contain both a variable star and a supernova, students use their Level 1 relation to get the variable star's L, then its distance, then the supernova's luminosity, L_SN = 4πr²F_peak. |
-| **3 · Hubble diagram** | Measure the expansion of the universe | For distant galaxies, students use their average L_SN and the supernova's peak flux to get the distance. They line up a template of spectral lines to get the galaxy's speed, then plot velocity against distance. |
+| **1 · Variable stars** | Build a period-luminosity relation | Clicking a variable star zooms in on its patch of sky, where students find the one star that is pulsing. Then, for each nearby variable star: pulsation period (by clicking peaks on a light curve), average flux, and parallax angle θ (by blinking between January and July images). From these they get the distance d [pc] = 1 [AU] / θ [arcsec] and then L = 4πr²F. While they work, the sidebar chart draws a vertical line at the star's period and then a horizontal line at its luminosity, so they can see where the point will land. Each star is plotted on a log-log L vs. P chart, and the game fits the line. |
+| **2 · Supernovae** | Find out whether Type 1a supernovae all have the same luminosity | Clicking a ★ galaxy zooms in to a close-up where students hunt for the one star that is pulsing, then blink between last year's image and tonight's to spot the supernova. In these galaxies, which contain both a variable star and a supernova, students use their Level 1 relation to get the variable star's L, then its distance, then the supernova's luminosity, L_SN = 4πr²F_peak. |
+| **3 · Hubble diagram** | Measure the expansion of the universe | Each distant galaxy also opens with a zoom-in and a supernova hunt. Then students use their average L_SN and the supernova's peak flux to get the distance. They line up a template of spectral lines to get the galaxy's speed, then plot velocity against distance. |
 
 When a student reaches the Level 3 goal, the game reveals the true H₀ for that sky and tells them how close they got. From there they can export a report, start over, or keep exploring.
 
@@ -26,13 +26,13 @@ Mistakes carry up the ladder, just as they do for real astronomers. A sloppy per
 
 ## Class codes
 
-The game has no server, so a teacher's settings reach students through a short **class code**. Everyone using the same code sees the same sky and plays under the same settings.
+The game has no server, so a teacher's settings reach students through a short **class code**. Everyone using the same code plays under the same settings. Each student gets their own randomly generated sky (and its own true H₀), so no two students' answers match. Starting over gives a brand-new sky.
 
 Example: `ORION-F1A53-10`
 
 | Part | Meaning | Options |
 |---|---|---|
-| `ORION` | Sky seed. Sets the positions, distances and speeds of everything, including the hidden true H₀ (between 62 and 78 km/s/Mpc). | Up to 16 letters or numbers |
+| `ORION` | Class name. Just a label; it keeps each class's saved progress separate. | Up to 16 letters or numbers |
 | `F` | Brightness language | `F` flux and luminosity · `M` magnitudes |
 | `1` | Starting level | `1` full ladder · `2` period-luminosity relation given · `3` supernova luminosity given |
 | `A` | Which steps students calculate themselves | `A` none (the game fills in every equation) · `H` all of them · `X` plus two characters for a custom mix chosen with the checkboxes in ⚙ settings (for example `X04` means students only calculate the distance from the parallax angle) |
@@ -40,6 +40,7 @@ Example: `ORION-F1A53-10`
 | `3` | ★ galaxies needed to unlock Level 3 | 2 to 9 |
 | `10` | Galaxies needed to finish Level 3 | 5 to 20 |
 | *(optional)* `Q0` / `Q2` | Quick-check questions | `Q0` off · nothing added for sometimes (the default) · `Q2` often |
+| *(optional)* `E0` | Equation building | nothing added for on (the default) · `E0` off, so equations are simply shown |
 
 **Sharing a code with students.** Either:
 - add it to the end of the link: `https://alexsobotka.github.io/cosmic-ladder/#ORION-F1A53-10`, or
@@ -55,9 +56,10 @@ You never need to build a code by hand. Open the ⚙ settings, choose your optio
 
 The gear button is protected by a passcode. **The default passcode is `ladder`.** From the settings you can:
 
-- choose the sky seed and every option above, and copy the resulting class code
+- choose the class name and every option above, and copy the resulting class code
 - tick exactly which calculation steps students must do themselves (period, parallax angle, distance from parallax, luminosity, and so on); checked steps show the equation with a blank answer that the game checks
-- set how often **quick-check questions** pop up (off, sometimes, often): short concept questions about the step a student just finished, sometimes using their own numbers; students must answer correctly to continue, and the report records how many they got right on the first try
+- set how often **quick-check questions** pop up (off, sometimes, often). These are short questions about the step a student just finished. Most ask *why* that measurement is needed ("Why do we need this star's pulsation period?"), so students think about the purpose of each step instead of just clicking through. Students must answer correctly to continue, and the report records how many they got right on the first try
+- turn **equation building** on or off. When it's on, students drag the pieces of each key equation into place before the numbers appear. Each equation is built in full the first time. After that, the game picks at random: about half of the objects ask for one equation, with only one or two boxes left blank
 - show the true H₀ line on the Hubble diagram
 - copy all of the current device's measurements as CSV
 - clear progress on the current device
@@ -80,11 +82,12 @@ Change the word between the quotes, save, and upload the file again.
 
 Students open **Menu → Your class**, enter their name, and click **Copy report for your teacher**. They can also click **Export results for teacher** on the finish screen. The report is plain text they can paste into an LMS assignment. It includes:
 
-- their name, class code and date
+- their name, class code, sky and date
 - for each lesson quiz, how many questions they got right on the first try, and which ones took extra tries
 - how many objects they measured at each level, their period-luminosity relation and their average supernova luminosity
 - their H₀, and after finishing, the true H₀ and how far off they were
 - quick checks answered right on the first try, and their best streak
+- equations built right on the first try
 - a **check code**
 
 To confirm a report wasn't edited, paste it into **⚙ → Check a student report**.
@@ -93,6 +96,7 @@ To confirm a report wasn't edited, paste it into **⚙ → Check a student repor
 
 ## Good to know
 
+- **Each student's sky is random.** The hidden true H₀ is somewhere between 60 and 80 km/s/Mpc.
 - **Progress is stored in each student's browser.** Students who switch devices, use a private window or clear their browser data start over. Each class code has its own separate save.
 - **Sound:** the game generates its own music and sound effects in the browser, with no audio files. The soundtrack, "Starlight Synthwave," is a 2:40 synthwave piece that builds from a soft intro through bass, drums and a bell melody before looping. Music starts when a student clicks Start. Students can set music and effects volume, or mute everything, under **Menu → Sound**; the choice is remembered on their device.
 - **An internet connection is needed** to load the fonts and the equation renderer (MathJax, from a public CDN). Without it, equations appear as raw LaTeX text.

@@ -159,6 +159,23 @@ td{padding:5px 6px;text-align:right;font-family:var(--mono);font-variant-numeric
 .q{border:1px solid var(--rule);border-radius:6px;padding:12px 14px 14px;margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
 .q legend{padding:0 6px;font-weight:600;max-width:100%}
 .opts{display:flex;flex-wrap:wrap;gap:6px}
+#zoomFx{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;transition:opacity .35s}#zoomFx.live{pointer-events:auto;cursor:crosshair;touch-action:none}#zoomFx.grabbing{cursor:grabbing}.findtab{position:absolute;left:12px;top:12px;z-index:5;background:rgba(0,0,0,.8)}
+.findhud{position:absolute;left:12px;top:12px;max-width:min(460px,calc(100% - 24px));background:rgba(0,0,0,.78);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;z-index:5}.findhud h3{margin:2px 0 6px}.findhud p{margin:0 0 8px;font-size:14px}.findhud .row{margin-top:6px}#zoomFx.out{opacity:0}
+.plot.zoom{cursor:crosshair;background:#000}
+.builder{border:1px solid var(--rule);border-radius:6px;padding:12px;margin:10px 0;background:#050505}
+.beq{font-family:"STIX Two Math","Cambria Math","Times New Roman",serif;font-size:24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px;padding:14px 4px;color:var(--ink)}
+.beq .bt{white-space:pre}
+.msym{font-style:italic;font-family:"STIX Two Math","Cambria Math","Times New Roman",serif}
+.msym sub{font-style:normal;font-size:.6em}
+.slot{min-width:2.1em;min-height:1.7em;border:2px dashed #6a6a72;border-radius:6px;background:#111;color:var(--ink);font:inherit;font-size:.95em;padding:0 6px;margin:0 2px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;vertical-align:middle}
+.slot.fixed{border:none;background:none;cursor:default;padding:0 2px;min-width:0}.slot.full{border-style:solid;border-color:#8a8a92}.slot.over{border-color:#f6bd5f;background:#1d1a10}.slot.bad{border-color:#ff6a55;border-style:solid}
+.bfr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px}.bfr>span{display:flex;align-items:center;padding:3px 2px}.bfr>span:first-child{border-bottom:2px solid var(--ink)}
+.bsq{display:inline-flex;align-items:stretch}.bsq .rad{font-size:1.6em;line-height:1}.bsq .und{display:inline-flex;align-items:center;border-top:2px solid var(--ink);padding:0 3px}
+.bsup{font-size:.62em;display:inline-flex;align-items:center;align-self:flex-start;margin:0 1px}.bfr .bsup,.bsq .bsup{margin-top:-.2em}.bsup .slot{font-size:1.3em;min-height:1.4em}
+.btray{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 10px}
+.bchip{display:inline-flex;flex-direction:column;align-items:center;gap:1px;background:#111;border:1px solid #5a5a62;border-radius:8px;padding:5px 12px;font-size:20px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;color:var(--ink)}
+.bchip small{font-size:11px;font-family:var(--mono);color:var(--ink)}.bchip.sel{border-color:#f6bd5f;box-shadow:0 0 0 2px #f6bd5f55}.bchip.used{opacity:.3;cursor:default}
+.bchip.ghost{position:fixed;z-index:999;pointer-events:none;transform:translate(-50%,-60%);opacity:.92;box-shadow:0 6px 18px #000}
 .opt{background:var(--panel-2);border:1px solid var(--rule);border-radius:4px;padding:7px 12px;text-align:left}
 .opt:hover:not(:disabled){border-color:var(--ink)}
 .opt.right{border-color:var(--good);color:var(--good)}
@@ -169,6 +186,7 @@ td{padding:5px 6px;text-align:right;font-family:var(--mono);font-variant-numeric
 .welcome{position:fixed;inset:0;z-index:85;background:#000;display:flex;justify-content:center;align-items:flex-start;overflow:hidden}
 #wcv{position:absolute;inset:0;width:100%;height:100%;display:block}
 .wel-inner{position:relative;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:max(7vh,calc(env(safe-area-inset-top,0px) + 32px));padding:28px max(20px,env(safe-area-inset-right,0px)) 36px max(20px,env(safe-area-inset-left,0px));background:radial-gradient(closest-side,rgba(0,0,0,.72),rgba(0,0,0,.35) 70%,rgba(0,0,0,0));max-width:100%}
+.wel-credit{margin:0;font-size:14px;letter-spacing:.06em;color:var(--ink)}
 .wel-title{display:flex;flex-direction:column;align-items:center;line-height:.9;text-transform:uppercase;margin:0}
 .wel-title span{font-size:clamp(26px,4.6vw,54px);font-weight:600;letter-spacing:.14em;color:var(--ink)}
 .wel-title b{font-size:clamp(54px,11vw,138px);font-weight:800;color:var(--redlight);letter-spacing:.01em;text-shadow:0 0 40px rgba(255,106,85,.35)}
@@ -207,11 +225,11 @@ td{padding:5px 6px;text-align:right;font-family:var(--mono);font-variant-numeric
 <div class="welcome" id="welcome" role="dialog" aria-modal="true" aria-labelledby="welTitle">
   <canvas id="wcv" aria-hidden="true"></canvas>
   <div class="wel-inner">
-    <span class="eyebrow">An astronomy game about the distance ladder</span>
     <h1 class="wel-title" id="welTitle"><span>Climbing the</span><b>Cosmic Ladder</b></h1>
     <p class="wel-sub">Parallax → variable stars → Type 1a supernovae → the expanding universe</p>
     <button class="btn big" id="startBtn">Start game</button>
     <p class="wel-class" id="welClass"></p>
+    <p class="wel-credit">Created by Dr. Alex Sobotka</p>
   </div>
 </div>
 
@@ -223,14 +241,14 @@ const mOf=F=>MSUN-2.5*Math.log10(F/F10);
 const FOfm=m=>F10*Math.pow(10,-0.4*(m-MSUN));
 const MOfL=L=>MSUN-2.5*Math.log10(L);
 const TXT='#f5f1e8',TXT2='#ddd6c8',GRID='#2c2c30',FONT='12px "IBM Plex Mono", monospace';
-const CL={F:'#5ab8ff',L:'#4fd67a',r:'#ff8ad1',d:'#ff6b6b',th:'#5ab8ff',P:'#b58cff'};
+const CL={F:'#5ab8ff',L:'#4fd67a',r:'#ff8ad1',d:'#ff8ad1',th:'#ff9f43',P:'#b58cff',v:'#f6bd5f'};
 const T={F:String.raw`{\color{#5ab8ff}F}`,Fb:String.raw`{\color{#5ab8ff}\bar{F}}`,Fpk:String.raw`{\color{#5ab8ff}F_\text{peak}}`,
-  L:String.raw`{\color{#4fd67a}L}`,Lsn:String.raw`{\color{#4fd67a}L_\text{SN}}`,r:String.raw`{\color{#ff8ad1}r}`,d:String.raw`{\color{#ff6b6b}d}`,
-  th:String.raw`{\color{#5ab8ff}\theta}`,P:String.raw`{\color{#b58cff}P}`,m:String.raw`{\color{#5ab8ff}\bar{m}}`,mpk:String.raw`{\color{#5ab8ff}m_\text{peak}}`,
+  L:String.raw`{\color{#4fd67a}L}`,Lsn:String.raw`{\color{#4fd67a}L_\text{SN}}`,r:String.raw`{\color{#ff8ad1}r}`,d:String.raw`{\color{#ff8ad1}d}`,
+  th:String.raw`{\color{#ff9f43}\theta}`,P:String.raw`{\color{#b58cff}P}`,m:String.raw`{\color{#5ab8ff}\bar{m}}`,mpk:String.raw`{\color{#5ab8ff}m_\text{peak}}`,
   M:String.raw`{\color{#4fd67a}M}`,Msn:String.raw`{\color{#4fd67a}M_\text{SN}}`,v:String.raw`{\color{#f6bd5f}v}`,z:String.raw`{\color{#f6bd5f}z}`};
 const FU=String.raw`L_\odot/\text{pc}^2`;
-/* color a plugged-in number to match its variable: F/m blue, L/M green, r pink, d red, θ blue, P purple, v amber */
-const cl=(k,x)=>`{\\color{${{F:'#5ab8ff',m:'#5ab8ff',th:'#5ab8ff',L:'#4fd67a',M:'#4fd67a',r:'#ff8ad1',d:'#ff6b6b',P:'#b58cff',v:'#f6bd5f'}[k]}}${x}}`;
+/* color a plugged-in number to match its variable: F/m blue, L/M green, r and d pink, θ orange, P purple, v amber */
+const cl=(k,x)=>`{\\color{${{F:'#5ab8ff',m:'#5ab8ff',th:'#ff9f43',L:'#4fd67a',M:'#4fd67a',r:'#ff8ad1',d:'#ff8ad1',P:'#b58cff',v:'#f6bd5f'}[k]}}${x}}`;
 const LINES=[
   {n:'Ca K',l:393.37,a:-0.42,w:1.1},{n:'Ca H',l:396.85,a:-0.38,w:1.1},{n:'G band',l:430.5,a:-0.16,w:1.5},
   {n:'Hβ',l:486.13,a:-0.14,w:1.1,em:0.3},{n:'[O III]',l:500.7,a:0,w:0.9,em:0.22},{n:'Mg b',l:517.5,a:-0.18,w:1.6},
@@ -276,13 +294,14 @@ const DEFAULT_CODE='ORION-F1A53-10';
 const TEACHER_PASSCODE='ladder';
 const teacherOK=()=>{try{return localStorage.getItem('cosmic-ladder:teacher')===TEACHER_PASSCODE||sessionStorage.getItem('cosmic-ladder:teacher')===TEACHER_PASSCODE}catch(e){return false}};
 function cleanSeed(s){return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,16)||'ORION'}
-function parseCode(c){c=(c||'').trim().toUpperCase().replace(/[^A-Z0-9-]/g,'');const m=c.match(/^([A-Z0-9]{1,16})-([FM])([123])([AH]|X[0-9A-F]{2})([3-9])([2-9])(?:-(\d{1,2})(Q[012])?)?$/);if(!m)return null;
-  const o={seed:m[1],units:m[2]==='F'?'flux':'mag',start:+m[3],hand:m[4]==='H'?255:m[4]==='A'?0:parseInt(m[4].slice(1),16),n1:+m[5],n2:+m[6],n3:m[7]?Math.max(5,Math.min(30,+m[7])):10,qc:m[8]?+m[8][1]:1};o.code=makeCode(o.seed,o.units,o.start,o.hand,o.n1,o.n2,o.n3,o.qc);return o}
-const makeCode=(seed,units,start,hand,n1,n2,n3=10,qc=1)=>`${cleanSeed(seed)}-${units==='flux'?'F':'M'}${start}${hand===255?'H':!hand?'A':'X'+hand.toString(16).toUpperCase().padStart(2,'0')}${n1}${n2}-${n3}${qc===1?'':'Q'+qc}`;
-function settingsText(s){return [s.units==='flux'?'Flux and luminosity':'Magnitudes',['starts at Level 1 (full distance ladder)','starts at Level 2 (period-luminosity relation given)','starts at Level 3 (supernova luminosity given)'][s.start-1],s.hand===255?'students compute every step':!s.hand?'the game does the arithmetic':'students compute some steps',`${s.n1} variable stars and ${s.n2} supernova galaxies to unlock`,`${s.n3} galaxies to finish Level 3`,['no quick checks','occasional quick checks','frequent quick checks'][s.qc??1]].join(' · ')}
+function parseCode(c){c=(c||'').trim().toUpperCase().replace(/[^A-Z0-9-]/g,'');const m=c.match(/^([A-Z0-9]{1,16})-([FM])([123])([AH]|X[0-9A-F]{2})([3-9])([2-9])(?:-(\d{1,2})(Q[012])?(E[01])?)?$/);if(!m)return null;
+  const o={seed:m[1],units:m[2]==='F'?'flux':'mag',start:+m[3],hand:m[4]==='H'?255:m[4]==='A'?0:parseInt(m[4].slice(1),16),n1:+m[5],n2:+m[6],n3:m[7]?Math.max(5,Math.min(30,+m[7])):10,qc:m[8]?+m[8][1]:1,drag:m[9]?+m[9][1]:1};o.code=makeCode(o.seed,o.units,o.start,o.hand,o.n1,o.n2,o.n3,o.qc,o.drag);return o}
+const makeCode=(seed,units,start,hand,n1,n2,n3=10,qc=1,drag=1)=>`${cleanSeed(seed)}-${units==='flux'?'F':'M'}${start}${hand===255?'H':!hand?'A':'X'+hand.toString(16).toUpperCase().padStart(2,'0')}${n1}${n2}-${n3}${qc===1?'':'Q'+qc}${drag?'':'E0'}`;
+function settingsText(s){return [s.units==='flux'?'Flux and luminosity':'Magnitudes',['starts at Level 1 (full distance ladder)','starts at Level 2 (period-luminosity relation given)','starts at Level 3 (supernova luminosity given)'][s.start-1],s.hand===255?'students compute every step':!s.hand?'the game does the arithmetic':'students compute some steps',`${s.n1} variable stars and ${s.n2} supernova galaxies to unlock`,`${s.n3} galaxies to finish Level 3`,['no quick checks','occasional quick checks','frequent quick checks'][s.qc??1],s.drag===0?'equations given':'students build equations by drag-and-drop'].join(' · ')}
 
-const S={code:'',seed:'',set:{units:'flux',start:1,hand:0,n1:5,n2:3,n3:10,qc:1},H0:0,U:null,st:null,view:1,cam:{x:0,y:0},cur:null,hover:null,showTrue:false};
-const blankSt=()=>({vars:{},hosts:{},far:{},lessons:{},quiz:{},qc:{n:0,first:0,streak:0,best:0,asked:[]}});
+const S={code:'',seed:'',set:{units:'flux',start:1,hand:0,n1:5,n2:3,n3:10,qc:1,drag:1},H0:0,U:null,st:null,view:1,cam:{x:0,y:0},cur:null,hover:null,showTrue:false};
+const randSky=()=>{const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';const u=new Uint32Array(7);try{crypto.getRandomValues(u)}catch(e){for(let i=0;i<7;i++)u[i]=Math.random()*4294967296}for(const x of u)s+=a[x%a.length];return s};
+const blankSt=()=>({sky:randSky(),vars:{},hosts:{},far:{},lessons:{},quiz:{},qc:{n:0,first:0,streak:0,best:0,asked:[]}});
 function saveSt(){try{localStorage.setItem('redshift-hunt:v3:'+S.code,JSON.stringify(S.st));localStorage.setItem('redshift-hunt:v3:code',S.code)}catch(e){}}
 function loadSt(){let o=null;try{o=JSON.parse(localStorage.getItem('redshift-hunt:v3:'+S.code)||'null')}catch(e){}S.st=Object.assign(blankSt(),o||{})}
 const cnt=k=>Object.keys(S.st[k]).length;
@@ -292,7 +311,7 @@ const topLevel=()=>unlocked(3)?3:unlocked(2)?2:1;
 /* ================= universe ================= */
 let stars=null;
 function buildUniverse(seed){
-  const r=mulberry32(hashStr(seed)),g=gaussOf(r);S.H0=+(62+r()*16).toFixed(1);
+  const r=mulberry32(hashStr(seed)),g=gaussOf(r);S.H0=+(60+r()*20).toFixed(1);
   const pos=()=>({x:140+r()*(W-280),y:140+r()*(H-280)});
   const vars=[];for(let i=0;i<12;i++){const P=Math.pow(10,0.35+1.25*r()),d=150+r()*330;vars.push({id:'V'+String.fromCharCode(65+i),name:'Variable '+String.fromCharCode(65+i),kind:'var',P,d,L:L_A*P*Math.pow(10,0.045*g()),ph:r(),...pos()})}
   const used=new Set(),gid=()=>{let n;do{n=100+Math.floor(r()*900)}while(used.has(n));used.add(n);return'SKY-'+n};
@@ -373,24 +392,29 @@ function centerOn(o){fitT(sky);S.cam.x=o.x-sky.clientWidth/2;S.cam.y=o.y-sky.cli
 
 /* ================= charts ================= */
 const fx=(x,d)=>fmt(x,d);
-function drawPL(cv,hi){const {ctx,w,h}=fitT(cv),fl=isFlux(),L=fl?66:52,R=14,Tp=16,B=44,rl=plRel();
+function drawPL(cv,hi,trk){const {ctx,w,h}=fitT(cv),fl=isFlux(),L=fl?66:52,R=14,Tp=16,B=44,rl=plRel();
   const X=p=>L+Math.log10(p)/2*(w-L-R),Y=fl?l=>Tp+(1-(Math.log10(l)-2)/3)*(h-Tp-B):l=>{const M=MOfL(l);return Tp+(M+8.5)/9*(h-Tp-B)};
   ctx.strokeStyle=GRID;ctx.fillStyle=TXT2;ctx.textAlign='center';[1,2,5,10,20,50,100].forEach(p=>{const x=X(p);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillText(p,x,h-B+15)});
   if(fl)[100,1000,10000,100000].forEach(l=>{const y=Y(l);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.textAlign='right';ctx.fillText(fmt(l),L-6,y+4)});
   else for(let M=0;M>=-8;M-=2){const y=Tp+(M+8.5)/9*(h-Tp-B);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.textAlign='right';ctx.fillText(M,L-6,y+4)}
-  ctx.textAlign='center';ctx.fillText('Pulsation Period (days)',L+(w-L-R)/2,h-6);axisLabelY(ctx,fl?'Luminosity (Solar Units)':'Absolute magnitude M',13,Tp+(h-Tp-B)/2);
+  ctx.textAlign='center';ctx.fillStyle=CL.P;ctx.fillText('Pulsation Period (days)',L+(w-L-R)/2,h-6);ctx.fillStyle=CL.L;axisLabelY(ctx,fl?'Luminosity (Solar Units)':'Absolute magnitude M',13,Tp+(h-Tp-B)/2);ctx.fillStyle=TXT2;
   if(rl){ctx.strokeStyle='#ff7a6b';ctx.lineWidth=2.5;ctx.globalAlpha=.85;ctx.beginPath();ctx.moveTo(X(1),Y(lumP(rl,1)));ctx.lineTo(X(100),Y(lumP(rl,100)));ctx.stroke();ctx.globalAlpha=1;ctx.lineWidth=1;
     ctx.fillStyle='#ff7a6b';ctx.textAlign='left';ctx.fillText(rl.given?'period-luminosity relation (given)':`your relation (${rl.n} stars)`,L+8,Tp+14)}
   for(const v of Object.values(S.st.vars)){ctx.fillStyle='#ff9a8a';ctx.beginPath();ctx.arc(X(v.P),Y(v.L),4.5,0,7);ctx.fill()}
+  if(trk&&(trk.P||trk.L)){ctx.save();ctx.font='600 12px "IBM Plex Mono", monospace';ctx.lineWidth=2;ctx.setLineDash([7,5]);
+    if(trk.P){const x=X(trk.P);ctx.strokeStyle=CL.P;ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillStyle=CL.P;ctx.textAlign=x>w-90?'right':'left';ctx.fillText(`P = ${sig3(trk.P)} days`,x+(x>w-90?-6:6),h-B-8)}
+    if(trk.L){const y=Y(trk.L);ctx.strokeStyle=CL.L;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.fillStyle=CL.L;ctx.textAlign='right';ctx.fillText(fl?`L = ${sci(trk.L)} L☉`:`M = ${MOfL(trk.L).toFixed(2)}`,w-R-4,y-7)}
+    ctx.setLineDash([]);if(trk.P&&trk.L){ctx.strokeStyle='#f6bd5f';ctx.beginPath();ctx.arc(X(trk.P),Y(trk.L),7,0,7);ctx.stroke()}
+    ctx.textAlign='left';ctx.fillStyle=TXT;ctx.fillText('this star, so far',L+8,Tp+32);ctx.restore()}
   if(hi){const x=X(hi.P),y=Y(hi.L);if(hi.read){ctx.setLineDash([6,5]);ctx.lineWidth=2;ctx.strokeStyle=CL.P;ctx.beginPath();ctx.moveTo(x,h-B);ctx.lineTo(x,y);ctx.stroke();ctx.strokeStyle=CL.L;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(L,y);ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1}
     hiMark(ctx,x,y,hi.pulse)}
-  if(!rl&&!Object.keys(S.st.vars).length&&!hi){ctx.fillStyle=TXT;ctx.font='14px "IBM Plex Sans", sans-serif';ctx.textAlign='center';ctx.fillText('Your measured variable stars will appear here.',L+(w-L-R)/2,Tp+(h-Tp-B)/2)}}
+  if(!rl&&!Object.keys(S.st.vars).length&&!hi&&!(trk&&(trk.P||trk.L))){ctx.fillStyle=TXT;ctx.font='14px "IBM Plex Sans", sans-serif';ctx.textAlign='center';ctx.fillText('Your measured variable stars will appear here.',L+(w-L-R)/2,Tp+(h-Tp-B)/2)}}
 function drawSNL(cv,hi){const {ctx,w,h}=fitT(cv),fl=isFlux(),L=20,R=20,Tp=30,B=46,cal=snCal(),rl=plRel();
   const lo=9.2,hiL=10.2,M0=MOfL(Math.pow(10,lo)),M1=MOfL(Math.pow(10,hiL)),X=fl?l=>L+(Math.log10(l)-lo)/(hiL-lo)*(w-L-R):l=>L+(MOfL(l)-M0)/(M1-M0)*(w-L-R);
   ctx.strokeStyle=GRID;ctx.fillStyle=TXT2;ctx.textAlign='center';
   if(fl)[2e9,3e9,5e9,7e9,1e10,1.5e10].forEach(l=>{const x=X(l);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillText(sci(l,2).replace('.0×','×'),x,h-B+15)});
   else for(let M=-18.5;M>=-20.5;M-=0.5){const x=L+(M-M0)/(M1-M0)*(w-L-R);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillText(M.toFixed(1),x,h-B+15)}
-  ctx.fillText(fl?'Type 1a supernova peak luminosity (Solar Units)':'Type 1a supernova peak absolute magnitude M',L+(w-L-R)/2,h-6);
+  ctx.fillStyle=CL.L;ctx.fillText(fl?'Type 1a supernova peak luminosity (Solar Units)':'Type 1a supernova peak absolute magnitude M',L+(w-L-R)/2,h-6);ctx.fillStyle=TXT2;
   const pts=Object.entries(S.st.hosts).map(([id,hh])=>{const r=hostDist(hh,rl);return{id,L:FOURPI*r*r*hh.Fpk}});if(hi)pts.push({id:'this galaxy',L:hi.L,hi:true,pulse:hi.pulse});
   if(cal&&!cal.given&&cal.n){const x=X(cal.L);ctx.strokeStyle='#4fd67a';ctx.setLineDash([6,5]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,Tp-8);ctx.lineTo(x,h-B);ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1;ctx.fillStyle='#4fd67a';ctx.fillText('average',x,Tp-12)}
   if(cal&&cal.given){const x=X(cal.L);ctx.strokeStyle='#4fd67a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle='#4fd67a';ctx.fillText('given',x,Tp-10)}
@@ -402,7 +426,7 @@ function drawHub(cv,hi){const {ctx,w,h}=fitT(cv),L=62,R=14,Tp=14,B=44,cal=snCal(
   const dmax=Math.max(60,...pts.map(p=>p.d*1.08))*1.05,vmax=Math.max(5000,...pts.map(p=>p.v))*1.1,vmin=Math.min(0,...pts.map(p=>p.v));const X=d=>L+d/dmax*(w-L-R),Y=v=>Tp+(1-(v-vmin)/(vmax-vmin))*(h-Tp-B);
   ctx.fillStyle=TXT2;ctx.strokeStyle=GRID;const ds=niceStep(dmax,5);for(let d=0;d<=dmax;d+=ds){const x=X(d);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.textAlign='center';ctx.fillText(fmt(d),x,h-B+15)}
   const vs=niceStep(vmax-vmin,5);for(let v=Math.ceil(vmin/vs)*vs;v<=vmax;v+=vs){const y=Y(v);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.textAlign='right';ctx.fillText(fmt(v),L-6,y+4)}
-  ctx.textAlign='center';ctx.fillText('distance r (Mpc)',L+(w-L-R)/2,h-6);axisLabelY(ctx,'velocity v (km/s)',12,Tp+(h-Tp-B)/2);
+  ctx.textAlign='center';ctx.fillStyle=CL.r;ctx.fillText('distance r (Mpc)',L+(w-L-R)/2,h-6);ctx.fillStyle=CL.v;axisLabelY(ctx,'velocity v (km/s)',12,Tp+(h-Tp-B)/2);ctx.fillStyle=TXT2;
   const line=(Hv,col,dash)=>{const dEnd=Math.min(dmax,vmax/Hv);ctx.strokeStyle=col;ctx.setLineDash(dash);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(0),Y(0));ctx.lineTo(X(dEnd),Y(Hv*dEnd));ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1};
   if(S.showTrue||S.st.done)line(S.H0,'rgba(134,220,174,.7)',[2,4]);const f=hubbleFit();if(f)line(f.H,'#ff6a55',[7,5]);
   for(const p of pts){const x=X(p.d),y=Y(p.v);ctx.strokeStyle='rgba(134,201,242,.6)';ctx.beginPath();ctx.moveTo(X(p.d*0.93),y);ctx.lineTo(X(p.d*1.07),y);ctx.stroke();ctx.fillStyle=p.hi?'#f6bd5f':'#86c9f2';ctx.beginPath();ctx.moveTo(x,y-5.5);ctx.lineTo(x+5.5,y);ctx.lineTo(x,y+5.5);ctx.lineTo(x-5.5,y);ctx.closePath();ctx.fill();if(p.hi)hiMark(ctx,x,y,p.pulse)}
@@ -413,7 +437,7 @@ function drawCurve(cv,lc,marked,color,avg,arrows){const {ctx,w,h}=fitT(cv),L=58,
   const X=t=>L+t/t1*(w-L-R),Y=fl?v=>Tp+(1-(v-v0)/(v1-v0))*(h-Tp-B):v=>Tp+(v-v0)/(v1-v0)*(h-Tp-B);
   ctx.strokeStyle=GRID;ctx.fillStyle=TXT2;const ts=niceStep(t1,6);for(let t=0;t<=t1+1e-9;t+=ts){const x=X(t);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.textAlign='center';ctx.fillText(+t.toFixed(2),x,h-B+15)}
   const vs=niceStep(v1-v0,4),dec=vs<0.1?2:vs<1?1:0;for(let v=Math.ceil(v0/vs)*vs;v<=v1;v+=vs){const y=Y(v);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.textAlign='right';ctx.fillText(v.toFixed(dec),L-6,y+4)}
-  ctx.textAlign='center';ctx.fillText('Time (days)',L+(w-L-R)/2,h-6);axisLabelY(ctx,fl?`Flux (10${sup(k)} L☉/pc²)`:'magnitude m (brighter ↑)',13,Tp+(h-Tp-B)/2);
+  ctx.textAlign='center';ctx.fillText('Time (days)',L+(w-L-R)/2,h-6);ctx.fillStyle=CL.F;axisLabelY(ctx,fl?`Flux (10${sup(k)} L☉/pc²)`:'magnitude m (brighter ↑)',13,Tp+(h-Tp-B)/2);ctx.fillStyle=TXT2;
   if(avg){const av=fl?avgFlux(lc)/Math.pow(10,k):mOf(avgFlux(lc));ctx.strokeStyle='#5ab8ff';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(L,Y(av));ctx.lineTo(w-R,Y(av));ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1;ctx.fillStyle='#5ab8ff';ctx.textAlign='right';ctx.fillText('average',w-R-4,Y(av)-6)}
   const pts=lc.map((p,i)=>{const x=X(p.t),y=Y(vals[i]);if(marked.has(i)){ctx.strokeStyle='rgba(181,140,255,.7)';ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillStyle='#b58cff';ctx.beginPath();ctx.arc(x,y,6,0,7);ctx.fill();ctx.fillStyle=TXT;ctx.textAlign='center';ctx.fillText('day '+p.t,x,Tp+11)}
     else{ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,3,0,7);ctx.fill()}return{x,y,i}});
@@ -427,8 +451,12 @@ function nearestPt(pts,e){const r=e.currentTarget.getBoundingClientRect(),px=e.c
 /* ================= measurement cards ================= */
 const obsEl=document.getElementById('obs');
 function openObj(o){stopBlink();const k=o.kind;S.cur={kind:k,obj:o,i:0,marks:[],snPick:null,zGuess:0,pm:{},epoch:'jan',blink:false,blinkShow:'jan',hand:{},msg:null,
-  lc:k==='far'?null:lcCep(o,k==='var'?0.012:0.03+0.04*(o.d/4e7)),snlc:k==='var'?null:lcSN(o),spec:k==='far'?specData(o):null,par:k==='var'?parData(o):null,review:!!recOf(o)};renderPanel();requestDraw()}
-function closePanel(){stopBlink();S.cur=null;obsEl.hidden=true;obsEl.innerHTML='';requestDraw()}
+  lc:k==='far'?null:lcCep(o,k==='var'?0.012:0.03+0.04*(o.d/4e7)),snlc:k==='var'?null:lcSN(o),spec:k==='far'?specData(o):null,par:k==='var'?parData(o):null,review:!!recOf(o),found:{}};requestDraw();if(!S.cur.review){stopFind();obsEl.hidden=true;zoomIn(o,()=>{if(S.cur&&S.cur.obj===o)renderPanel()})}else renderPanel()}
+function closePanel(){stopFind();stopBlink();S.cur=null;obsEl.hidden=true;obsEl.innerHTML='';zoomOut();requestDraw();drawLPC()}
+function stepDone(c,ca){return c.ready(ca)&&(!c.hand||!handOn(c.id)||S.cur.hand[c.id]!=null)&&!needBuild(c,ca)}
+function lpTrack(){const cur=S.cur;if(!cur||cur.kind!=='var'||S.view!==1||cur.review)return null;const cards=cardsFor(cur),ca=calc(cur),at=id=>{const i=cards.findIndex(c=>c.id===id);return i>=0&&(cur.i>i||(cur.i===i&&stepDone(cards[i],ca)))};
+  return{P:at('P')?ca.P:null,L:at('L')?ca.L:null}}
+function drawLPC(){const cv=document.getElementById('lpc');if(cv&&S.view===1&&S.st)drawPL(cv,null,lpTrack())}
 function stopBlink(){if(S.cur&&S.cur.blinkTimer){clearInterval(S.cur.blinkTimer);S.cur.blinkTimer=null}}
 function calc(cur){const o={},k=cur.kind,fl=isFlux();
   if(cur.lc){const ts=cur.marks.map(i=>cur.lc[i].t).sort((a,b)=>a-b);o.ts=ts;o.n=ts.length;o.P=o.n>=2?(ts[o.n-1]-ts[0])/(o.n-1):null;if(o.P===0)o.P=null;o.F=avgFlux(cur.lc);o.m=mOf(o.F)}
@@ -441,13 +469,17 @@ function calc(cur){const o={},k=cur.kind,fl=isFlux();
 function relTex(rl,fl){if(fl)return String.raw`${T.L} = ${tx(rl.A)}\,L_\odot \times ${T.P}^{\,${rl.b.toFixed(2)}}`;const a=MSUN-2.5*Math.log10(rl.A),b=-2.5*rl.b;return String.raw`${T.M} = ${a.toFixed(2)} ${b<0?'-':'+'} ${Math.abs(b).toFixed(2)}\log_{10}${T.P}`}
 
 function cardsFor(cur){const k=cur.kind,fl=isFlux(),given1=S.set.start>=2,cs=[];
-  const cP={id:'P',t:'Pulsation period',w:'lc',text:k==='var'?'This nearby variable star gets brighter and dimmer. Click the peak of each pulse. Mark at least two peaks in a row. Marking more peaks averages out your error.':'Your telescope can pick out a variable star in this galaxy. Click the peak of each pulse (at least two in a row).',
+  const cP={id:'P',t:'Pulsation period',w:'lc',text:k==='var'?'Here is the light curve of the variable star you found. Click the peak of each pulse. Mark at least two peaks in a row. Marking more peaks averages out your error.':'Here is the light curve of the variable star you found. Click the peak of each pulse (at least two in a row).',
     ready:o=>!!o.P,wait:'Mark at least two peaks to see the period.',eq:(o,a)=>String.raw`${T.P} = \frac{t_\text{last}-t_\text{first}}{N_\text{peaks}-1} = \frac{${fx(o.ts[o.n-1],2)}-${fx(o.ts[0],2)}}{${o.n-1}} = ${cl('P',a)}\ \text{days}`,
     ans:o=>tx(o.P),hand:o=>({ans:o.P,ok:rel(o.P,.03),unit:'days',hint:'Subtract the first peak time from the last, then divide by the number of gaps between peaks (one less than the number of peaks).'})};
   const cF={id:'F',t:fl?'Average flux':'Average brightness',w:'lcAvg',text:fl?"The dashed blue line is the star's average flux: how much of its light we actually receive.":"The dashed blue line is the star's average apparent magnitude: how bright it looks from Earth.",
     ready:()=>true,eq:o=>fl?String.raw`${T.Fb} = ${cl('F',tx(o.F))}\ ${FU}`:String.raw`${T.m} = ${cl('m',t2(o.m))}`};
+  const fV={id:'findV',t:'Find the variable star',w:'zoomV',text:k==='var'?`You zoomed in on the patch of sky where ${cur.obj.name} is hiding, among many other stars in our own galaxy. One of these stars is a variable star, slowly getting brighter and dimmer. Watch closely, find it, and click on it.`:`You zoomed in on ${cur.obj.id}. Now you can pick out its individual stars. One of them is a variable star, slowly getting brighter and dimmer. Watch closely, find it, and click on it.`,
+    ready:()=>!!cur.found.v,wait:'Click the star that is pulsing.',found:'You found the variable star (circled). Next, measure its light curve.'};
+  const fS={id:'findSN',t:'Find the supernova',w:'zoomS',text:`A Type 1a supernova went off in this ${k==='far'?'faraway ':''}galaxy. Astronomers find supernovae by comparing a new image of a galaxy with an older one. Blink between the two images and click the new point of light.`,
+    ready:()=>!!cur.found.sn,wait:'Click the new point of light in tonight\'s image.',found:'You found the supernova (circled). Next, follow how its brightness changes.'};
   if(k==='var'){
-    cs.push(cP,cF,
+    cs.push(fV,cP,cF,
       {id:'th',t:'Parallax angle',w:'par',text:"These two images were taken six months apart, from opposite sides of Earth's orbit. Click the center of the variable star in the January image, then in the July image. Use Blink to see it shift against the background stars.",
         ready:o=>!!o.th,wait:'Click the star in both images to measure its shift.',eq:(o,a)=>String.raw`${T.th} = \frac{{\color{#6ee07a}\text{total shift}}}{2} = \frac{{\color{#6ee07a}${o.shift.toFixed(5)}''}}{2} = ${cl('th',a)}''`,ans:o=>o.th.toFixed(5),
         hand:o=>({ans:o.th,ok:rel(o.th,.02),unit:'arcsec',hint:'The parallax angle is half of the total shift.'})},
@@ -461,8 +493,8 @@ function cardsFor(cur){const k=cur.kind,fl=isFlux(),given1=S.set.start>=2,cs=[];
         eq:(o,a)=>String.raw`\begin{aligned} ${T.M} &= ${T.m} - 5\log_{10}\!\left(\frac{${T.d}}{10\ \text{pc}}\right) \\ &= ${cl('m',t2(o.m))} - 5\log_{10}\!\left(\frac{${cl('d',tx(o.d))}}{10}\right) \\ &= ${cl('M',a)} \end{aligned}`,ans:o=>t2(o.M),
         hand:o=>({ans:o.M,ok:absTol(o.M,.05),unit:'',hint:'Divide the distance by 10, take log base 10, multiply by 5, and subtract that from m.'})},
       {id:'plot',t:'Add it to your relation',w:'plPrev',text:'Here is this star on your period-luminosity chart (gold). Add it to build your relation.',ready:()=>true,act:'Add to my relation'})}
-  else if(k==='host'){
-    cs.push(cP,
+  if(k==='host'){
+    cs.push(fV,cP,
       {id:'Lc',t:fl?'Luminosity from the relation':'M from the relation',w:'plRead',text:given1?'Use the period-luminosity relation to find how luminous this variable star is.':'Use your period-luminosity relation from Level 1 to find how luminous this variable star is.',ready:o=>!!o.Lc,
         eq:(o,a)=>fl?String.raw`\begin{aligned} ${T.L} &= ${tx(o.rel.A)}\,L_\odot \times ${T.P}^{\,${o.rel.b.toFixed(2)}} \\ &= ${tx(o.rel.A)} \times (${cl('P',tx(o.P))})^{${o.rel.b.toFixed(2)}} \\ &= ${cl('L',a)}\ L_\odot \end{aligned}`
           :String.raw`\begin{aligned} ${T.M} &= ${o.relM.a.toFixed(2)} - ${Math.abs(o.relM.b).toFixed(2)}\log_{10}${T.P} \\ &= ${o.relM.a.toFixed(2)} - ${Math.abs(o.relM.b).toFixed(2)}\log_{10}(${cl('P',tx(o.P))}) \\ &= ${cl('M',a)} \end{aligned}`,
@@ -474,7 +506,7 @@ function cardsFor(cur){const k=cur.kind,fl=isFlux(),given1=S.set.start>=2,cs=[];
       :{id:'rc',t:'Distance',text:'You know how bright the variable star truly is (M) and how bright it looks (m). Their difference gives the distance.',ready:()=>true,
         eq:(o,a)=>String.raw`\begin{aligned} ${T.d} &= 10^{(${T.m} - ${T.M} + 5)/5}\ \text{pc} \\ &= 10^{(${cl('m',t2(o.m))} - (${cl('M',t2(o.Mc))}) + 5)/5}\ \text{pc} \\ &= ${cl('d',tx(o.r))}\ \text{pc} = ${cl('d',a)}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
         hand:o=>({ans:o.r/1e6,ok:rel(o.r/1e6,.05),unit:'Mpc',hint:'Work out m − M, add 5, divide by 5, raise 10 to that power for parsecs, then divide by 1,000,000.'})},
-      {id:'Fpk',t:'Supernova peak',w:'sn',text:'A Type 1a supernova exploded in this same galaxy. Click the brightest point of its light curve.',ready:o=>o.Fpk!=null,wait:'Click the peak of the supernova light curve.',
+      fS,{id:'Fpk',t:'Supernova peak',w:'sn',text:'Here is the light curve of the supernova you found. Type 1a supernovae are in the same galaxy as the variable star. Click the brightest point of its light curve.',ready:o=>o.Fpk!=null,wait:'Click the peak of the supernova light curve.',
         eq:o=>fl?String.raw`${T.Fpk} = ${cl('F',tx(o.Fpk))}\ ${FU}`:String.raw`${T.mpk} = ${cl('m',t2(o.mpk))}`},
       fl?{id:'Lsn',t:'Supernova luminosity',text:'The supernova is in the same galaxy as the variable star, so it is at the same distance r.',ready:()=>true,
         eq:(o,a)=>String.raw`\begin{aligned} ${T.Lsn} &= 4\pi ${T.r}^2 ${T.Fpk} \\ &= 4\pi\,(${cl('r',tx(o.r))}\ \text{pc})^2\,(${cl('F',tx(o.Fpk))}\ ${FU}) \\ &= ${cl('L',a)}\ L_\odot \end{aligned}`,ans:o=>tx(o.Lsn),
@@ -483,8 +515,8 @@ function cardsFor(cur){const k=cur.kind,fl=isFlux(),given1=S.set.start>=2,cs=[];
         eq:(o,a)=>String.raw`\begin{aligned} ${T.Msn} &= ${T.mpk} - 5\log_{10}\!\left(\frac{${T.d}}{10\ \text{pc}}\right) \\ &= ${cl('m',t2(o.mpk))} - 5\log_{10}\!\left(\frac{${cl('d',tx(o.r))}}{10}\right) \\ &= ${cl('M',a)} \end{aligned}`,ans:o=>t2(o.Msn),
         hand:o=>({ans:o.Msn,ok:absTol(o.Msn,.05),unit:'',hint:'Divide the distance by 10, take log base 10, multiply by 5, and subtract from the peak magnitude.'})},
       {id:'rec',t:'Record the supernova',w:'snPrev',text:'Here is this supernova (gold) next to the others you have measured. Do they all have about the same luminosity?',ready:()=>true,act:'Add to my supernova results'})}
-  else{
-    cs.push({id:'Fpk',t:'Supernova peak',w:'sn',text:'You caught a Type 1a supernova in this distant galaxy. Click the brightest point of its light curve.',ready:o=>o.Fpk!=null,wait:'Click the peak of the supernova light curve.',
+  else if(k==='far'){
+    cs.push(fS,{id:'Fpk',t:'Supernova peak',w:'sn',text:'Here is the light curve of the supernova you found. Click the brightest point of its light curve.',ready:o=>o.Fpk!=null,wait:'Click the peak of the supernova light curve.',
         eq:o=>fl?String.raw`${T.Fpk} = ${cl('F',tx(o.Fpk))}\ ${FU}`:String.raw`${T.mpk} = ${cl('m',t2(o.mpk))}`},
       fl?{id:'rs',t:'Distance',text:S.set.start>=3?'Type 1a supernovae all have about the same peak luminosity, so this one is a standard candle.':'You found in Level 2 that Type 1a supernovae all have about the same peak luminosity. Use your average value.',ready:()=>true,
         eq:(o,a)=>String.raw`\begin{aligned} ${T.r} &= \sqrt{\frac{${T.Lsn}}{4\pi ${T.Fpk}}} = \sqrt{\frac{${cl('L',tx(o.cal.L))}}{4\pi\,(${cl('F',tx(o.Fpk))})}} \\ &= ${cl('r',tx(o.r))}\ \text{pc} = ${cl('r',a)}\ \text{Mpc} \end{aligned}`,ans:o=>tx(o.r/1e6),
@@ -498,8 +530,63 @@ function cardsFor(cur){const k=cur.kind,fl=isFlux(),given1=S.set.start>=2,cs=[];
       {id:'hub',t:'Plot it',w:'hubPrev',text:'This galaxy becomes one point on your Hubble diagram (gold).',ready:()=>true,act:'Add to Hubble diagram'})}
   return cs}
 
+/* ================= drag-and-drop equation building ================= */
+const BSYM={L:['L','L','luminosity'],Lsn:['L<sub>SN</sub>','L','supernova luminosity'],F:['F','F','flux'],Fpk:['F<sub>peak</sub>','F','supernova peak flux'],r:['r','r','distance'],d:['d','d','distance'],
+  th:['θ','th','parallax angle'],P:['P','P','pulsation period'],shift:['total shift','shift',''],two:['2','',''],m:['m','F','apparent magnitude'],M:['M','L','absolute magnitude'],mpk:['m<sub>peak</sub>','F','supernova peak magnitude'],Msn:['M<sub>SN</sub>','L','supernova absolute magnitude']};
+const bcol=k=>({L:CL.L,F:CL.F,r:CL.r,d:CL.d,th:CL.th,P:CL.P,shift:SHIFT_GREEN}[BSYM[k][1]]||'#f5f1e8');
+const bsym=k=>`<span class="msym" style="color:${bcol(k)}">${BSYM[k][0]}</span>`;
+function buildTpl(id,o){const fl=isFlux(),S_=k=>({s:k}),fr=(a,b)=>({fr:[a,b]}),sq=a=>({sq:a}),sp=a=>({sup:a});
+  const T_={th:{t:[S_('th'),' = ',fr([S_('shift')],[S_('two')])],c:['th','shift','two','d','P'],h:'The parallax angle is what you are finding. It is half of the total shift.'},
+    d:{t:[S_('d'),' [pc] = ',fr(['1 [AU]'],[S_('th'),' [arcsec]'])],c:['d','th','P','F','shift'],h:'You are solving for the distance. Parallax angle and distance are inversely related.'},
+    L:fl?{t:[S_('L'),' = 4π',S_('r'),sp(['2']),' ',S_('F')],c:['L','r','F','P','th'],h:'You are solving for how much light the star gives off. You measured how much light reaches you and how far away it is.'}
+      :{t:[S_('M'),' = ',S_('m'),' − 5 log₁₀',fr([S_('d')],['10 pc'])],c:['M','m','d','P'],h:'You are solving for how bright the star truly is, using how bright it looks and how far away it is.'},
+    Lc:fl?{t:[S_('L'),` = ${o&&o.rel?sig3(o.rel.A):'A'} L☉ × `,S_('P'),sp([o&&o.rel?o.rel.b.toFixed(2):'b'])],c:['L','P','F','r'],h:'Your relation turns a pulsation period into a luminosity.'}
+      :{t:[S_('M'),` = ${o&&o.relM?o.relM.a.toFixed(2):'a'} − ${o&&o.relM?Math.abs(o.relM.b).toFixed(2):'b'} log₁₀`,S_('P')],c:['M','P','m','d'],h:'Your relation turns a pulsation period into an absolute magnitude.'},
+    rc:fl?{t:[S_('r'),' = ',sq([fr([S_('L')],['4π',S_('F')])])],c:['r','L','F','P'],h:'Now distance is the unknown. Luminosity came from the period, and flux is what you measure.'}
+      :{t:[S_('d'),' = 10',sp(['(',S_('m'),' − ',S_('M'),' + 5)/5']),' pc'],c:['d','m','M','P'],h:'Now distance is the unknown. You know how bright the star truly is and how bright it looks.'},
+    Lsn:fl?{t:[S_('Lsn'),' = 4π',S_('r'),sp(['2']),' ',S_('Fpk')],c:['Lsn','r','Fpk','F','P'],h:"You are finding the supernova's luminosity. Use its peak flux and the galaxy's distance."}
+      :{t:[S_('Msn'),' = ',S_('mpk'),' − 5 log₁₀',fr([S_('d')],['10 pc'])],c:['Msn','mpk','d','m','P'],h:"You are finding the supernova's absolute magnitude. Use its peak magnitude and the galaxy's distance."},
+    rs:fl?{t:[S_('r'),' = ',sq([fr([S_('Lsn')],['4π',S_('Fpk')])])],c:['r','Lsn','Fpk','L','F'],h:'Distance is the unknown. The supernova is a standard candle, so you know its luminosity.'}
+      :{t:[S_('d'),' = 10',sp(['(',S_('mpk'),' − ',S_('Msn'),' + 5)/5']),' pc'],c:['d','mpk','Msn','M','m'],h:'Distance is the unknown. The supernova is a standard candle, so you know its absolute magnitude.'}};
+  return T_[id]||null}
+const bExp=id=>((S.st.build||{})[id]||0)>=1;
+function buildPlan(){const cur=S.cur;if(!cur.bplan){const ids=cardsFor(cur).map(c=>c.id).filter(id=>buildTpl(id,null)),fresh=ids.filter(id=>!bExp(id)),old=ids.filter(bExp);
+  /* new equations are always built once; after that, about half of objects get one random equation to build, with only some boxes blank */
+  cur.bplan=[...fresh];if(old.length&&Math.random()<(fresh.length?0.25:0.5))cur.bplan.push(old[Math.floor(Math.random()*old.length)])}return cur.bplan}
+const needBuild=(c,ca)=>!!(S.set.drag&&S.cur&&!S.cur.review&&buildTpl(c.id,ca)&&!(S.cur.built||{})[c.id]&&buildPlan().includes(c.id)&&c.ready(ca));
+const tplKeys=a=>a.flatMap(x=>typeof x==='string'?[]:x.s?[x.s]:x.fr?[...tplKeys(x.fr[0]),...tplKeys(x.fr[1])]:x.sq?tplKeys(x.sq):x.sup?tplKeys(x.sup):[]);
+function bState(c){const cur=S.cur;cur.bld=cur.bld||{};return cur.bld[c.id]||(cur.bld[c.id]={slots:{},sel:null,bad:[],tries:0,order:null})}
+function builderHtml(c,ca){const tp=buildTpl(c.id,ca),st=bState(c);let n=0;const slots=[];
+  if(!st.order)st.order=tp.c.map((_,i)=>i).sort(()=>Math.random()-0.5);
+  if(!st.fixed){const keys=tplKeys(tp.t);st.fixed=[];if(bExp(c.id)&&keys.length>1){const idx=keys.map((_,i)=>i).sort(()=>Math.random()-0.5),blanks=1+Math.floor(Math.random()*Math.min(2,keys.length-1));st.fixed=idx.slice(blanks);st.fixed.forEach(i=>st.slots[i]=keys[i])}}
+  const R=a=>a.map(x=>typeof x==='string'?`<span class="bt">${x}</span>`:x.s?(()=>{const i=n++;slots.push(x.s);const v=st.slots[i];return st.fixed.includes(i)?`<span class="slot fixed">${bsym(v)}</span>`:`<button type="button" class="slot${v?' full':''}${st.bad.includes(i)?' bad':''}" data-slot="${i}" aria-label="${v?'Box holding '+(BSYM[v][2]||BSYM[v][0])+'. Click to remove.':'Empty box'}">${v?bsym(v):'&nbsp;'}</button>`})()
+    :x.fr?`<span class="bfr"><span>${R(x.fr[0])}</span><span>${R(x.fr[1])}</span></span>`:x.sq?`<span class="bsq"><span class="rad">√</span><span class="und">${R(x.sq)}</span></span>`:x.sup?`<sup class="bsup">${R(x.sup)}</sup>`:'').join('');
+  const eq=R(tp.t);st.ans=slots;const used=Object.values(st.slots);
+  const chips=st.order.map(i=>tp.c[i]).map(k=>`<button type="button" class="bchip${used.includes(k)?' used':''}${st.sel===k?' sel':''}" data-chip="${k}" ${used.includes(k)?'disabled':''}>${bsym(k)}${BSYM[k][2]?`<small>${BSYM[k][2]}</small>`:''}</button>`).join('');
+  const full=Object.keys(st.slots).length===slots.length;
+  return `<div class="builder"><p class="note"><b>Build the equation.</b> Drag each piece into a box, or tap a piece and then tap a box. ${st.fixed.length?'Some pieces are already in place. Fill in the empty boxes.':'Not every piece is used. The quantity you are solving for goes on the left.'}</p>
+    <div class="beq">${eq}</div><div class="btray">${chips}</div>
+    <div class="row"><button type="button" class="btn ghost sm" id="bChk" ${full?'':'disabled'}>Check my equation</button><button type="button" class="btn ghost sm" id="bClr">Clear</button></div>${st.msg?`<p class="fb bad" role="status">${st.msg}</p>`:''}</div>`}
+function mountBuilder(c,ca){const box=obsEl.querySelector('.builder');if(!box)return;const st=bState(c),cur=S.cur;
+  const place=(k,i)=>{for(const j in st.slots)if(st.slots[j]===k)delete st.slots[j];st.slots[i]=k;st.sel=null;st.bad=st.bad.filter(x=>x!=i);st.msg=null;sfx('tick');refreshEq()};
+  box.querySelectorAll('.slot').forEach(b=>b.onclick=()=>{const i=+b.dataset.slot;if(st.sel)place(st.sel,i);else if(st.slots[i]){delete st.slots[i];st.bad=st.bad.filter(x=>x!=i);refreshEq()}});
+  box.querySelectorAll('.bchip').forEach(ch=>{const k=ch.dataset.chip;let drag=null;
+    ch.addEventListener('pointerdown',e=>{if(ch.disabled)return;drag={x:e.clientX,y:e.clientY,g:null};ch.setPointerCapture(e.pointerId)});
+    ch.addEventListener('pointermove',e=>{if(!drag)return;if(!drag.g&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>6){drag.g=ch.cloneNode(true);drag.g.className='bchip ghost';document.body.appendChild(drag.g)}
+      if(drag.g){drag.g.style.left=e.clientX+'px';drag.g.style.top=e.clientY+'px';box.querySelectorAll('.slot').forEach(s=>s.classList.remove('over'));drag.g.hidden=true;const el=document.elementFromPoint(e.clientX,e.clientY);drag.g.hidden=false;const sl=el&&el.closest('.slot');if(sl)sl.classList.add('over')}});
+    let justDragged=false;ch.addEventListener('click',()=>{if(justDragged){justDragged=false;return}st.sel=st.sel===k?null:k;refreshEq()});
+    const end=e=>{if(!drag)return;const g=drag.g;drag=null;if(!g)return;justDragged=true;setTimeout(()=>justDragged=false,400);
+      g.hidden=true;const el=document.elementFromPoint(e.clientX,e.clientY);g.remove();const sl=el&&el.closest('.slot');if(sl&&box.contains(sl))place(k,+sl.dataset.slot);else box.querySelectorAll('.slot').forEach(s=>s.classList.remove('over'))};
+    ch.addEventListener('pointerup',end);ch.addEventListener('pointercancel',e=>{if(drag&&drag.g)drag.g.remove();drag=null})});
+  box.querySelector('#bClr').onclick=()=>{for(const j in st.slots)if(!st.fixed.includes(+j))delete st.slots[j];st.bad=[];st.sel=null;st.msg=null;refreshEq()};
+  box.querySelector('#bChk').onclick=()=>{st.tries++;st.bad=st.ans.map((k,i)=>st.slots[i]===k?-1:i).filter(i=>i>=0);
+    if(!st.bad.length){cur.built=cur.built||{};cur.built[c.id]=true;st.msg=null;sfx('right');const b=S.st.build||(S.st.build={n:0,first:0});b.n++;if(st.tries===1){b.first++;b[c.id]=(b[c.id]||0)+1}saveSt()}
+    else{st.msg=`Not quite. The boxes outlined in red need a different piece. ${buildTpl(c.id,ca).h}`;sfx('wrong')}refreshEq()}}
+
 function renderPanel(){
-  const cur=S.cur;if(!cur)return;obsEl.hidden=false;const o=cur.obj,fl=isFlux();
+  const cur=S.cur;if(!cur)return;
+  if(!cur.review){const c0=cardsFor(cur)[cur.i];if((c0.id==='findV'&&!cur.found.v)||(c0.id==='findSN'&&!cur.found.sn)){stopBlink();obsEl.hidden=true;obsEl.innerHTML='';startFind(c0.id==='findV'?'v':'sn');return}}
+  stopFind();obsEl.hidden=false;const o=cur.obj,fl=isFlux();
   const kindTxt=cur.kind==='var'?'Variable star in our galaxy':cur.kind==='host'?'Galaxy with a variable star and a supernova ★':`${o.type==='spiral'?'Spiral':'Elliptical'} galaxy with a supernova`;
   const title=cur.kind==='var'?o.name:o.id;
   if(cur.review){const rc=recOf(o);let rows='';
@@ -511,27 +598,31 @@ function renderPanel(){
     obsEl.querySelector('#closeObs').onclick=closePanel;obsEl.querySelector('#redo').onclick=()=>{cur.review=false;renderPanel()};typeset(obsEl);return}
   const cards=cardsFor(cur),c=cards[cur.i],ca=calc(cur),hand=!!c.hand&&handOn(c.id),ready=c.ready(ca);
   const hd=hand&&ready?c.hand(ca):null,solved=!hand||cur.hand[c.id]!=null;
-  let eqBlock='';
+  let eqBlock='';const nb=needBuild(c,ca);
   if(c.eq){if(!ready)eqBlock=`<p class="waiting">${c.wait||''}</p>`;
+    else if(nb)eqBlock=builderHtml(c,ca);
     else if(c.ans){eqBlock=eqHtml(c.eq(ca,solved?c.ans(ca):String.raw`\boxed{\,?\,}`));
       if(hand&&!solved)eqBlock+=`<div class="answer"><label for="hIn">Your answer</label><input id="hIn" inputmode="decimal" autocomplete="off">${hd.unit?`<span>${hd.unit}</span>`:''}<button class="btn ghost sm" id="hChk">Check</button></div>${cur.msg?`<p class="fb bad" role="status">${cur.msg}</p>`:''}`;
       else if(hand&&solved)eqBlock+=`<p class="fb good">Correct.</p>`}
     else eqBlock=eqHtml(c.eq(ca))+(c.more?c.more(ca):'')}
+  else if(c.found)eqBlock=ready?`<p class="fb good">${c.found}</p>`:`${cur.msg?`<p class="fb bad" role="status">${cur.msg}</p>`:`<p class="waiting">${c.wait}</p>`}`;
   const widget={lc:'<canvas class="plot" id="wv" aria-label="Light curve. Click peaks."></canvas>',lcAvg:'<canvas class="plot static" id="wv" aria-label="Light curve with average"></canvas>',sn:'<canvas class="plot" id="wv" aria-label="Supernova light curve. Click the peak."></canvas>',
     par:`<div class="row"><button class="chip" data-ep="jan" aria-pressed="${!cur.blink&&cur.epoch==='jan'}">January image</button><button class="chip" data-ep="jul" aria-pressed="${!cur.blink&&cur.epoch==='jul'}">July image</button><button class="chip" id="blink" aria-pressed="${cur.blink}">Blink</button><button class="chip" id="clrPar">Clear clicks</button></div><canvas class="plot par" id="wv" aria-label="Star field. Each grid square is 0.001 arcseconds."></canvas><p class="note">Each grid square is 0.001 arcseconds.</p>`,
     spec:`<canvas class="plot static" id="wv" style="height:250px" aria-label="Galaxy spectrum"></canvas><div class="slider"><label for="zr" class="eyebrow">Slide the template</label><input type="range" id="zr" min="-0.004" max="0.11" step="0.0001" value="${cur.zGuess}"><div class="row"><button class="btn ghost sm" data-nz="-0.001">−0.001</button><button class="btn ghost sm" data-nz="-0.0001">−0.0001</button><button class="btn ghost sm" data-nz="0.0001">+0.0001</button><button class="btn ghost sm" data-nz="0.001">+0.001</button><span class="note">Match</span><span class="meter"><i id="mt"></i></span></div></div>`,
+    zoomV:'<canvas class="plot zoom" id="wv" style="height:380px" aria-label="Close-up of the galaxy. Click the star that is pulsing."></canvas>',
+    zoomS:`<div class="row"><button class="chip" data-ze="ref" aria-pressed="${!cur.blink&&cur.zep==='ref'}">Last year</button><button class="chip" data-ze="new" aria-pressed="${!cur.blink&&cur.zep!=='ref'}">Tonight</button><button class="chip" id="zblink" aria-pressed="${cur.blink}">Blink</button></div><canvas class="plot zoom" id="wv" style="height:380px" aria-label="Close-up of the galaxy. Compare the two images and click the new point of light."></canvas>`,
     parSnap:'<canvas class="plot static" id="wv" style="height:220px" aria-label="Snapshot of your two star positions and the shift between them"></canvas>',
     plPrev:'<canvas class="plot static" id="wv" style="height:280px"></canvas>',plRead:'<canvas class="plot static" id="wv" style="height:280px"></canvas>',snPrev:'<canvas class="plot static" id="wv"></canvas>',hubPrev:'<canvas class="plot static" id="wv" style="height:280px"></canvas>'}[c.w]||'';
-  const canNext=ready&&solved,last=cur.i===cards.length-1;
+  const canNext=ready&&solved&&!nb,last=cur.i===cards.length-1;
   obsEl.innerHTML=`<div class="obs-head"><div><span class="eyebrow">${kindTxt}</span><h2>${title}</h2><div class="dots">${cards.map((_,j)=>`<i class="${j===cur.i?'on':j<cur.i?'done':''}"></i>`).join('')}</div></div><button class="x" id="closeObs" aria-label="Close">×</button></div>
     <div class="obs-body"><span class="eyebrow">Step ${cur.i+1} of ${cards.length}</span><h3>${c.t}</h3><p class="task">${c.text}</p>${widget}${c.prev&&ready?`<p class="note">Your parallax angle from the previous step:</p>${eqHtml(c.prev(ca))}<p class="note">Now the distance:</p>`:''}<div id="eqZone">${eqBlock}</div></div>
     <div class="obs-foot"><button class="btn ghost" id="bk" ${cur.i?'':'disabled'}>Back</button><span class="sp"></span><button class="btn" id="nx" ${canNext?'':'disabled'}>${c.act||'Next'}</button></div>`;
   obsEl.querySelector('#closeObs').onclick=closePanel;
   obsEl.querySelector('#bk').onclick=()=>{cur.i--;cur.msg=null;stopBlink();cur.blink=false;renderPanel()};
   obsEl.querySelector('#nx').onclick=()=>{stopBlink();cur.blink=false;const go=last?()=>saveObj(ca):()=>{sfx('step');cur.i++;cur.msg=null;renderPanel();obsEl.scrollTop=0};if(!maybeQuick(c,ca,go))go()};
-  if(hand&&!solved&&ready){const inp=obsEl.querySelector('#hIn'),go=()=>{const x=parseNum(inp.value);if(x==null)cur.msg='Type a number first.';else if(hd.ok(x)){cur.hand[c.id]=x;cur.msg=null;sfx('right')}else{cur.msg='Not quite. '+hd.hint;sfx('wrong')}refreshEq();const ni=obsEl.querySelector('#hIn');if(ni)ni.focus({preventScroll:true})};
+  if(hand&&!solved&&ready&&!nb){const inp=obsEl.querySelector('#hIn'),go=()=>{const x=parseNum(inp.value);if(x==null)cur.msg='Type a number first.';else if(hd.ok(x)){cur.hand[c.id]=x;cur.msg=null;sfx('right')}else{cur.msg='Not quite. '+hd.hint;sfx('wrong')}refreshEq();const ni=obsEl.querySelector('#hIn');if(ni)ni.focus({preventScroll:true})};
     obsEl.querySelector('#hChk').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go()}}
-  mountWidget(c,ca);typeset(obsEl.querySelector('.obs-body'))}
+  mountWidget(c,ca);if(nb)mountBuilder(c,ca);typeset(obsEl.querySelector('.obs-body'));drawLPC()}
 function refreshEq(){const top=obsEl.scrollTop;renderPanel();obsEl.scrollTop=top}
 function mountWidget(c,ca){const cur=S.cur,cv=obsEl.querySelector('#wv');if(!cv)return;
   const resetHand=()=>{for(const k of ['P','th','d','L','Lc','rc','rs','Lsn'])delete cur.hand[k];cur.msg=null};
@@ -547,6 +638,18 @@ function mountWidget(c,ca){const cur=S.cur,cv=obsEl.querySelector('#wv');if(!cv)
     const setZ=z=>{cur.zGuess=z;resetHand();upd();const ez=obsEl.querySelector('#eqZone'),op=ez.querySelector('details')?.open,cc=calc(cur);ez.innerHTML=eqHtml(c.eq(cc))+(c.more?c.more(cc):'');if(op)ez.querySelector('details').open=true;typeset(ez)};
     obsEl.querySelector('#zr').oninput=e=>setZ(+e.target.value);
     obsEl.querySelectorAll('[data-nz]').forEach(b=>b.onclick=()=>{const z=Math.max(-0.004,Math.min(0.11,+(cur.zGuess+ +b.dataset.nz).toFixed(4)));obsEl.querySelector('#zr').value=z;setZ(z)})}
+  else if(c.w==='zoomV'||c.w==='zoomS'){const g=cur.obj,isV=c.w==='zoomV',key=isV?'v':'sn';let pos=null;
+    const draw=t=>{const {ctx,w,h}=fitT(cv),mode=isV?'var':(cur.blink?cur.zblinkShow:cur.zep||'new');pos=drawClose(ctx,w,h,g,mode,t);const p=pos[key];
+      ctx.font='600 14px "IBM Plex Sans", sans-serif';ctx.fillStyle=TXT;ctx.textAlign='left';ctx.fillText(isV?(g.name||g.id):mode==='ref'?'Last year':'Tonight',10,22);if(!isV&&cur.blink){ctx.fillStyle='#ff6a55';ctx.textAlign='right';ctx.fillText('BLINKING',w-10,22)}ctx.font=FONT;
+      if(cur.found[key]){ctx.strokeStyle='#f6bd5f';ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,14,0,7);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle='#f6bd5f';ctx.textAlign='left';ctx.font='600 13px "IBM Plex Sans", sans-serif';ctx.fillText(isV?'variable star':'supernova',p.x+18,p.y+4);ctx.font=FONT}};
+    draw(0);cur.redraw=()=>draw(performance.now()/1000);
+    if(isV&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const loop=t=>{if(!cv.isConnected)return;draw(t/1000);requestAnimationFrame(loop)};requestAnimationFrame(loop)}
+    if(!isV){if(!cur.zep)cur.zep='new';obsEl.querySelectorAll('[data-ze]').forEach(b=>b.onclick=()=>{stopBlink();cur.blink=false;cur.zep=b.dataset.ze;refreshEq()});
+      obsEl.querySelector('#zblink').onclick=()=>{if(cur.blink){stopBlink();cur.blink=false;refreshEq()}else{cur.blink=true;cur.zblinkShow='ref';refreshEq();cur.blinkTimer=setInterval(()=>{cur.zblinkShow=cur.zblinkShow==='ref'?'new':'ref';if(cv.isConnected)draw(0)},650)}}}
+    cv.onclick=e=>{if(cur.found[key]||!pos)return;const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,p=pos[key];
+      if(Math.hypot(x-p.x,y-p.y)<16){cur.found[key]=true;cur.msg=null;cur.miss=0;stopBlink();cur.blink=false;sfx('right');refreshEq();return}
+      cur.miss=(cur.miss||0)+1;sfx('wrong');cur.msg=(isV?"That star isn't changing. Watch for one that brightens and dims.":"That light was there in last year's image too. Blink between the images and look for one that appears.")+(cur.miss>=3?` Hint: look in the ${regionWord(p,r.width,r.height)} of the image.`:'');
+      const ez=obsEl.querySelector('#eqZone');ez.innerHTML=`<p class="fb bad" role="status">${cur.msg}</p>`}}
   else if(c.w==='parSnap'){const d=()=>drawPar(cv,true);d();cur.redraw=d}
   else if(c.w==='plRead'){const d=()=>drawPL(cv,ca.Lc?{P:ca.P,L:ca.Lc,read:true}:null);d();cur.redraw=d}
   else if(c.w==='plPrev'||c.w==='snPrev'||c.w==='hubPrev'){const hi=c.w==='plPrev'?{P:ca.P,L:ca.L}:c.w==='snPrev'?{L:ca.Lsn}:{d:ca.r/1e6,v:ca.v},fn=c.w==='plPrev'?drawPL:c.w==='snPrev'?drawSNL:drawHub;
@@ -569,9 +672,85 @@ function drawPar(cv,snap){const cur=S.cur;if(!cur||!cur.par)return;const {ctx,w,
 function drawSpec(cv){const cur=S.cur,{ctx,w,h}=fitT(cv),{lam,flux}=cur.spec,L=40,R=12,Tp=42,B=42,fmin=Math.min(...flux)-0.05,fmax=Math.max(...flux)+0.05,X=l=>L+(l-370)/400*(w-L-R),Y=f=>Tp+(1-(f-fmin)/(fmax-fmin))*(h-Tp-B);
   for(let l=370;l<770;l+=2){ctx.fillStyle=wl2rgb(l);ctx.fillRect(X(l),h-B+2,X(l+2)-X(l)+0.5,6)}
   ctx.fillStyle=TXT2;ctx.strokeStyle=GRID;ctx.textAlign='center';for(let l=400;l<=750;l+=50){const x=X(l);ctx.beginPath();ctx.moveTo(x,Tp);ctx.lineTo(x,h-B);ctx.stroke();ctx.fillText(l,x,h-B+22)}
-  ctx.fillText('wavelength (nm)',L+(w-L-R)/2,h-4);axisLabelY(ctx,'flux',14,Tp+(h-Tp-B)/2);
+  ctx.fillText('wavelength (nm)',L+(w-L-R)/2,h-4);ctx.fillStyle=CL.F;axisLabelY(ctx,'flux',14,Tp+(h-Tp-B)/2);ctx.fillStyle=TXT2;
   ctx.strokeStyle=TXT;ctx.lineWidth=1.1;ctx.beginPath();lam.forEach((l,i)=>{const x=X(l),y=Y(flux[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.lineWidth=1;
   LINES.filter(ln=>lineAmp(cur.obj,ln)).forEach((ln,i)=>{const lo=ln.l*(1+cur.zGuess);if(lo<370||lo>770)return;const x=X(lo);ctx.strokeStyle='rgba(255,106,85,.9)';ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(x,Tp-4);ctx.lineTo(x,h-B);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#ff6a55';ctx.fillText(ln.n,x,i%2?Tp-9:Tp-24)})}
+
+/* ================= galaxy close-ups: zoom in, find the variable star, find the supernova ================= */
+function closeData(g){if(g._cz&&g._cz.seed===S.seed)return g._cz;
+  if(g.kind==='var'){const r=mulberry32(hashStr(S.seed+g.id+'z')),stars=[],bg=[];for(let i=0;i<1150;i++)stars.push({x:(r()-.5)*4.4,y:(r()-.5)*4.6,b:0.15+0.85*Math.pow(r(),3),t:['255,255,255','255,226,190','210,220,255','255,205,175'][Math.floor(r()*4)]});
+    for(let i=0;i<600;i++)bg.push({u:r(),v:r(),b:r()});const a=r()*7,rr=0.25+0.55*r();return g._cz={seed:S.seed,stars,glow:[],bg,v:{x:rr*Math.cos(a),y:rr*Math.sin(a)*0.9},sn:{x:0,y:0}}}const r=mulberry32(hashStr(S.seed+g.id+'z')),gs=gaussOf(r),sp=g.type==='spiral';
+  const armTh=(rr,arm)=>4.4*(rr-0.12)/0.85+arm*Math.PI;
+  const stars=[];for(let i=0;i<(sp?360:300);i++){let rr,th;if(sp&&r()<0.72){rr=0.1+0.9*Math.pow(r(),0.8);th=armTh(rr,r()<.5?0:1)+gs()*0.22}else{rr=Math.min(1.05,-0.32*Math.log(1-r()*0.96));th=r()*Math.PI*2}
+    stars.push({x:rr*Math.cos(th),y:rr*Math.sin(th),b:0.2+0.8*Math.pow(r(),2.6),t:['255,255,255','255,226,190','210,220,255','255,205,175'][Math.floor(r()*4)]})}
+  const glow=[];if(sp)for(let i=0;i<1600;i++){const rr=0.08+0.95*Math.pow(r(),0.9),arm=r()<.5?0:1;glow.push({x:rr*Math.cos(armTh(rr,arm)+gs()*0.16),y:rr*Math.sin(armTh(rr,arm)+gs()*0.16),s:0.02+0.035*r()})}
+  const vr=0.55+0.3*r(),vth=sp?armTh(vr,r()<.5?0:1)+(r()<.5?-1:1)*(0.12+0.1*r()):r()*7,sr=0.3+0.45*r(),sth=sp?armTh(sr,r()<.5?0:1)+gs()*0.15:r()*7;
+  const bg=[];for(let i=0;i<500;i++)bg.push({u:r(),v:r(),b:r()});
+  return g._cz={seed:S.seed,stars,glow,bg,v:{x:vr*Math.cos(vth),y:vr*Math.sin(vth),b:0.5},sn:{x:sr*Math.cos(sth),y:sr*Math.sin(sth)}}}
+const czQ=g=>g.kind==='var'?1:Math.max(g.q,0.55);
+function czScale(g,w,h){if(g.kind==='var')return Math.min(w,h)*0.46;const q=czQ(g),ca=Math.cos(g.ang),sa=Math.sin(g.ang),ex=Math.hypot(ca,q*sa),ey=Math.hypot(sa,q*ca);return Math.min(0.46*w/ex,0.44*h/ey)}
+function czProj(g,w,h){if(g.kind==='var'){const cx=w/2,cy=h/2;return p=>({x:cx+p.x*w*0.46,y:cy+p.y*h*0.44})}const sc=czScale(g,w,h),q=czQ(g),ca=Math.cos(g.ang),sa=Math.sin(g.ang),cx=w/2,cy=h/2;return p=>{const x=p.x,y=p.y*q;return{x:cx+(x*ca-y*sa)*sc,y:cy+(x*sa+y*ca)*sc}}}
+function czBase(g,w,h){const key=w+'x'+h+'x'+(window.devicePixelRatio||1)+S.seed;if(g._czc&&g._czc.key===key)return g._czc.cv;const d=closeData(g),dpr=window.devicePixelRatio||1,cv=document.createElement('canvas'),M=CZM;cv.width=Math.round(w*(1+2*M)*dpr);cv.height=Math.round(h*(1+2*M)*dpr);
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.fillStyle='#000';ctx.fillRect(0,0,w*(1+2*M),h*(1+2*M));for(const s of d.bg){ctx.fillStyle=`rgba(230,230,240,${0.15+0.5*s.b})`;ctx.fillRect(s.u*w*(1+2*M),s.v*h*(1+2*M),1.2,1.2)}ctx.translate(M*w,M*h);
+  const sc=czScale(g,w,h),P=czProj(g,w,h),sp=g.type==='spiral';
+  if(g.kind==='var'){ctx.save();ctx.translate(w/2,h/2);ctx.rotate(-0.5);const band=ctx.createLinearGradient(0,-h*0.6,0,h*0.6);band.addColorStop(0,'rgba(120,120,145,0)');band.addColorStop(.5,'rgba(140,140,165,.16)');band.addColorStop(1,'rgba(120,120,145,0)');ctx.fillStyle=band;ctx.fillRect(-w*2,-h*0.6,w*4,h*1.2);ctx.restore()}
+  else{ctx.save();ctx.translate(w/2,h/2);ctx.rotate(g.ang);ctx.scale(1,czQ(g));const gr=ctx.createRadialGradient(0,0,0,0,0,sc*1.05);
+  if(sp){gr.addColorStop(0,'rgba(255,240,215,.95)');gr.addColorStop(.08,'rgba(250,228,200,.6)');gr.addColorStop(.3,'rgba(170,185,235,.16)');gr.addColorStop(1,'rgba(120,150,230,0)')}
+  else{gr.addColorStop(0,'rgba(255,238,205,.95)');gr.addColorStop(.12,'rgba(245,215,170,.55)');gr.addColorStop(.5,'rgba(220,180,140,.16)');gr.addColorStop(1,'rgba(200,160,120,0)')}
+  ctx.fillStyle=gr;ctx.beginPath();ctx.arc(0,0,sc*1.05,0,7);ctx.fill();ctx.restore()}
+  ctx.globalCompositeOperation='lighter';const spr=czSprite();for(const p of d.glow){const q=P(p),R=p.s*sc*1.6;ctx.globalAlpha=0.075;ctx.drawImage(spr,q.x-R,q.y-R,R*2,R*2)}ctx.globalAlpha=1;
+  for(const s of d.stars){const q=P(s),R=0.5+1.5*s.b;if(s.b>0.6){const gl=ctx.createRadialGradient(q.x,q.y,0,q.x,q.y,R*3.2);gl.addColorStop(0,`rgba(${s.t},${0.35*s.b})`);gl.addColorStop(1,`rgba(${s.t},0)`);ctx.fillStyle=gl;ctx.beginPath();ctx.arc(q.x,q.y,R*3.2,0,7);ctx.fill()}
+    ctx.fillStyle=`rgba(${s.t},${0.45+0.55*s.b})`;ctx.beginPath();ctx.arc(q.x,q.y,R,0,7);ctx.fill()}
+  ctx.globalCompositeOperation='source-over';g._czc={key,cv};return cv}
+let _spr=null;function czSprite(){if(_spr)return _spr;_spr=document.createElement('canvas');_spr.width=_spr.height=64;const c=_spr.getContext('2d'),g=c.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(160,182,255,.9)');g.addColorStop(.5,'rgba(150,175,255,.3)');g.addColorStop(1,'rgba(150,175,255,0)');c.fillStyle=g;c.fillRect(0,0,64,64);return _spr}
+function czStar(ctx,x,y,b,tint='255,236,200'){const R=0.6+1.6*b,gR=R*(2.6+2*b);const gl=ctx.createRadialGradient(x,y,0,x,y,gR);gl.addColorStop(0,`rgba(${tint},${Math.min(1,0.45*b)})`);gl.addColorStop(1,`rgba(${tint},0)`);ctx.fillStyle=gl;ctx.beginPath();ctx.arc(x,y,gR,0,7);ctx.fill();ctx.fillStyle=`rgba(${tint},${Math.min(1,0.4+0.6*b)})`;ctx.beginPath();ctx.arc(x,y,R,0,7);ctx.fill()}
+/* mode: 'var' (variable star pulsing), 'ref' (old image, no supernova), 'new' (supernova present), 'none' */
+const CZM=0.6;
+function drawClose(ctx,w,h,g,mode,t){ctx.drawImage(czBase(g,w,h),-CZM*w,-CZM*h,w*(1+2*CZM),h*(1+2*CZM));const d=closeData(g),P=czProj(g,w,h),v=P(d.v),s=P(d.sn);
+  const vb=mode==='var'?0.05+1.45*pulse((t||0)/2):0.45;czStar(ctx,v.x,v.y,vb,'255,222,150');
+  if(mode==='new'){czStar(ctx,s.x,s.y,g.kind==='far'?2.0:1.75,'235,242,255');ctx.strokeStyle='rgba(240,245,255,.75)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(s.x-13,s.y);ctx.lineTo(s.x+13,s.y);ctx.moveTo(s.x,s.y-13);ctx.lineTo(s.x,s.y+13);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(s.x,s.y,2.2,0,7);ctx.fill()}return{v,sn:s}}
+function regionWord(p,w,h){const dx=p.x-w/2,dy=p.y-h/2;return `${Math.abs(dy)<h*0.08?'':dy<0?'upper ':'lower '}${Math.abs(dx)<w*0.08?(Math.abs(dy)<h*0.08?'middle':'part'):dx<0?'left':'right'}`.trim()}
+function zoomIn(o,done){const wrap=sky.parentElement;let fx=document.getElementById('zoomFx');if(!fx){fx=document.createElement('canvas');fx.id='zoomFx';fx.setAttribute('aria-hidden','true');wrap.insertBefore(fx,document.getElementById('skyhint'))}
+  fx.hidden=false;fx.classList.remove('out');const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,D=reduce?0:1500,t0=performance.now(),c0={x:S.cam.x+skyW/2,y:S.cam.y+skyH/2};sfx('zoom');
+  const ease=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+  const frame=now=>{if(S.cur?.obj!==o){fx.hidden=true;return}const {ctx,w,h}=fitT(fx),p=D?Math.min(1,(now-t0)/D):1,e=ease(p),Zm=o.kind==='var'?14:czScale(o,w,h)/galSize(o),Z=Math.exp(Math.log(Zm)*e),cx=c0.x+(o.x-c0.x)*Math.min(1,e*1.6),cy=c0.y+(o.y-c0.y)*Math.min(1,e*1.6);
+    ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);ctx.save();ctx.translate(w/2,h/2);ctx.scale(Z,Z);ctx.translate(-cx,-cy);const vw=w/Z,vh=h/Z,sx=Math.max(0,cx-vw/2),sy=Math.max(0,cy-vh/2);
+    ctx.drawImage(stars,sx,sy,Math.min(W-sx,vw+2),Math.min(H-sy,vh+2),sx,sy,Math.min(W-sx,vw+2),Math.min(H-sy,vh+2));if(o.kind!=='var')drawGalaxy(ctx,o,o.x,o.y);ctx.restore();
+    if(e>0.5){ctx.globalAlpha=Math.min(1,(e-0.5)/0.4);drawClose(ctx,w,h,o,'none');ctx.globalAlpha=1}
+    if(p<1)requestAnimationFrame(frame);else done()};requestAnimationFrame(frame)}
+function zoomRedraw(){const fx=document.getElementById('zoomFx');if(fx&&!fx.hidden&&S.cur&&!FIND){const {ctx,w,h}=fitT(fx);drawClose(ctx,w,h,S.cur.obj,'none')}}
+function zoomOut(){const fx=document.getElementById('zoomFx');if(fx&&!fx.hidden){fx.classList.add('out');setTimeout(()=>{if(!S.cur)fx.hidden=true},380)}}
+/* find mode: the hunt happens right in the sky view, on the zoomed-in close-up */
+let FIND=null;
+function stopFind(){if(!FIND)return;FIND.stop=true;if(FIND.timer)clearInterval(FIND.timer);if(FIND.tab)FIND.tab.remove();FIND=null;const fx=document.getElementById('zoomFx'),hud=document.getElementById('findHud');if(fx){fx.classList.remove('live','grabbing');fx.onpointerdown=fx.onpointermove=fx.onpointerup=fx.onpointercancel=null}if(hud)hud.remove();document.getElementById('skyhint').hidden=false;zoomRedraw()}
+function startFind(key){const cur=S.cur,g=cur.obj,fx=document.getElementById('zoomFx');if(!fx)return;if(FIND&&FIND.key===key&&FIND.obj===g)return;stopFind();
+  const F=FIND={key,obj:g,mode:'new',blink:false,miss:0,found:false,pos:null,stop:false,ox:0,oy:0};fx.hidden=false;fx.classList.remove('out');fx.classList.add('live');document.getElementById('skyhint').hidden=true;
+  const isV=key==='v',name=g.name||g.id,hud=document.createElement('div');hud.id='findHud';hud.className='findhud';
+  hud.innerHTML=`<span class="eyebrow">${name}</span><h3>${isV?'Find the variable star':'Find the supernova'}</h3>
+    <p>${isV?(g.kind==='var'?`You zoomed in on the patch of sky where ${name} is hiding. One of these stars is slowly getting brighter and dimmer. Watch closely, find it, and click on it.`:`You zoomed in on ${name}. One of its stars is slowly getting brighter and dimmer. Watch closely, find it, and click on it.`)
+      :`A Type 1a supernova went off in this galaxy. Blink between last year's image and tonight's, and click the new point of light.`}</p>
+    ${isV?'':`<div class="row"><button class="chip" data-fe="ref">Last year</button><button class="chip" data-fe="new" aria-pressed="true">Tonight</button><button class="chip" id="fBlink">Blink</button></div>`}
+    <p class="fb" id="findMsg" role="status"></p><p class="note">Drag to look around.</p><div class="row"><button class="btn ghost sm" id="findBack">Back to the sky</button><button class="btn ghost sm" id="findHide">Hide this box</button></div>`;
+  sky.parentElement.appendChild(hud);
+  const setBtns=()=>{hud.querySelectorAll('[data-fe]').forEach(b=>b.setAttribute('aria-pressed',String(!F.blink&&F.mode===b.dataset.fe)));const bl=hud.querySelector('#fBlink');if(bl)bl.setAttribute('aria-pressed',String(F.blink))};
+  hud.querySelectorAll('[data-fe]').forEach(b=>b.onclick=()=>{F.blink=false;if(F.timer){clearInterval(F.timer);F.timer=null}F.mode=b.dataset.fe;setBtns()});
+  const bl=hud.querySelector('#fBlink');if(bl)bl.onclick=()=>{if(F.blink){F.blink=false;clearInterval(F.timer);F.timer=null}else{F.blink=true;F.mode='ref';F.timer=setInterval(()=>{F.mode=F.mode==='ref'?'new':'ref'},650)}setBtns()};
+  hud.querySelector('#findBack').onclick=closePanel;
+  const tab=document.createElement('button');tab.className='btn ghost sm findtab';tab.textContent='Show instructions';tab.hidden=true;sky.parentElement.appendChild(tab);F.tab=tab;
+  hud.querySelector('#findHide').onclick=()=>{hud.hidden=true;tab.hidden=false};tab.onclick=()=>{hud.hidden=false;tab.hidden=true};
+  const loop=now=>{if(F.stop)return;const {ctx,w,h}=fitT(fx),mode=isV?'var':F.mode;F.ox=Math.max(-w*0.6,Math.min(w*0.6,F.ox));F.oy=Math.max(-h*0.6,Math.min(h*0.6,F.oy));
+    ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);ctx.save();ctx.translate(F.ox,F.oy);const pp=drawClose(ctx,w,h,g,mode,now/1000);ctx.restore();F.pos={v:{x:pp.v.x+F.ox,y:pp.v.y+F.oy},sn:{x:pp.sn.x+F.ox,y:pp.sn.y+F.oy}};
+    if(!isV){ctx.font='600 15px "IBM Plex Sans", sans-serif';ctx.fillStyle=TXT;ctx.textAlign='right';ctx.fillText(F.mode==='ref'?'Last year':'Tonight',w-14,h-16);if(F.blink){ctx.fillStyle='#ff6a55';ctx.fillText('BLINKING',w-14,h-36)}ctx.font=FONT}
+    if(F.found){const p=F.pos[isV?'v':'sn'];ctx.strokeStyle='#f6bd5f';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(p.x,p.y,16,0,7);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle='#f6bd5f';ctx.font='600 15px "IBM Plex Sans", sans-serif';ctx.textAlign='left';ctx.fillText(isV?'variable star':'supernova',p.x+22,p.y+5);ctx.font=FONT}
+    requestAnimationFrame(loop)};requestAnimationFrame(loop);
+  let pd=null;fx.onpointerdown=e=>{pd={x:e.clientX,y:e.clientY,ox:F.ox,oy:F.oy,moved:false};fx.setPointerCapture(e.pointerId)};
+  fx.onpointermove=e=>{if(!pd)return;const dx=e.clientX-pd.x,dy=e.clientY-pd.y;if(!pd.moved&&Math.hypot(dx,dy)>5){pd.moved=true;fx.classList.add('grabbing')}if(pd.moved){F.ox=pd.ox+dx;F.oy=pd.oy+dy}};
+  fx.onpointerup=e=>{const was=pd;pd=null;fx.classList.remove('grabbing');if(was&&!was.moved)hit(e)};fx.onpointercancel=()=>{pd=null;fx.classList.remove('grabbing')};
+  const hit=e=>{if(F.found||!F.pos)return;const r=fx.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,p=F.pos[isV?'v':'sn'],msg=hud.querySelector('#findMsg');
+    if(Math.hypot(x-p.x,y-p.y)<18){F.found=true;if(F.timer){clearInterval(F.timer);F.timer=null}F.blink=false;F.mode='new';cur.found[isV?'v':'sn']=true;sfx('right');msg.className='fb good';
+      msg.textContent=isV?'Found it! That star is pulsing, so it is a variable star.':'Found it! That point of light was not there last year: a supernova.';
+      setTimeout(()=>{if(FIND!==F||S.cur!==cur)return;stopFind();cur.i++;cur.msg=null;renderPanel();obsEl.scrollTop=0},1300);return}
+    F.miss++;sfx('wrong');msg.className='fb bad';msg.textContent=(isV?"That star isn't changing. Watch for one that brightens and dims.":"That light was there in last year's image too. Blink between the images and look for one that appears.")+(F.miss>=3?` Hint: look in the ${regionWord(p,r.width,r.height)} of the view.`:'')}}
 
 function saveObj(ca){const cur=S.cur,o=cur.obj,was=[unlocked(2),unlocked(3)];
   if(cur.kind==='var')S.st.vars[o.id]={P:ca.P,F:ca.F,th:ca.th,d:ca.d,L:ca.L};
@@ -604,7 +783,7 @@ function renderLP(){const lp=document.getElementById('lp'),lv=S.view,fl=isFlux()
     ${qcLine()}
     <canvas class="chart" id="lpc" aria-label="${LV[lv].title} chart"></canvas>${result}${extra}
     ${nextUn?`<button class="btn" id="goNext">Go to Level ${lv+1}</button>`:''}`;
-  const cv=lp.querySelector('#lpc');(lv===1?drawPL:lv===2?drawSNL:drawHub)(cv,null);
+  const cv=lp.querySelector('#lpc');lv===1?drawPL(cv,null,lpTrack()):(lv===2?drawSNL:drawHub)(cv,null);
   const gn=lp.querySelector('#goNext');if(gn)gn.onclick=()=>setView(lv+1);const sf=lp.querySelector('#seeFinal');if(sf)sf.onclick=showFinish;lp.querySelector('#lpLesson').onclick=()=>{closePanel();openTut('l'+lv)};typeset(lp)}
 function renderHint(){document.getElementById('skyhint').textContent=S.view===1?'Click a circled variable star to observe it':S.view===2?'Click a galaxy marked ★ to observe it':'Click a circled galaxy to observe it'}
 function renderAll(){renderTabs();renderLP();renderHint();requestDraw()}
@@ -662,7 +841,7 @@ function renderMenu(){let name='';try{name=localStorage.getItem('redshift-hunt:n
 function renderSettings(){const s=S.set,opt=(lo,hi,v)=>Array.from({length:hi-lo+1},(_,i)=>lo+i).map(x=>`<option ${x===v?'selected':''}>${x}</option>`).join('');
   dbox.innerHTML=`<div class="dhead"><h2>Instructor settings</h2><button class="x" id="dClose" aria-label="Close settings">×</button></div>
   <p class="note">Choose settings, then share the class code. Students enter it under Menu, then Your class. Or they can open the game's link with # and the code added to the end.</p>
-  <div class="formrow"><label class="lbl" for="seed">Sky seed</label><input type="text" id="seed" value="${S.seed}" maxlength="16" style="width:11em"></div>
+  <div class="formrow"><label class="lbl" for="seed">Class name</label><input type="text" id="seed" value="${S.cls}" maxlength="16" style="width:11em"></div><p class="note">Every student gets their own randomly generated sky, so each has a different true H₀. Starting over gives a new sky.</p>
   <fieldset class="seg"><legend>Brightness language</legend><label><input type="radio" name="units" value="flux" ${s.units==='flux'?'checked':''}> Flux and luminosity (inverse square law)</label><label><input type="radio" name="units" value="mag" ${s.units==='mag'?'checked':''}> Magnitudes</label></fieldset>
   <fieldset class="seg"><legend>Starting level</legend><label><input type="radio" name="start" value="1" ${s.start===1?'checked':''}> Level 1: build the period-luminosity relation from parallax</label><label><input type="radio" name="start" value="2" ${s.start===2?'checked':''}> Level 2: period-luminosity relation is given</label><label><input type="radio" name="start" value="3" ${s.start===3?'checked':''}> Level 3: supernova luminosity is given</label></fieldset>
   <fieldset class="seg"><legend>Steps students calculate themselves</legend><p class="note">Checked steps show the equation with a blank answer that students must fill in. Unchecked steps are filled in by the game.</p>
@@ -671,13 +850,15 @@ function renderSettings(){const s=S.set,opt=(lo,hi,v)=>Array.from({length:hi-lo+
   <fieldset class="seg"><legend>Goals</legend><label>Variable stars needed to unlock Level 2 <select id="n1">${opt(3,9,s.n1)}</select></label><label>★ galaxies needed to unlock Level 3 <select id="n2">${opt(2,9,s.n2)}</select></label><label>Galaxies needed to finish Level 3 <select id="n3">${opt(5,20,s.n3)}</select></label></fieldset>
   <fieldset class="seg"><legend>Quick-check questions</legend><p class="note">Short concept questions that pop up at random while students measure, about the step they just did. Never on the first object of a level.</p>
     <label><input type="radio" name="qc" value="0" ${s.qc===0?'checked':''}> Off</label><label><input type="radio" name="qc" value="1" ${(s.qc??1)===1?'checked':''}> Sometimes (about 1 in 3 objects)</label><label><input type="radio" name="qc" value="2" ${s.qc===2?'checked':''}> Often (about 2 in 3 objects)</label></fieldset>
+  <fieldset class="seg"><legend>Equation building</legend><p class="note">Before the numbers appear, students drag the pieces of the equation (L, r, F, P, θ…) into place. Each equation is built in full the first time. After that, the game picks at random: about half of the objects ask for one equation, with only one or two boxes left blank.</p>
+    <label><input type="radio" name="drag" value="1" ${s.drag!==0?'checked':''}> On</label><label><input type="radio" name="drag" value="0" ${s.drag===0?'checked':''}> Off (equations are given)</label></fieldset>
   <div class="row"><span>Class code: <span class="code" id="newCode"></span></span></div>
   <div class="row"><button class="btn" id="applyCode">Use these settings here</button><button class="btn ghost" id="copyCode">Copy code</button><span class="note" id="instMsg"></span></div>
   <section class="dsec"><h3>Class tools</h3><label class="formrow"><input type="checkbox" id="showTrue" ${S.showTrue?'checked':''}> Show the true H₀ line on the Hubble diagram</label>
     <div class="row"><button class="btn ghost" id="copyCsv">Copy data as CSV</button><button class="btn ghost" id="clearAll">Clear progress on this device</button><button class="btn ghost" id="lockBtn">Lock settings</button></div></section>
   <section class="dsec"><h3>Check a student report</h3><textarea id="verifyIn" rows="6" placeholder="Paste a student's report here" aria-label="Student report"></textarea><div class="row"><button class="btn ghost" id="verifyBtn">Check report</button><span id="verifyOut"></span></div></section>`;
   const q=s=>dbox.querySelector(s),val=n=>(dbox.querySelector(`input[name="${n}"]:checked`)||{}).value;
-  const nc=()=>makeCode(q('#seed').value,val('units'),+val('start'),[...dbox.querySelectorAll('.hstep:checked')].reduce((a,x)=>a|+x.value,0),+q('#n1').value,+q('#n2').value,+q('#n3').value,+(val('qc')??1));const upd=()=>q('#newCode').textContent=nc();upd();
+  const nc=()=>makeCode(q('#seed').value,val('units'),+val('start'),[...dbox.querySelectorAll('.hstep:checked')].reduce((a,x)=>a|+x.value,0),+q('#n1').value,+q('#n2').value,+q('#n3').value,+(val('qc')??1),+(val('drag')??1));const upd=()=>q('#newCode').textContent=nc();upd();
   dbox.querySelectorAll('input,select').forEach(i=>i.addEventListener(i.type==='text'?'input':'change',upd));
   q('#hAll').onclick=()=>{dbox.querySelectorAll('.hstep').forEach(x=>x.checked=true);upd()};q('#hNone').onclick=()=>{dbox.querySelectorAll('.hstep').forEach(x=>x.checked=false);upd()};
   const msg=t=>{q('#instMsg').textContent=t};
@@ -689,7 +870,7 @@ function renderSettings(){const s=S.set,opt=(lo,hi,v)=>Array.from({length:hi-lo+
     for(const [id,h] of Object.entries(S.st.hosts)){const r=hostDist(h,rl);csv+=`2,${id},${h.P.toFixed(2)},${r?r.toFixed(0):''},${r?(FOURPI*r*r*h.Fpk).toExponential(3):''},,\n`}
     for(const [id,f] of Object.entries(S.st.far)){const r=farDist(f,cal);csv+=`3,${id},,${r?r.toFixed(0):''},,${f.z.toFixed(5)},${(f.z*C).toFixed(0)}\n`}
     navigator.clipboard?.writeText(csv).then(()=>msg('Data copied.'),()=>msg('Copy blocked here.'))};
-  const clr=q('#clearAll');clr.onclick=()=>{if(clr.dataset.arm){S.st=blankSt();saveSt();S.view=S.set.start;renderAll();clr.textContent='Clear progress on this device';delete clr.dataset.arm;msg('Progress cleared.')}else{clr.dataset.arm=1;clr.textContent='Click again to clear everything'}};
+  const clr=q('#clearAll');clr.onclick=()=>{if(clr.dataset.arm){S.st=blankSt();saveSt();closeDrawer();applyCode(S.code);toast('Progress cleared. You have a brand-new sky.')}else{clr.dataset.arm=1;clr.textContent='Click again to clear everything'}};
   q('#lockBtn').onclick=()=>{try{localStorage.removeItem('cosmic-ladder:teacher');sessionStorage.removeItem('cosmic-ladder:teacher')}catch(e){}closeDrawer();toast('Settings locked. The gear now asks for the passcode.')};
   q('#verifyBtn').onclick=()=>{const out=q('#verifyOut'),lines=normReport(q('#verifyIn').value),i=lines.findIndex(l=>l.startsWith('Check code: '));
     if(i<1){out.innerHTML='<span class="fb bad">No check code found. Paste the whole report.</span>';return}
@@ -697,7 +878,7 @@ function renderSettings(){const s=S.set,opt=(lo,hi,v)=>Array.from({length:hi-lo+
 function chk(body){const a=hashStr('RH3|'+body),b=hashStr(body+'|RH3');return (a.toString(36)+b.toString(36)).toUpperCase().slice(0,8)}
 function normReport(t){return t.replace(/\r/g,'').split('\n').map(l=>l.replace(/\s+$/,'')).filter((l,i,a)=>!(l===''&&i===a.length-1))}
 function buildReport(){let name='';try{name=localStorage.getItem('redshift-hunt:name')||''}catch(e){}
-  const lines=['CLIMBING THE COSMIC LADDER · STUDENT REPORT',`Student: ${name.trim()||'(no name entered)'}`,`Class code: ${S.code}`,`Date: ${new Date().toLocaleDateString('en-CA')}`];
+  const lines=['CLIMBING THE COSMIC LADDER · STUDENT REPORT',`Student: ${name.trim()||'(no name entered)'}`,`Class code: ${S.code}`,`Sky: ${S.seed}`,`Date: ${new Date().toLocaleDateString('en-CA')}`];
   for(const id of lessonIds()){const q=S.st.quiz[id];if(!q||!q.n){lines.push(`${LESSON_NAMES[id]} quiz: not attempted`);continue}
     const it=q.items||{},ans=Object.keys(it).length,first=Object.values(it).filter(x=>x.ok&&x.tries===1).length,extra=Object.entries(it).filter(([,x])=>x.tries>1).map(([k,x])=>`Q${+k+1} took ${x.tries} tries`);
     lines.push(`${LESSON_NAMES[id]} quiz: ${first} of ${q.n} right on first try${ans<q.n?` (${q.n-ans} unanswered)`:''}${extra.length?' · '+extra.join(', '):''}`)}
@@ -706,6 +887,7 @@ function buildReport(){let name='';try{name=localStorage.getItem('redshift-hunt:
   if(S.set.start<=2)lines.push(`Level 2: ${cnt('hosts')} supernova galaxies${cal&&!cal.given?` · average L_SN = ${cal.L.toExponential(2)} Lsun`:''}`);
   lines.push(`Level 3: ${cnt('far')} galaxies · H0 = ${f?`${f.H.toFixed(1)} ± ${f.err.toFixed(1)} km/s/Mpc`:'not enough data yet'}`);
   const qs=S.st.qc||{n:0};if(S.set.qc||qs.n)lines.push(`Quick checks: ${qs.n?`${qs.first} of ${qs.n} right on first try · best streak ${qs.best}`:'none answered yet'}`);
+  const bs=S.st.build;if(S.set.drag||(bs&&bs.n))lines.push(`Equations built: ${bs&&bs.n?`${bs.first} of ${bs.n} right on first try`:'none yet'}`);
   if(S.st.done&&f)lines.push(`Finished the game · true H0 = ${S.H0} km/s/Mpc · off by ${fmt(Math.abs(f.H-S.H0)/S.H0*100,1)}%`);
   const body=lines.join('\n');return body+'\nCheck code: '+chk(body)}
 
@@ -732,22 +914,28 @@ function lesson1(){const fl=isFlux();return{label:'Level 1 · Variable stars and
 <canvas class="tcv" id="tc" aria-label="Animated variable star and its light curve"></canvas>
 <p>We can measure two things right away: its <b>pulsation period</b> (the time from one peak to the next) and how bright it appears to us. What we <b>don't</b> know yet is how bright it truly is, its ${fl?'luminosity':'absolute magnitude'}. How could we figure that out?</p>`,
 mount(r){const cv=r.querySelector('#tc'),per=2.4,win=3*per;anim(t=>{const {ctx,w,h}=fitT(cv),sx=Math.min(w*0.15,90);drawPulse(ctx,sx,h/2-6,Math.min(26,h*0.12),pulse(t/per));ctx.fillStyle=TXT2;ctx.textAlign='center';ctx.fillText('variable star',sx,h-14);
-  const x0=sx*2+24,x1=w-14,top=50,bot=h-32,Y=b=>bot-(b*0.85+0.05)*(bot-top),X=tt=>x1-(t-tt)/win*(x1-x0);ctx.strokeStyle=GRID;ctx.beginPath();ctx.moveTo(x0,top-8);ctx.lineTo(x0,bot);ctx.lineTo(x1,bot);ctx.stroke();ctx.fillStyle=TXT2;ctx.textAlign='right';ctx.fillText('Time →',x1,bot+18);axisLabelY(ctx,fl?'Flux ↑':'brightness ↑',x0-10,(top+bot)/2);
+  const x0=sx*2+24,x1=w-14,top=50,bot=h-32,Y=b=>bot-(b*0.85+0.05)*(bot-top),X=tt=>x1-(t-tt)/win*(x1-x0);ctx.strokeStyle=GRID;ctx.beginPath();ctx.moveTo(x0,top-8);ctx.lineTo(x0,bot);ctx.lineTo(x1,bot);ctx.stroke();ctx.fillStyle=TXT2;ctx.textAlign='right';ctx.fillText('Time →',x1,bot+18);ctx.fillStyle=CL.F;axisLabelY(ctx,fl?'Flux ↑':'brightness ↑',x0-10,(top+bot)/2);
   const peaks=[];for(let k=Math.floor((t-win)/per)-1;k<=Math.floor(t/per)+1;k++){const tp=(k+0.2)*per;if(tp>=t-win&&tp<=t)peaks.push(tp)}
   if(peaks.length>=2){const a=X(peaks[peaks.length-2]),b2=X(peaks[peaks.length-1]),yy=top-18;ctx.strokeStyle=CL.P;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a,yy);ctx.lineTo(b2,yy);ctx.moveTo(a,yy-5);ctx.lineTo(a,yy+5);ctx.moveTo(b2,yy-5);ctx.lineTo(b2,yy+5);ctx.stroke();ctx.lineWidth=1;ctx.fillStyle=CL.P;ctx.textAlign='center';ctx.fillText('pulsation period',(a+b2)/2,yy-8)}
   ctx.strokeStyle='#ff7a6b';ctx.lineWidth=1.8;ctx.beginPath();let first=true;for(let x=x0;x<=x1;x+=2){const y=Y(pulse((t-(x1-x)/(x1-x0)*win)/per));first?ctx.moveTo(x,y):ctx.lineTo(x,y);first=false}ctx.stroke();ctx.lineWidth=1})}},
 fl?{title:'Flux vs. luminosity',html:`<ul class="defs"><li><b>Luminosity</b>: how much energy an object emits as light each second. In other words, how bright it truly is, like the wattage of a lightbulb.</li><li><b>Flux</b>: how much light we actually receive. How bright it appears.</li></ul>
 <p>Light spreads out over a spherical area. A 20 Watt bulb stays 20 Watts, but the farther away it is, the fainter it appears. Move the bulb and watch.</p>
-<canvas class="tcv short" id="tc" aria-label="A 20 watt bulb moved farther away"></canvas>
-<div class="slider"><label for="tD" class="eyebrow">Distance to the bulb</label><input type="range" id="tD" min="1" max="4" step="0.05" value="2"></div>
+<canvas class="tcv" id="tc" aria-label="Looking down the line of sight at a 20 watt bulb that moves farther away and fades"></canvas>
+<div class="slider"><label for="tD" class="eyebrow">Distance to the bulb</label><input type="range" id="tD" min="1" max="5" step="0.05" value="1.5"></div>
 <p>How much light we receive depends on the star's luminosity and its distance from us. That is the <b>inverse square law</b>:</p>${EQ.inv}
 <p>To use the "balancing scale" analogy, get rid of the fraction:</p>${EQ.bal}`,
-mount(r){const cv=r.querySelector('#tc'),sl=r.querySelector('#tD');anim(()=>{const {ctx,w,h}=fitT(cv),d=+sl.value,x0=60,x=x0+(d-1)/3*(w-200)+20,looks=20/(d*d);
-  ctx.fillStyle='#86c9f2';ctx.beginPath();ctx.arc(30,h/2,7,0,7);ctx.fill();ctx.fillStyle=TXT2;ctx.textAlign='center';ctx.fillText('you',30,h/2+24);
-  const gl=ctx.createRadialGradient(x+40,h/2-8,0,x+40,h/2-8,40);gl.addColorStop(0,'rgba(255,230,160,.9)');gl.addColorStop(1,'rgba(255,230,160,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(x+40,h/2-8,40,0,7);ctx.fill();
-  ctx.fillStyle='#ffe9a8';ctx.beginPath();ctx.arc(x+40,h/2-8,13,0,7);ctx.fill();ctx.fillStyle='#8a8a8a';ctx.fillRect(x+33,h/2+4,14,12);
-  ctx.fillStyle=CL.L;ctx.fillText('20 Watt bulb',x+40,22);ctx.fillStyle=CL.F;ctx.fillText(`looks like ${looks>=10?fmt(looks,0):fmt(looks,1)} Watts`,x+40,h-14);
-  ctx.strokeStyle=CL.r;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(40,h/2+30);ctx.lineTo(x+24,h/2+30);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=CL.r;ctx.fillText(`${d.toFixed(1)}× as far`,(40+x+24)/2,h/2+46)})}}
+mount(r){const cv=r.querySelector('#tc'),sl=r.querySelector('#tD');anim(()=>{const {ctx,w,h}=fitT(cv),d=+sl.value,looks=20/(d*d),b=1/(d*d);
+  const vx=w/2,vy=h*0.3,gy=h-6,depth=k=>vy+(gy-vy)/(k*1.35);
+  /* line-of-sight view: a road of light running away from you toward a vanishing point */
+  const sk=ctx.createLinearGradient(0,0,0,vy);sk.addColorStop(0,'#000');sk.addColorStop(1,'#07070c');ctx.fillStyle=sk;ctx.fillRect(0,0,w,vy);
+  ctx.strokeStyle='#26262c';ctx.lineWidth=1;for(let k=-6;k<=6;k++){ctx.beginPath();ctx.moveTo(vx+k*w*0.16,gy+40);ctx.lineTo(vx,vy);ctx.stroke()}
+  for(let k=1;k<=5;k++){const y=depth(k),half=(y-vy)/(gy-vy)*w*0.9;ctx.strokeStyle=k===1?'#3a3a42':'#26262c';ctx.beginPath();ctx.moveTo(vx-half,y);ctx.lineTo(vx+half,y);ctx.stroke();ctx.fillStyle=CL.r;ctx.globalAlpha=.75;ctx.textAlign='left';ctx.fillText(k+'×',vx+half*0.55+4,y-3);ctx.globalAlpha=1}
+  const by=depth(d)-6-50/d,R=24/d,gR=R*4.5;
+  const gl=ctx.createRadialGradient(vx,by,0,vx,by,gR);gl.addColorStop(0,`rgba(255,230,160,${0.9*b})`);gl.addColorStop(1,'rgba(255,230,160,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(vx,by,gR,0,7);ctx.fill();
+  ctx.fillStyle=`rgba(255,233,168,${0.25+0.75*b})`;ctx.beginPath();ctx.arc(vx,by,R,0,7);ctx.fill();ctx.fillStyle=`rgba(138,138,138,${0.3+0.7*b})`;ctx.fillRect(vx-R*0.5,by+R*0.85,R,R*0.85);
+  ctx.strokeStyle=`rgba(138,138,138,${0.3+0.7*b})`;ctx.beginPath();ctx.moveTo(vx,by+R*1.7);ctx.lineTo(vx,depth(d));ctx.stroke();
+  ctx.font='600 13px "IBM Plex Sans", sans-serif';ctx.textAlign='left';ctx.fillStyle=CL.L;ctx.fillText('20 Watt bulb',12,20);ctx.fillStyle=CL.r;ctx.fillText(`${d.toFixed(1)}× as far`,12,40);
+  ctx.textAlign='right';ctx.fillStyle=CL.F;ctx.fillText(`looks like ${looks>=10?fmt(looks,0):fmt(looks,1)} Watts`,w-12,20);ctx.font=FONT;ctx.fillStyle=TXT2;ctx.fillText('your view down the line of sight',w-12,40)})}}
 :{title:'Apparent vs. absolute magnitude',html:`<ul class="defs"><li><b>Absolute magnitude M</b>: how bright a star truly is. Defined as how bright it would look from 10 parsecs away.</li><li><b>Apparent magnitude m</b>: how bright it appears from Earth.</li></ul>
 <p>Magnitudes run backwards: bigger numbers are fainter. A star looks fainter the farther away it is, so the difference between m and M tells you its distance:</p>${EQ.mag}<p>Or, solving for the distance:</p>${EQ.magd}`},
 {title:'Parallax',html:`<p>Hold your thumb at arm's length and blink one eye, then the other. Your thumb seems to jump against the background. <b>Parallax</b> is the apparent shift in a star's position due to the motion of Earth. Your eyes are like Earth at different points in its orbit. Your thumb is like a nearby star. The target is the far away background stars.</p>
@@ -760,7 +948,7 @@ mount(r){const cv=r.querySelector('#tc'),sl=r.querySelector('#tD');anim(t=>{cons
   ctx.strokeStyle='#666';ctx.setLineDash([5,5]);ctx.beginPath();ctx.ellipse(sx,sy,R,R*0.35,0,0,7);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#ffd27a';ctx.beginPath();ctx.arc(sx,sy,9,0,7);ctx.fill();ctx.fillStyle=TXT2;ctx.textAlign='center';ctx.fillText('Sun',sx,sy+26);
   ctx.fillStyle='#86c9f2';ctx.beginPath();ctx.arc(ex,ey,5,0,7);ctx.fill();ctx.fillStyle=TXT;ctx.fillText('Earth',ex,ey-10);ctx.fillStyle='#ff6b6b';ctx.beginPath();ctx.arc(sx,stY,5,0,7);ctx.fill();ctx.textAlign='left';ctx.fillText('nearby star',sx+10,stY+4);
   const ix=ex+(sx-ex)*(ey-bgY)/(ey-stY);ctx.strokeStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(ix,bgY);ctx.stroke();
-  ctx.fillStyle='#ff6b6b';ctx.beginPath();ctx.arc(Math.max(4,Math.min(w-4,ix)),bgY,6,0,7);ctx.fill();ctx.fillStyle=TXT;ctx.textAlign='right';ctx.fillText(`d = ${d.toFixed(1)} pc   θ = ${(1/d).toFixed(3)}″`,w-10,h-10)})}},
+  ctx.fillStyle='#ff6b6b';ctx.beginPath();ctx.arc(Math.max(4,Math.min(w-4,ix)),bgY,6,0,7);ctx.fill();ctx.textAlign='right';ctx.fillStyle=CL.th;ctx.fillText(`θ = ${(1/d).toFixed(3)}″`,w-10,h-10);ctx.fillStyle=CL.d;ctx.fillText(`d = ${d.toFixed(1)} pc   `,w-10-ctx.measureText(`θ = ${(1/d).toFixed(3)}″`).width,h-10)})}},
 {title:'The plan',html:`<p>Henrietta Swan-Leavitt discovered that the pulsation period of a variable star is directly related to its ${fl?'luminosity':'absolute magnitude'}. In Level 1 you'll rediscover this yourself. For each nearby variable star:</p>
 <ol class="recipe"><li><div><b>Measure the pulsation period</b> from its light curve.</div></li><li><div><b>Measure its average ${fl?'flux':'apparent magnitude'}</b>.</div></li>
 <li><div><b>Measure its parallax angle</b> and turn it into a distance.${EQ.par}</div></li>
@@ -818,7 +1006,7 @@ mount(r){const cv=r.querySelector('#tc'),sl=r.querySelector('#tV');anim(()=>{con
 mount(r){const cv=r.querySelector('#tc');let type='elliptical';r.querySelectorAll('[data-ty]').forEach(b=>b.onclick=()=>{type=b.dataset.ty;r.querySelectorAll('[data-ty]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
   anim(()=>{const {ctx,w,h}=fitT(cv),L=40,R=12,l0=380,l1=700,X=l=>L+(l-l0)/(l1-l0)*(w-L-R),top=84,bot=h-38;strip(ctx,L,10,w-L-R,28,l0,l1,tutLines(type));
     const fs=[];for(let l=l0;l<=l1;l+=0.5)fs.push(specModel(type,0,l));const fmin=Math.min(...fs)-.05,fmax=Math.max(...fs)+.05,Y=f=>top+(1-(f-fmin)/(fmax-fmin))*(bot-top);
-    ctx.strokeStyle=GRID;ctx.fillStyle=TXT2;ctx.textAlign='center';for(let l=400;l<=700;l+=50){const x=X(l);ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bot);ctx.stroke();ctx.fillText(l,x,bot+16)}ctx.fillText('wavelength (nm)',L+(w-L-R)/2,h-4);axisLabelY(ctx,'flux',16,(top+bot)/2);
+    ctx.strokeStyle=GRID;ctx.fillStyle=TXT2;ctx.textAlign='center';for(let l=400;l<=700;l+=50){const x=X(l);ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bot);ctx.stroke();ctx.fillText(l,x,bot+16)}ctx.fillText('wavelength (nm)',L+(w-L-R)/2,h-4);ctx.fillStyle=CL.F;axisLabelY(ctx,'flux',16,(top+bot)/2);ctx.fillStyle=TXT2;
     let i=0;for(const ln of tutLines(type)){if(ln.n==='Ca H'||ln.n==='[N II]')continue;const x=X(ln.l),y=i++%2?58:73;ctx.strokeStyle=ln.amp>0?'rgba(134,220,174,.55)':'rgba(255,106,85,.5)';ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(x,y+3);ctx.lineTo(x,bot);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=ln.amp>0?'#86dcae':'#ff6a55';ctx.fillText(ln.n==='Ca K'?'Ca H&K':ln.n,x,y)}
     ctx.strokeStyle=TXT;ctx.lineWidth=1.3;ctx.beginPath();fs.forEach((f,k)=>{const x=X(l0+k*0.5),y=Y(f);k?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.lineWidth=1})}},
 {title:'From shift to speed',html:`<p>The faster a galaxy is moving away, the more its lines are shifted toward the red end of the spectrum. In Level 3 you'll line up a template of lines with each galaxy's spectrum. Once they match, the game reads off how far the lines shifted and tells you the galaxy's speed.</p>
@@ -844,46 +1032,62 @@ document.addEventListener('keydown',e=>{if(e.key!=='Escape'||!document.getElemen
 /* ================= quick-check questions ================= */
 const f2=x=>fmt(x,2),f1=x=>fmt(x,1);
 const W2=(o,a,f)=>({o,a,f});
+const Y_=q=>({...q,why:true});
+const WD=fl=>fl?{F:'flux',L:'luminosity',Fs:'how much light reaches us',Ls:'how much light it gives off'}:{F:'apparent magnitude',L:'absolute magnitude',Fs:'how bright it looks from Earth',Ls:'how bright it truly is'};
 const QB={
- P:[o=>({q:`You marked peaks on day ${f2(o.ts[0])} and day ${f2(o.ts[o.n-1])}, with ${o.n-1} gap${o.n>2?'s':''} between them. Why do we divide by the number of gaps?`,...W2(['Each gap between neighboring peaks is one full pulsation period','To turn days into hours','Because the star gets fainter over time','To find the average flux'],0,['Right. One gap is one pulse, so dividing the total time by the number of gaps gives the time for one pulse.','Not quite. The answer stays in days.','Not quite. The star repeats the same pattern every period.','Not quite. That comes from the average line, not the peak times.'])}),
-    ()=>({q:'Why does marking more peaks give you a better period?',...W2(['Small errors in each peak time get averaged out','More peaks make the star brighter','The period changes from pulse to pulse','It doesn\'t. Two peaks are always best'],0,['Right. Your click on each peak is a little off, and spreading the measurement over more pulses shrinks that error.','Not quite. Clicking doesn\'t change the star.','Not quite. A Cepheid\'s period is very steady.','Not quite. More pulses spread out your clicking error.'])}),
-    o=>({q:`Suppose you skipped a peak by accident but still divided by ${o.n-1}. Your period would come out…`,...W2(['too long','too short','exactly right'],0,['Right. The time span covers one more pulse than you counted, so each "pulse" looks longer.','Not quite. You would be fitting more time into fewer pulses.','Not quite. A missing peak changes the count.'])})],
- F:[(o,fl)=>fl?{q:'What does this star\'s average flux tell you?',...W2(['How much of the star\'s light actually reaches us','How much light the star truly gives off','How far away the star is','How long the star takes to pulse'],0,['Right. Flux is how bright the star appears from Earth.','Not quite. That is luminosity, which you haven\'t found yet.','Not by itself. You need its luminosity too.','Not quite. That is the period.'])}:{q:'What does this star\'s average apparent magnitude tell you?',...W2(['How bright the star appears from Earth','How bright the star truly is','How far away the star is'],0,['Right. Apparent magnitude is how bright it looks to us.','Not quite. That is absolute magnitude.','Not by itself.'])},
-    (o,fl)=>fl?{q:'If this same star were twice as far away, its average flux would be…',...W2(['¼ as much','½ as much','the same','twice as much'],0,['Right. Flux falls with distance squared: (½)² = ¼.','Close, but the distance is squared.','Not quite. Moving away makes it fainter.','Not quite. Farther means fainter.'])}:{q:'If this same star were 10 times farther away, its apparent magnitude would be…',...W2(['5 bigger (fainter)','10 bigger (fainter)','5 smaller (brighter)','the same'],0,['Right. 10 times farther is 100 times fainter, which is 5 magnitudes.','Not quite. Every 5 magnitudes is a factor of 10 in distance.','Not quite. Farther means fainter, which is a bigger number.','Not quite. Distance changes how bright it appears.'])}],
- th:[o=>({q:`The star shifted ${o.shift.toFixed(5)}″ between January and July. Why is the parallax angle only half of that?`,...W2(['The shift spans Earth\'s whole orbit, from one side of the Sun to the other, but the parallax angle is defined using 1 AU','Because the star moves halfway back by July','To correct for the star\'s pulsing','Because there are two images'],0,['Right. January to July covers 2 AU of Earth\'s orbit. The parallax angle is half of the total angle.','Not quite. The background stars don\'t move; the shift comes from Earth moving.','Not quite. Pulsing changes brightness, not position.','Not quite. It\'s about how far Earth moved, not how many pictures.'])}),
-    ()=>({q:'A star twice as far away as this one would shift between January and July by…',...W2(['half as much','twice as much','the same amount','a quarter as much'],0,['Right. Parallax angle and distance are inversely related: twice as far, half the angle.','Not quite. Farther stars shift less, like your thumb at arm\'s length.','Not quite. Distance changes the shift.','Not quite. It\'s 1/d, not 1/d².'])})],
- d:[o=>({q:`Your parallax angle is ${o.th.toFixed(5)}″, much smaller than 1″. That tells you the star is…`,...W2(['much farther than 1 parsec','much closer than 1 parsec','exactly 1 parsec away'],0,['Right. A star at 1 pc has a parallax angle of 1″. Smaller angles mean farther stars.','Not quite. Closer stars have bigger parallax angles.','Not quite. That would need θ = 1″.'])}),
-    ()=>({q:'If you had measured a parallax angle twice as big, the distance would come out…',...W2(['half as far','twice as far','four times as far','the same'],0,['Right. d = 1/θ, so doubling θ halves d.','Not quite. Bigger angle means closer.','Not quite. d = 1/θ, so doubling θ halves d.','Not quite. The distance depends on θ.'])}),
-    ()=>({q:'Parallax works for this star but not for stars in other galaxies. Why?',...W2(['Their shift is far too small to measure','Other galaxies don\'t move','Their stars are too bright','Parallax only works on variable stars'],0,['Right. Parallax is only good out to about 500 pc. Other galaxies are millions of parsecs away.','Not quite. Parallax comes from Earth moving.','Not quite. Brightness doesn\'t stop parallax.','Not quite. Any nearby star works.'])})],
- L:[(o,fl)=>fl?{q:'Two stars have the same flux, but star A is 3 times farther away than star B. How do their luminosities compare?',...W2(['A is 9 times more luminous','A is 3 times more luminous','They are equally luminous','B is 9 times more luminous'],0,['Right. To look equally bright from 3 times farther, A must give off 3² = 9 times more light.','Close. The distance is squared in 4πr²F = L.','Not quite. The farther one must be brighter to look the same.','Not quite. The farther star must be the more luminous one.'])}:{q:'Two stars have the same apparent magnitude, but star A is 10 times farther away. Star A\'s absolute magnitude is…',...W2(['5 smaller (brighter) than B\'s','5 bigger (fainter) than B\'s','the same as B\'s'],0,['Right. To look equally bright from 10 times farther, A must truly be 100 times brighter, which is 5 magnitudes.','Not quite. The farther star must truly be brighter.','Not quite. Different distances mean different true brightness.'])},
-    (o,fl)=>fl?{q:'If you had measured this star\'s distance as twice as far (with the same flux), its luminosity would come out…',...W2(['4 times bigger','2 times bigger','the same','4 times smaller'],0,['Right. L = 4πr²F, so doubling r makes L four times bigger. Distance errors matter a lot.','Close, but r is squared.','Not quite. L depends on r.','Not quite. Farther with the same flux means more luminous.'])}:null],
- plot:[()=>({q:'Look at your period-luminosity chart. What happens as the pulsation period gets longer?',...W2(['The star is more luminous','The star is less luminous','There is no pattern'],0,['Right. That\'s the period-luminosity relation Henrietta Swan-Leavitt discovered.','Not quite. Look again: the points climb to the right.','Look again: the points follow a clear trend.'])}),
-    ()=>({q:'Why will this relation be so useful in Level 2?',...W2(['Measure a variable star\'s period, and you know its luminosity','It tells you the distance directly','It works only for nearby stars','It tells you how fast stars move'],0,['Right. That turns variable stars into standard candles.','Not directly. You still need the flux to get distance.','Not quite. The whole point is to use it where parallax can\'t reach.','Not quite. That comes from spectra.'])})],
- Lc:[o=>{const more=o.P>3;return{q:`This variable star pulses every ${f1(o.P)} days. Compared with a variable star that pulses every 3 days, it is…`,...W2([more?'more luminous':'less luminous',more?'less luminous':'more luminous','equally luminous'],0,[`Right. ${more?'Longer':'Shorter'} period means ${more?'more':'less'} luminous.`,'Not quite. Remember the period-luminosity relation: longer period, more luminous.','Not quite. Different periods mean different luminosities.'])}},
-    ()=>({q:'What makes this variable star a standard candle?',...W2(['Its pulsation period tells us its luminosity','It is the brightest star in its galaxy','It is very close to us','It never changes brightness'],0,['Right. A standard candle is an object we know the luminosity of.','Not quite. Brightness alone doesn\'t make it a standard candle.','Not quite. It\'s millions of parsecs away.','Not quite. It pulses, which is exactly how we use it.'])})],
- rc:[(o,fl)=>({q:`Two variable stars have the same period, but one has ${fl?'1/100 the flux':'an apparent magnitude 5 bigger than the other'}. The fainter one is…`,...W2(['10 times farther away','100 times farther away','the same distance','10 times closer'],0,['Right. Same period means same luminosity. 100 times fainter means √100 = 10 times farther.','Not quite. Distance is squared, so take the square root.','Not quite. They look different, so their distances differ.','Not quite. Fainter means farther.'])}),
-    ()=>({q:'Why can we find this distance even though parallax can\'t reach this galaxy?',...W2(['We know the luminosity from the period and measure the flux','We measured the parallax very carefully','We assume all galaxies are the same distance','We use the supernova'],0,['Right. Knowing L and F, the inverse square law gives r.','Not quite. Parallax is far too small here.','Not quite. Galaxies are at many different distances.','Not yet. The supernova comes next.'])})],
- Fpk:[()=>({q:'Why do we use the supernova\'s peak brightness rather than any point on its light curve?',...W2(['Type 1a supernovae all reach about the same peak luminosity','The peak is easiest to see','The supernova is closest at its peak','It doesn\'t matter which point'],0,['Right. The peak is the standard part of a Type 1a supernova.','Partly, but the real reason is that the peak is what\'s standard.','Not quite. It doesn\'t move closer.','Not quite. Only the peak is standard.'])})],
- Lsn:[()=>({q:'Why can you use the variable star\'s distance for the supernova?',...W2(['They\'re in the same galaxy, so they\'re the same distance away','Supernovae are always next to variable stars','The supernova is a variable star','You can\'t; it\'s just a guess'],0,['Right. Everything in one galaxy is at essentially the same distance from us.','Not quite. They just happen to be in the same galaxy.','Not quite. They\'re different kinds of objects.','It\'s not a guess: same galaxy, same distance.'])}),
-    ()=>({q:'If all Type 1a supernovae really have the same luminosity, your supernova results should…',...W2(['cluster around one value','spread evenly over a wide range','get brighter with distance'],0,['Right. That\'s exactly what you\'re testing in Level 2.','Not quite. Same luminosity means similar values.','Not quite. True luminosity doesn\'t depend on distance.'])})],
- rs:[(o,fl)=>({q:`Supernova A has ${fl?'¼ the peak flux of':'a peak magnitude about 1.5 bigger than'} supernova B. Supernova A is…`,...W2(['about 2 times farther away','4 times farther away','2 times closer','the same distance'],0,['Right. Same luminosity, ¼ the flux, so √4 = 2 times farther.','Not quite. Take the square root.','Not quite. Fainter means farther.','Not quite. They look different, so their distances differ.'])}),
-    ()=>({q:'Why can supernovae reach galaxies that variable stars can\'t?',...W2(['They are millions of times more luminous','They are closer to us','They pulse faster','They are bluer'],0,['Right. Billions of times the Sun\'s luminosity is visible hundreds of megaparsecs away.','Not quite. They\'re in faraway galaxies.','Not quite. Supernovae don\'t pulse.','Not quite. It\'s about luminosity.'])})],
- spec:[()=>({q:'This galaxy\'s lines are shifted toward the red end of the spectrum. The galaxy is…',...W2(['moving away from us','moving toward us','moving side to side','not moving'],0,['Right. Light from a source moving away gets stretched: redshifted.','Not quite. Moving toward us would scrunch the light: blueshift.','Not quite. Side-to-side motion gives no shift.','Not quite. A shift means motion toward or away.'])}),
-    ()=>({q:'Galaxy A\'s lines are shifted twice as much as galaxy B\'s. Galaxy A is…',...W2(['moving away about twice as fast','twice as far away, for sure','moving toward us','the same speed'],0,['Right. The faster it moves, the more its light is shifted.','Not directly. That\'s what the Hubble diagram tests.','Not quite. A redshift means moving away.','Not quite. More shift means faster.'])})],
- hub:[()=>({q:'If the Hubble law holds, a galaxy twice as far away as this one should be moving away…',...W2(['about twice as fast','at the same speed','half as fast','four times as fast'],0,['Right. v = H₀ r, so speed grows in step with distance.','Not quite. Farther galaxies move faster.','Not quite. Farther galaxies move faster.','Not quite. It\'s a straight line, not squared.'])}),
-    ()=>({q:'What does the slope of your Hubble diagram tell you?',...W2(['How fast the universe is expanding (H₀)','How bright the galaxies are','How old the stars are','How many galaxies there are'],0,['Right. The slope is the Hubble constant, H₀.','Not quite. Brightness was used to find distance.','Not directly, though 1/H₀ gives the universe\'s age.','Not quite.'])})]};
+ P:[(o,fl,k)=>{const w=WD(fl);return k==='var'?Y_({q:"Why are we measuring this star's pulsation period?",...W2([`Because the period might be connected to the star's ${w.L}, and we want to find out how`,'Because the period tells us the distance directly','Because stars that pulse faster are closer to us','To find out whether the star is moving away from us'],0,[`Right. Leavitt found that period and ${w.L} are linked. Level 1 is about measuring that link yourself.`,'Not quite. The period alone has nothing to do with distance until we know how it connects to the star itself.','Not quite. How fast a star pulses has nothing to do with where it is.','Not quite. Motion comes from spectra, in Level 3.'])})
+   :Y_({q:"Why do we need this variable star's pulsation period?",...W2([`Your Level 1 relation turns the period into the star's ${w.L}`,'The period tells us how far away the galaxy is all by itself','The period tells us how fast the galaxy is moving','We don\'t really need it; it\'s just extra data'],0,[`Right. Period → ${w.L}. That's what makes this star a standard candle.`,`Not by itself. The period gives the ${w.L}, and only then can you get the distance.`,'Not quite. Speed comes from the spectrum.','It\'s the key piece: no period, no luminosity, no distance.'])})},
+  (o,fl,k)=>{const w=WD(fl);return Y_({q:`Imagine you skipped the period and only measured this star's ${w.F}. What could you NOT figure out?`,...W2([`Where it goes on the period-${fl?'luminosity':'magnitude'} relation`,`How bright it appears`,'Its position on the sky'],0,[`Right. Without the period there's no way to connect the star to the relation${k==='var'?' you are building':''}.`,`You'd still have that. That's what the ${w.F} is.`,'You\'d still know that. You clicked on it!'])})},
+  o=>({q:`You marked peaks on day ${f2(o.ts[0])} and day ${f2(o.ts[o.n-1])}, with ${o.n-1} gap${o.n>2?'s':''} between them. Why do we divide by the number of gaps?`,...W2(['Each gap between neighboring peaks is one full pulsation period','To turn days into hours','Because the star gets fainter over time','To find the average flux'],0,['Right. One gap is one pulse, so dividing the total time by the number of gaps gives the time for one pulse.','Not quite. The answer stays in days.','Not quite. The star repeats the same pattern every period.','Not quite. That comes from the average line, not the peak times.'])})],
+ F:[(o,fl,k)=>{const w=WD(fl);return k==='var'?Y_({q:`Why do we need this star's average ${w.F}?`,...W2([`Combined with the distance, it tells us the star's ${w.L}`,'It tells us the pulsation period','It tells us the distance by itself','We only need it to make the chart look nice'],0,[`Right. ${fl?'Flux plus distance gives luminosity: L = 4πr²F.':'m and the distance together give M.'}`,'Not quite. The period comes from the peaks.',`Not by itself. A faint star could be dim and close or ${fl?'luminous':'truly bright'} and far.`,'It\'s essential: it is one of the two things that give the true brightness.'])})
+   :Y_({q:`Why do we need this variable star's ${w.F}?`,...W2([`We know its ${w.L} from the period, so comparing that with the ${w.F} gives the distance`,'It tells us the pulsation period','It tells us how fast the galaxy is moving'],0,[`Right. Knowing ${fl?'L and measuring F':'M and measuring m'} lets you solve for the distance.`,'Not quite. The period comes from the peaks.','Not quite. That comes from the spectrum.'])})},
+  (o,fl)=>Y_({q:`A star's ${WD(fl).F} alone can't tell you how ${fl?'luminous':'bright'} it truly is. Why not?`,...W2(['A faint-looking star could be a dim star nearby or a powerful star far away','Flux changes every time the star pulses','Telescopes can\'t measure flux accurately'],0,['Right. You need the distance to tell those two cases apart. That\'s why we need parallax.','It does vary, but that\'s why we use the average. The real problem is distance.','They can. The problem is that distance also affects how bright it looks.'])}),
+  (o,fl)=>fl?{q:'If this same star were twice as far away, its average flux would be…',...W2(['¼ as much','½ as much','the same','twice as much'],0,['Right. Flux falls with distance squared: (½)² = ¼.','Close, but the distance is squared.','Not quite. Moving away makes it fainter.','Not quite. Farther means fainter.'])}:{q:'If this same star were 10 times farther away, its apparent magnitude would be…',...W2(['5 bigger (fainter)','10 bigger (fainter)','5 smaller (brighter)','the same'],0,['Right. 10 times farther is 100 times fainter, which is 5 magnitudes.','Not quite. Every 5 magnitudes is a factor of 10 in distance.','Not quite. Farther means fainter, which is a bigger number.','Not quite. Distance changes how bright it appears.'])}],
+ th:[(o,fl)=>Y_({q:'Why go to the trouble of measuring parallax for these stars?',...W2(['It gives the distance from pure geometry, without needing to know anything about the star itself','It tells us how luminous the star is directly','It tells us the pulsation period','It is the only way to find any distance in astronomy'],0,['Right. Parallax is the first rung of the ladder: it\'s the anchor everything else is checked against.',`Not directly. It gives the distance, and the distance plus the ${WD(fl).F} gives the ${WD(fl).L}.`,'Not quite. The period comes from the light curve.','Not quite. It\'s the first method, but it only works for nearby stars. That\'s why we need a ladder.'])}),
+  o=>({q:`The star shifted ${o.shift.toFixed(5)}″ between January and July. Why is the parallax angle only half of that?`,...W2(['The shift spans Earth\'s whole orbit, from one side of the Sun to the other, but the parallax angle is defined using 1 AU','Because the star moves halfway back by July','To correct for the star\'s pulsing','Because there are two images'],0,['Right. January to July covers 2 AU of Earth\'s orbit. The parallax angle is half of the total angle.','Not quite. The background stars don\'t move; the shift comes from Earth moving.','Not quite. Pulsing changes brightness, not position.','Not quite. It\'s about how far Earth moved, not how many pictures.'])}),
+  ()=>Y_({q:'Why do we compare images taken six months apart?',...W2(['Earth is on opposite sides of the Sun, so we view the star from two spots as far apart as possible','The star is brightest in January and July','The background stars move during those months','It gives the star time to finish pulsing'],0,['Right. A wider baseline means a bigger, easier-to-measure shift, just like looking with one eye and then the other.','Not quite. The timing is about Earth\'s position, not the star\'s brightness.','Not quite. The background stars are so far away they barely shift at all.','Not quite. The pulsing has nothing to do with position.'])})],
+ d:[(o,fl)=>Y_({q:'Why do we need this star\'s distance?',...W2([`Without it, we can't turn the ${WD(fl).F} we measured into the star's ${WD(fl).L}`,'To know how long the light took to get here','To find the pulsation period','We don\'t; the period is enough'],0,['Right. Distance is the missing link between how bright a star looks and how bright it truly is.','Interesting, but that\'s not why we need it here.','Not quite. The period comes from the light curve.',`Not yet. We are still figuring out how the period connects to ${WD(fl).L}.`])}),
+  ()=>Y_({q:'Parallax works for this star but not for stars in other galaxies. Why does that matter for our plan?',...W2(['We need another way to measure distances farther out, so we use nearby stars to calibrate a new method','It means we can never measure distances to other galaxies','It means other galaxies have no variable stars','It doesn\'t matter at all'],0,['Right. That\'s the whole idea of the distance ladder: each rung calibrates the next.','Not quite. That\'s exactly the problem variable stars solve.','Not quite. Other galaxies have variable stars. Level 2 uses them.','It\'s the main reason Level 1 exists.'])}),
+  ()=>({q:'If you had measured a parallax angle twice as big, the distance would come out…',...W2(['half as far','twice as far','four times as far','the same'],0,['Right. d = 1/θ, so doubling θ halves d.','Not quite. Bigger angle means closer.','Not quite. d = 1/θ, so doubling θ halves d.','Not quite. The distance depends on θ.'])})],
+ L:[(o,fl)=>{const w=WD(fl);return Y_({q:`Why do we plot ${w.L} against period, instead of just plotting ${w.F} against period?`,...W2([`${fl?'Flux':'Apparent magnitude'} depends on how far away each star happens to be. ${fl?'Luminosity':'Absolute magnitude'} belongs to the star itself`,`${w.F} and ${w.L} are the same thing`,`${w.L} is easier to measure`],0,['Right. Stars at different distances would scatter all over a flux plot and hide the pattern.',`Not quite. ${w.F} is ${w.Fs}; ${w.L} is ${w.Ls}.`,`Not quite. It's harder: you needed both the ${w.F} and the parallax distance.`])})},
+  (o,fl)=>Y_({q:`You found this star's ${WD(fl).L}. What is the bigger goal?`,...W2([`To learn how period and ${WD(fl).L} are related, so later the period alone can tell us a star's ${WD(fl).L}`,'To find which star is the closest','To measure how fast the universe expands right now','To find the star\'s pulsation period'],0,['Right. Once the relation is known, variable stars in other galaxies become standard candles.','Not quite. Distance was only a stepping stone.','That comes later, in Level 3.','You already have that.'])}),
+  (o,fl)=>fl?{q:'If you had measured this star\'s distance as twice as far (with the same flux), its luminosity would come out…',...W2(['4 times bigger','2 times bigger','the same','4 times smaller'],0,['Right. L = 4πr²F, so doubling r makes L four times bigger. Distance errors matter a lot.','Close, but r is squared.','Not quite. L depends on r.','Not quite. Farther with the same flux means more luminous.'])}:null],
+ plot:[()=>Y_({q:'Why measure several variable stars instead of just one?',...W2(['One point can\'t show a trend. Several reveal the relation and average out errors','To make sure we have the closest one','Each star gives a different value for H₀','The game requires it, but one would be enough'],0,['Right. A line needs at least two points, and more points make it trustworthy.','Not quite. Distance isn\'t the point here.','Not quite. H₀ comes later.','One point can\'t tell you how period and luminosity are related.'])}),
+  ()=>Y_({q:'Why will this relation be so useful in Level 2?',...W2(['Measure a variable star\'s period, and you know its luminosity, even where parallax can\'t reach','It tells you the distance directly','It works only for nearby stars','It tells you how fast stars move'],0,['Right. That turns variable stars into standard candles.','Not directly. You still need the flux to get distance.','Not quite. The whole point is to use it where parallax can\'t reach.','Not quite. That comes from spectra.'])}),
+  ()=>({q:'Look at your period-luminosity chart. What happens as the pulsation period gets longer?',...W2(['The star is more luminous','The star is less luminous','There is no pattern'],0,['Right. That\'s the period-luminosity relation Henrietta Swan-Leavitt discovered.','Not quite. Look again: the points climb to the right.','Look again: the points follow a clear trend.'])})],
+ Lc:[(o,fl)=>Y_({q:`In Level 1 you measured ${WD(fl).L} using parallax. Why use your relation here instead?`,...W2(['This galaxy is far too distant for parallax, and parallax needs the distance, which is exactly what we are trying to find','The relation is more fun','Parallax only works on supernovae','The relation gives the speed of the galaxy'],0,['Right. The relation lets the period stand in for the distance we can\'t measure directly.','Not quite. There\'s a real reason.','Not quite. Parallax works only on nearby stars.','Not quite. Speed comes from the spectrum.'])}),
+  ()=>({q:'What makes this variable star a standard candle?',...W2(['Its pulsation period tells us its luminosity','It is the brightest star in its galaxy','It is very close to us','It never changes brightness'],0,['Right. A standard candle is an object we know the luminosity of.','Not quite. Brightness alone doesn\'t make it a standard candle.','Not quite. It\'s millions of parsecs away.','Not quite. It pulses, which is exactly how we use it.'])}),
+  o=>{const more=o.P>3;return{q:`This variable star pulses every ${f1(o.P)} days. Compared with a variable star that pulses every 3 days, it is…`,...W2([more?'more luminous':'less luminous',more?'less luminous':'more luminous','equally luminous'],0,[`Right. ${more?'Longer':'Shorter'} period means ${more?'more':'less'} luminous.`,'Not quite. Remember the period-luminosity relation: longer period, more luminous.','Not quite. Different periods mean different luminosities.'])}}],
+ rc:[()=>Y_({q:'You now know the distance to this galaxy. Why isn\'t that the end of Level 2?',...W2(['We want the supernova\'s luminosity, so supernovae can reach galaxies far beyond where variable stars are visible','We need to check the parallax','We need the galaxy\'s speed first','It is the end; the supernova is just a bonus'],0,['Right. This galaxy is a stepping stone for calibrating the next rung of the ladder.','Not quite. Parallax can\'t reach this galaxy.','Speed comes in Level 3.','The supernova is the real goal of Level 2.'])}),
+  ()=>Y_({q:'Why can we find this distance even though parallax can\'t reach this galaxy?',...W2(['We know the luminosity from the period and measure the flux','We measured the parallax very carefully','We assume all galaxies are the same distance','We use the supernova'],0,['Right. Knowing L and F, the inverse square law gives r.','Not quite. Parallax is far too small here.','Not quite. Galaxies are at many different distances.','Not yet. The supernova comes next.'])}),
+  (o,fl)=>({q:`Two variable stars have the same period, but one has ${fl?'1/100 the flux':'an apparent magnitude 5 bigger than the other'}. The fainter one is…`,...W2(['10 times farther away','100 times farther away','the same distance','10 times closer'],0,['Right. Same period means same luminosity. 100 times fainter means √100 = 10 times farther.','Not quite. Distance is squared, so take the square root.','Not quite. They look different, so their distances differ.','Not quite. Fainter means farther.'])})],
+ Fpk:[(o,fl,k)=>k==='host'?Y_({q:'We already have this galaxy\'s distance from the variable star. Why bother with the supernova?',...W2(['Variable stars are too faint to see in very distant galaxies; supernovae are bright enough, but first we must learn their luminosity','To double-check the variable star','Supernovae tell us the galaxy\'s speed','There is no real reason'],0,['Right. This galaxy lets us calibrate the supernova so it can be used much farther away.','Not quite. The goal is the next rung of the ladder.','Not quite. Speed comes from spectra.','There\'s a big reason: the supernova is the next rung.'])}):Y_({q:'Why measure the supernova in this galaxy?',...W2(['It\'s a standard candle bright enough to see this far, so it gives the distance','It tells us how fast the galaxy moves','It has a pulsation period','To find the galaxy\'s parallax'],0,['Right. Known luminosity plus measured peak flux gives the distance.','Not quite. That comes from the spectrum.','Not quite. Supernovae don\'t pulse.','Not quite. Parallax doesn\'t work this far.'])}),
+  ()=>({q:'Why do we use the supernova\'s peak brightness rather than any point on its light curve?',...W2(['Type 1a supernovae all reach about the same peak luminosity','The peak is easiest to see','The supernova is closest at its peak','It doesn\'t matter which point'],0,['Right. The peak is the standard part of a Type 1a supernova.','Partly, but the real reason is that the peak is what\'s standard.','Not quite. It doesn\'t move closer.','Not quite. Only the peak is standard.'])})],
+ Lsn:[()=>Y_({q:'Why can you use the variable star\'s distance for the supernova?',...W2(['They\'re in the same galaxy, so they\'re the same distance away','Supernovae are always next to variable stars','The supernova is a variable star','You can\'t; it\'s just a guess'],0,['Right. Everything in one galaxy is at essentially the same distance from us.','Not quite. They just happen to be in the same galaxy.','Not quite. They\'re different kinds of objects.','It\'s not a guess: same galaxy, same distance.'])}),
+  ()=>Y_({q:'Why measure supernovae in several ★ galaxies instead of just one?',...W2(['To test whether they all have about the same luminosity. That is what would make them standard candles','To find the closest galaxy','To measure H₀','One would be enough'],0,['Right. If they agree, we can trust them as standard candles in Level 3.','Not quite. Distance isn\'t the goal here.','That comes in Level 3.','One can\'t show that they are all the same.'])}),
+  ()=>({q:'If all Type 1a supernovae really have the same luminosity, your supernova results should…',...W2(['cluster around one value','spread evenly over a wide range','get brighter with distance'],0,['Right. That\'s exactly what you\'re testing in Level 2.','Not quite. Same luminosity means similar values.','Not quite. True luminosity doesn\'t depend on distance.'])})],
+ rs:[(o,fl)=>Y_({q:`Why use the average supernova ${WD(fl).L} you found in Level 2?`,...W2([`Type 1a supernovae all have about the same ${WD(fl).L}, so knowing it and measuring the peak ${WD(fl).F} gives the distance`,'Because this galaxy also has a variable star','To find the galaxy\'s speed','Because parallax works out here'],0,['Right. That\'s what a standard candle is for.','Not quite. These far galaxies are too distant to see variable stars.','Not quite. Speed comes from the spectrum.','Not quite. Parallax only reaches nearby stars.'])}),
+  ()=>Y_({q:'Why can supernovae reach galaxies that variable stars can\'t?',...W2(['They are millions of times more luminous','They are closer to us','They pulse faster','They are bluer'],0,['Right. Billions of times the Sun\'s luminosity is visible hundreds of megaparsecs away.','Not quite. They\'re in faraway galaxies.','Not quite. Supernovae don\'t pulse.','Not quite. It\'s about luminosity.'])}),
+  (o,fl)=>({q:`Supernova A has ${fl?'¼ the peak flux of':'a peak magnitude about 1.5 bigger than'} supernova B. Supernova A is…`,...W2(['about 2 times farther away','4 times farther away','2 times closer','the same distance'],0,['Right. Same luminosity, ¼ the flux, so √4 = 2 times farther.','Not quite. Take the square root.','Not quite. Fainter means farther.','Not quite. They look different, so their distances differ.'])})],
+ spec:[()=>Y_({q:'We already have this galaxy\'s distance. Why do we also need its spectrum?',...W2(['The supernova gives distance, but only the shift of the spectral lines tells us how fast it is moving','To double-check the distance','To find its luminosity','To see what color the galaxy is'],0,['Right. The Hubble diagram needs both distance and speed.','Not quite. The spectrum gives speed, not distance.','Not quite. We already know that from the supernova.','Not quite. It\'s about the shift of the lines.'])}),
+  ()=>({q:'This galaxy\'s lines are shifted toward the red end of the spectrum. The galaxy is…',...W2(['moving away from us','moving toward us','moving side to side','not moving'],0,['Right. Light from a source moving away gets stretched: redshifted.','Not quite. Moving toward us would scrunch the light: blueshift.','Not quite. Side-to-side motion gives no shift.','Not quite. A shift means motion toward or away.'])})],
+ hub:[()=>Y_({q:'Why do we need both a distance and a speed for every galaxy?',...W2(['The Hubble diagram compares speed with distance. Its slope tells us how fast the universe is expanding','Speed alone tells us H₀','Distance alone tells us H₀','We don\'t; either one is enough'],0,['Right. One point needs two numbers, and the slope of many points is H₀.','Not quite. Speed alone can\'t give a slope.','Not quite. Distance alone can\'t give a slope.','You need both to put a point on the diagram.'])}),
+  ()=>Y_({q:'Why measure many galaxies instead of just a couple?',...W2(['Galaxies have their own random motions and our measurements have errors, so many points pin down the slope','More galaxies make the universe expand faster','Each galaxy has a different H₀','The first galaxies are always wrong'],0,['Right. The scatter averages out and the trend stands out.','Not quite. Measuring doesn\'t change the universe.','Not quite. There is one H₀; individual galaxies scatter around it.','Not quite. Every measurement has some error; many points beat it down.'])}),
+  ()=>({q:'What does the slope of your Hubble diagram tell you?',...W2(['How fast the universe is expanding (H₀)','How bright the galaxies are','How old the stars are','How many galaxies there are'],0,['Right. The slope is the Hubble constant, H₀.','Not quite. Brightness was used to find distance.','Not directly, though 1/H₀ gives the universe\'s age.','Not quite.'])})]};
+QB.findV=[(o,fl,k)=>k==='var'?Y_({q:'Why are we hunting for a star that pulses?',...W2(['Its pulsation period might be linked to how luminous it is, and that is what Level 1 tests','Pulsing stars are always the closest stars','Pulsing stars are the easiest ones to measure parallax for','Pulsing stars are moving away from us'],0,['Right. Leavitt found that link. You are rebuilding it from nearby stars.','Not quite. Distance has nothing to do with pulsing.','Not quite. Parallax works the same for any nearby star.','Not quite. Pulsing is about brightness, not motion.'])}):Y_({q:'Why are we hunting for a variable star inside this galaxy?',...W2(['Its period tells us its luminosity, so it can tell us how far away the galaxy is','Variable stars are the brightest stars in a galaxy','To measure the galaxy\'s parallax','To find out how fast the galaxy is moving'],0,['Right. The variable star is our standard candle for this galaxy.','Not quite. It\'s useful because of its period, not because it\'s the brightest.','Not quite. Parallax can\'t reach other galaxies.','Not quite. Speed comes from spectra.'])})];
+QB.findSN=[()=>Y_({q:'Why compare a new image with an older image of the same galaxy?',...W2(['A supernova is new light that wasn\'t there before, so it stands out when you blink the images','Galaxies change shape every year','To measure the parallax of the galaxy','To see the galaxy\'s redshift'],0,['Right. Real supernova searches work just like this.','Not quite. Galaxies look the same year to year. That\'s why a new point of light stands out.','Not quite. Parallax can\'t reach other galaxies.','Not quite. Redshift comes from the spectrum.'])})];
 QB.rec=QB.Lsn;
 function qcLine(){const q=S.st.qc;if(!q||!q.n)return'';return `<p class="mono note">Quick checks: ${q.first}/${q.n} right first try · streak ${q.streak} · best ${q.best}</p>`}
 function maybeQuick(c,ca,done){const cur=S.cur;if(!S.set.qc||cur.quickDone)return false;
   const k=cur.kind==='var'?'vars':cur.kind==='host'?'hosts':'far';if(cnt(k)<1&&!cur.review)return false;
-  const fl=isFlux(),elig=id=>(QB[id]||[]).some(g=>{try{return g(ca,fl)}catch(e){return false}});
+  const fl=isFlux(),K=cur.kind,elig=id=>(QB[id]||[]).some(g=>{try{return g(ca,fl,K)}catch(e){return false}});
   if(cur.quickAt===undefined){const ids=cardsFor(cur).map(x=>x.id).filter(id=>QB[id]);cur.quickAt=Math.random()<[0,0.35,0.7][S.set.qc]&&ids.length?ids[Math.floor(Math.random()*ids.length)]:null}
   if(cur.quickAt!==c.id||!elig(c.id))return false;
   const qs=S.st.qc||(S.st.qc={n:0,first:0,streak:0,best:0,asked:[]});
-  const gens=QB[c.id].map((g,i)=>({g,key:c.id+i})).filter(x=>{try{return x.g(ca,fl)}catch(e){return false}});
-  const fresh=gens.filter(x=>!qs.asked.includes(x.key)),pickFrom=fresh.length?fresh:gens,pick=pickFrom[Math.floor(Math.random()*pickFrom.length)],Q=pick.g(ca,fl);
+  const gens=QB[c.id].map((g,i)=>({g,key:c.id+i})).filter(x=>{try{return x.q=x.g(ca,fl,K)}catch(e){return false}});
+  const fresh=gens.filter(x=>!qs.asked.includes(x.key)),pool=fresh.length?fresh:gens,whys=pool.filter(x=>x.q.why),pickFrom=whys.length&&Math.random()<0.8?whys:pool,pick=pickFrom[Math.floor(Math.random()*pickFrom.length)],Q=pick.q;
   const order=Q.o.map((_,i)=>i).sort(()=>Math.random()-0.5);let tries=0;
-  const body=obsEl.querySelector('.obs-body');body.innerHTML=`<span class="eyebrow">Quick check</span><h3>Before you move on</h3><fieldset class="q"><legend>${Q.q}</legend><div class="opts">${order.map(i=>`<button class="opt" data-o="${i}">${Q.o[i]}</button>`).join('')}</div><p class="fb" id="qfb" aria-live="polite"></p></fieldset>`;
+  const body=obsEl.querySelector('.obs-body');body.innerHTML=`<span class="eyebrow">Quick check</span><h3>${Q.why?'Why are we doing this?':'Before you move on'}</h3><fieldset class="q"><legend>${Q.q}</legend><div class="opts">${order.map(i=>`<button class="opt" data-o="${i}">${Q.o[i]}</button>`).join('')}</div><p class="fb" id="qfb" aria-live="polite"></p></fieldset>`;
   const nx=obsEl.querySelector('#nx'),bk=obsEl.querySelector('#bk');nx.disabled=true;nx.textContent='Continue';bk.disabled=true;
   body.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const i=+b.dataset.o,ok=i===Q.a,fb=body.querySelector('#qfb');tries++;b.classList.add(ok?'right':'wrong');sfx(ok?'right':'wrong');
     if(!ok){fb.className='fb bad';fb.textContent=Q.f[i];return}
@@ -964,6 +1168,7 @@ function startMusic(){if(!sndInit())return;const c=SND.ctx;if(c.state==='suspend
 function tone(f,t0,dur,vol,type='sine'){const c=SND.ctx,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.connect(g);g.connect(SND.sfx);o.start(t0);o.stop(t0+dur+0.05)}
 function sfx(kind){if(SND.prefs.muted||!SND.prefs.sfx||!sndInit())return;const c=SND.ctx;if(c.state==='suspended')c.resume();const t=c.currentTime+0.01;
   if(kind==='tick')tone(1400,t,0.07,0.12,'triangle');
+  if(kind==='zoom'){const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(620,t+1.3);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.08,t+0.5);g.gain.exponentialRampToValueAtTime(0.0001,t+1.6);o.connect(g);g.connect(SND.sfx);o.start(t);o.stop(t+1.7)}
   else if(kind==='step')tone(660,t,0.12,0.07);
   else if(kind==='right'){tone(midi(76),t,0.5,0.18);tone(midi(83),t+0.09,0.7,0.16)}
   else if(kind==='wrong'){tone(midi(50),t,0.25,0.16,'triangle');tone(midi(49),t+0.12,0.3,0.13,'triangle')}
@@ -1011,15 +1216,27 @@ function showFinish(){if(TUT)closeTut(true);if(S.cur)closePanel();const f=hubble
   q('#finKeep').onclick=closeFinish;
   q('#finExp').onclick=()=>{const t=buildReport(),ta=q('#finRep'),m=q('#finMsg'),named=!!q('#finName').value.trim();ta.value=t;ta.hidden=false;
     navigator.clipboard?.writeText(t).then(()=>{m.textContent=named?'Copied. Paste it where your teacher asked.':'Copied, but add your name above and export again.'},()=>{ta.select();m.textContent='Select the text above and copy it.'})};
-  const rs=q('#finReset');rs.onclick=()=>{if(rs.dataset.arm){S.st=blankSt();saveSt();closeFinish();applyCode(S.code);toast('Progress cleared. Starting over.')}else{rs.dataset.arm=1;rs.textContent='Click again to erase all progress'}};
+  const rs=q('#finReset');rs.onclick=()=>{if(rs.dataset.arm){S.st=blankSt();saveSt();closeFinish();applyCode(S.code);toast('Progress cleared. Starting over with a brand-new sky.')}else{rs.dataset.arm=1;rs.textContent='Click again to erase all progress'}};
   typeset(q('.tut-body'));tutBox.focus({preventScroll:true})}
 
 /* ================= boot ================= */
+/* color the words luminosity / distance / flux everywhere in the page text, matching the equation colors */
+const KW_RE=/\b(luminosit(?:y|ies)|luminous|distances?|flux(?:es)?|(?:pulsation )?periods?)\b/gi,KW_SKIP='mjx-container,script,style,textarea,input,select,option,.btn,.chip,.lvl,.kw,canvas,svg,.eq,.code,title,.x';
+const kwCol=w=>{w=w.toLowerCase();return w.startsWith('lum')?CL.L:w.startsWith('dist')?CL.r:/^(per|pul)/.test(w)?CL.P:CL.F};
+function kwText(n){const t=n.nodeValue;if(!t||!/[a-z]/i.test(t))return;KW_RE.lastIndex=0;if(!KW_RE.test(t))return;const p=n.parentElement;if(!p||p.closest(KW_SKIP))return;
+  KW_RE.lastIndex=0;const f=document.createDocumentFragment();let last=0,m;while((m=KW_RE.exec(t))){if(m.index>last)f.appendChild(document.createTextNode(t.slice(last,m.index)));const sp=document.createElement('span');sp.className='kw';sp.style.color=kwCol(m[0]);sp.textContent=m[0];f.appendChild(sp);last=m.index+m[0].length}
+  if(last<t.length)f.appendChild(document.createTextNode(t.slice(last)));n.replaceWith(f)}
+function kwWalk(root){if(root.nodeType===3){kwText(root);return}if(root.nodeType!==1||root.closest(KW_SKIP))return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),list=[];while(tw.nextNode())list.push(tw.currentNode);list.forEach(kwText)}
+new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')kwText(m.target);else m.addedNodes.forEach(kwWalk)}}).observe(document.body,{childList:true,subtree:true,characterData:true});
+kwWalk(document.body);
+
 function applyCode(code){const p=parseCode(code)||parseCode(DEFAULT_CODE);if(S.cur)closePanel();if(TUT)closeTut(true);
-  S.code=p.code;S.seed=p.seed;S.set={units:p.units,start:p.start,hand:p.hand,n1:p.n1,n2:p.n2,n3:p.n3,qc:p.qc};buildUniverse(S.seed);loadSt();S.view=topLevel();
+  S.code=p.code;S.set={units:p.units,start:p.start,hand:p.hand,n1:p.n1,n2:p.n2,n3:p.n3,qc:p.qc,drag:p.drag};S.cls=p.seed;loadSt();
+  if(!S.st.sky){const old=['vars','hosts','far'].some(k=>Object.keys(S.st[k]).length);S.st.sky=old?p.seed:randSky();saveSt()}
+  S.seed=S.st.sky;buildUniverse(S.seed);S.view=topLevel();
   const t=targets();centerOn(t.find(o=>!recOf(o))||t[0]);try{localStorage.setItem('redshift-hunt:v3:code',S.code)}catch(e){}
   renderAll();maybeLesson()}
-window.addEventListener('resize',()=>{requestDraw();renderLP();if(S.cur&&S.cur.redraw)S.cur.redraw()});
+window.addEventListener('resize',()=>{requestDraw();renderLP();zoomRedraw();if(S.cur&&S.cur.redraw)S.cur.redraw()});
 window.addEventListener('hashchange',()=>{const p=parseCode(location.hash.slice(1));if(p&&p.code!==S.code)applyCode(p.code)});
 document.fonts&&document.fonts.ready.then(()=>{requestDraw();renderLP()});
 let startCode=parseCode(location.hash.slice(1))?.code;if(!startCode){try{startCode=localStorage.getItem('redshift-hunt:v3:code')}catch(e){}}
