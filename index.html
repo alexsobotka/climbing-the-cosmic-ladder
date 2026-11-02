@@ -191,6 +191,7 @@ td{padding:5px 6px;text-align:right;font-family:var(--mono);font-variant-numeric
 .wel-title span{font-size:clamp(26px,4.6vw,54px);font-weight:600;letter-spacing:.14em;color:var(--ink)}
 .wel-title b{font-size:clamp(54px,11vw,138px);font-weight:800;color:var(--redlight);letter-spacing:.01em;text-shadow:0 0 40px rgba(255,106,85,.35)}
 .wel-sub{font-family:var(--mono);font-size:clamp(13px,1.6vw,16px);color:var(--ink);letter-spacing:.04em;max-width:46ch}
+.wel-btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}.btn.big.ghost{background:rgba(0,0,0,.6);color:var(--ink);border:1px solid var(--rule);box-shadow:none}
 .btn.big{font-size:20px;padding:14px 36px;border-radius:6px;margin-top:6px;box-shadow:0 0 30px rgba(255,106,85,.35)}
 .wel-class{font-family:var(--mono);font-size:13px;color:var(--muted)}
 .intro-levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -227,7 +228,7 @@ td{padding:5px 6px;text-align:right;font-family:var(--mono);font-variant-numeric
   <div class="wel-inner">
     <h1 class="wel-title" id="welTitle"><span>Climbing the</span><b>Cosmic Ladder</b></h1>
     <p class="wel-sub">Parallax → variable stars → Type 1a supernovae → the expanding universe</p>
-    <button class="btn big" id="startBtn">Start game</button>
+    <div class="wel-btns"><button class="btn big" id="startBtn">Start game</button><button class="btn big ghost" id="newGameBtn" hidden>Start new game</button></div>
     <p class="wel-class" id="welClass"></p>
     <p class="wel-credit">Created by Dr. Alex Sobotka</p>
   </div>
@@ -289,14 +290,13 @@ function handLabels(fl){return{P:'Pulsation period from the marked peaks (Levels
 const isFlux=()=>S.set.units==='flux';
 
 /* ================= settings / class code ================= */
-const DEFAULT_CODE='ORION-F1A53-10';
+const DEFAULT_CODE='F1A53-10';
 /* ===== TEACHER PASSCODE for the gear (settings) button. Change the text between the quotes. ===== */
 const TEACHER_PASSCODE='ladder';
 const teacherOK=()=>{try{return localStorage.getItem('cosmic-ladder:teacher')===TEACHER_PASSCODE||sessionStorage.getItem('cosmic-ladder:teacher')===TEACHER_PASSCODE}catch(e){return false}};
-function cleanSeed(s){return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,16)||'ORION'}
-function parseCode(c){c=(c||'').trim().toUpperCase().replace(/[^A-Z0-9-]/g,'');const m=c.match(/^([A-Z0-9]{1,16})-([FM])([123])([AH]|X[0-9A-F]{2})([3-9])([2-9])(?:-(\d{1,2})(Q[012])?(E[01])?)?$/);if(!m)return null;
-  const o={seed:m[1],units:m[2]==='F'?'flux':'mag',start:+m[3],hand:m[4]==='H'?255:m[4]==='A'?0:parseInt(m[4].slice(1),16),n1:+m[5],n2:+m[6],n3:m[7]?Math.max(5,Math.min(30,+m[7])):10,qc:m[8]?+m[8][1]:1,drag:m[9]?+m[9][1]:1};o.code=makeCode(o.seed,o.units,o.start,o.hand,o.n1,o.n2,o.n3,o.qc,o.drag);return o}
-const makeCode=(seed,units,start,hand,n1,n2,n3=10,qc=1,drag=1)=>`${cleanSeed(seed)}-${units==='flux'?'F':'M'}${start}${hand===255?'H':!hand?'A':'X'+hand.toString(16).toUpperCase().padStart(2,'0')}${n1}${n2}-${n3}${qc===1?'':'Q'+qc}${drag?'':'E0'}`;
+function parseCode(c){c=(c||'').trim().toUpperCase().replace(/[^A-Z0-9-]/g,'');const m=c.match(/^(?:([A-Z0-9]{1,16})-)?([FM])([123])([AH]|X[0-9A-F]{2})([3-9])([2-9])(?:-(\d{1,2})(Q[012])?(E[01])?)?$/);if(!m)return null;
+  const o={seed:m[1],units:m[2]==='F'?'flux':'mag',start:+m[3],hand:m[4]==='H'?255:m[4]==='A'?0:parseInt(m[4].slice(1),16),n1:+m[5],n2:+m[6],n3:m[7]?Math.max(5,Math.min(30,+m[7])):10,qc:m[8]?+m[8][1]:1,drag:m[9]?+m[9][1]:1};o.code=makeCode(o.units,o.start,o.hand,o.n1,o.n2,o.n3,o.qc,o.drag);return o}
+const makeCode=(units,start,hand,n1,n2,n3=10,qc=1,drag=1)=>`${units==='flux'?'F':'M'}${start}${hand===255?'H':!hand?'A':'X'+hand.toString(16).toUpperCase().padStart(2,'0')}${n1}${n2}-${n3}${qc===1?'':'Q'+qc}${drag?'':'E0'}`;
 function settingsText(s){return [s.units==='flux'?'Flux and luminosity':'Magnitudes',['starts at Level 1 (full distance ladder)','starts at Level 2 (period-luminosity relation given)','starts at Level 3 (supernova luminosity given)'][s.start-1],s.hand===255?'students compute every step':!s.hand?'the game does the arithmetic':'students compute some steps',`${s.n1} variable stars and ${s.n2} supernova galaxies to unlock`,`${s.n3} galaxies to finish Level 3`,['no quick checks','occasional quick checks','frequent quick checks'][s.qc??1],s.drag===0?'equations given':'students build equations by drag-and-drop'].join(' · ')}
 
 const S={code:'',seed:'',set:{units:'flux',start:1,hand:0,n1:5,n2:3,n3:10,qc:1,drag:1},H0:0,U:null,st:null,view:1,cam:{x:0,y:0},cur:null,hover:null,showTrue:false};
@@ -835,13 +835,13 @@ function renderMenu(){let name='';try{name=localStorage.getItem('redshift-hunt:n
   dbox.querySelector('#muteAll').onchange=e=>{SND.prefs.muted=e.target.checked;saveSnd();if(!SND.prefs.muted)startMusic();sndApply()};
   dbox.querySelectorAll('[data-les]').forEach(b=>b.onclick=()=>{closeDrawer();openTut(b.dataset.les)});
   dbox.querySelector('#stuName').oninput=e=>{try{localStorage.setItem('redshift-hunt:name',e.target.value)}catch(x){}};
-  dbox.querySelector('#joinBtn').onclick=()=>{const p=parseCode(dbox.querySelector('#joinCode').value);if(!p){dbox.querySelector('#joinMsg').textContent='That code does not look right. Codes look like ORION-F1A53.';return}closeDrawer();applyCode(p.code);toast(`Joined class ${p.code}.`)};
+  dbox.querySelector('#joinBtn').onclick=()=>{const p=parseCode(dbox.querySelector('#joinCode').value);if(!p){dbox.querySelector('#joinMsg').textContent='That code does not look right. Codes look like F1A53-10.';return}closeDrawer();applyCode(p.code);toast(`Joined class ${p.code}.`)};
   dbox.querySelector('#repBtn').onclick=()=>{const t=buildReport(),ta=dbox.querySelector('#repText'),msg=dbox.querySelector('#repMsg');ta.value=t;ta.hidden=false;const named=!!dbox.querySelector('#stuName').value.trim();
     navigator.clipboard?.writeText(t).then(()=>{msg.textContent=named?'Copied. Paste it where your teacher asked.':'Copied, but add your name above and copy again.'},()=>{ta.select();msg.textContent='Select the text below and copy it.'})}}
 function renderSettings(){const s=S.set,opt=(lo,hi,v)=>Array.from({length:hi-lo+1},(_,i)=>lo+i).map(x=>`<option ${x===v?'selected':''}>${x}</option>`).join('');
   dbox.innerHTML=`<div class="dhead"><h2>Instructor settings</h2><button class="x" id="dClose" aria-label="Close settings">×</button></div>
   <p class="note">Choose settings, then share the class code. Students enter it under Menu, then Your class. Or they can open the game's link with # and the code added to the end.</p>
-  <div class="formrow"><label class="lbl" for="seed">Class name</label><input type="text" id="seed" value="${S.cls}" maxlength="16" style="width:11em"></div><p class="note">Every student gets their own randomly generated sky, so each has a different true H₀. Starting over gives a new sky.</p>
+  <p class="note">Every student gets their own randomly generated sky, so each has a different true H₀. Starting over gives a new sky.</p>
   <fieldset class="seg"><legend>Brightness language</legend><label><input type="radio" name="units" value="flux" ${s.units==='flux'?'checked':''}> Flux and luminosity (inverse square law)</label><label><input type="radio" name="units" value="mag" ${s.units==='mag'?'checked':''}> Magnitudes</label></fieldset>
   <fieldset class="seg"><legend>Starting level</legend><label><input type="radio" name="start" value="1" ${s.start===1?'checked':''}> Level 1: build the period-luminosity relation from parallax</label><label><input type="radio" name="start" value="2" ${s.start===2?'checked':''}> Level 2: period-luminosity relation is given</label><label><input type="radio" name="start" value="3" ${s.start===3?'checked':''}> Level 3: supernova luminosity is given</label></fieldset>
   <fieldset class="seg"><legend>Steps students calculate themselves</legend><p class="note">Checked steps show the equation with a blank answer that students must fill in. Unchecked steps are filled in by the game.</p>
@@ -858,7 +858,7 @@ function renderSettings(){const s=S.set,opt=(lo,hi,v)=>Array.from({length:hi-lo+
     <div class="row"><button class="btn ghost" id="copyCsv">Copy data as CSV</button><button class="btn ghost" id="clearAll">Clear progress on this device</button><button class="btn ghost" id="lockBtn">Lock settings</button></div></section>
   <section class="dsec"><h3>Check a student report</h3><textarea id="verifyIn" rows="6" placeholder="Paste a student's report here" aria-label="Student report"></textarea><div class="row"><button class="btn ghost" id="verifyBtn">Check report</button><span id="verifyOut"></span></div></section>`;
   const q=s=>dbox.querySelector(s),val=n=>(dbox.querySelector(`input[name="${n}"]:checked`)||{}).value;
-  const nc=()=>makeCode(q('#seed').value,val('units'),+val('start'),[...dbox.querySelectorAll('.hstep:checked')].reduce((a,x)=>a|+x.value,0),+q('#n1').value,+q('#n2').value,+q('#n3').value,+(val('qc')??1),+(val('drag')??1));const upd=()=>q('#newCode').textContent=nc();upd();
+  const nc=()=>makeCode(val('units'),+val('start'),[...dbox.querySelectorAll('.hstep:checked')].reduce((a,x)=>a|+x.value,0),+q('#n1').value,+q('#n2').value,+q('#n3').value,+(val('qc')??1),+(val('drag')??1));const upd=()=>q('#newCode').textContent=nc();upd();
   dbox.querySelectorAll('input,select').forEach(i=>i.addEventListener(i.type==='text'?'input':'change',upd));
   q('#hAll').onclick=()=>{dbox.querySelectorAll('.hstep').forEach(x=>x.checked=true);upd()};q('#hNone').onclick=()=>{dbox.querySelectorAll('.hstep').forEach(x=>x.checked=false);upd()};
   const msg=t=>{q('#instMsg').textContent=t};
@@ -878,7 +878,7 @@ function renderSettings(){const s=S.set,opt=(lo,hi,v)=>Array.from({length:hi-lo+
 function chk(body){const a=hashStr('RH3|'+body),b=hashStr(body+'|RH3');return (a.toString(36)+b.toString(36)).toUpperCase().slice(0,8)}
 function normReport(t){return t.replace(/\r/g,'').split('\n').map(l=>l.replace(/\s+$/,'')).filter((l,i,a)=>!(l===''&&i===a.length-1))}
 function buildReport(){let name='';try{name=localStorage.getItem('redshift-hunt:name')||''}catch(e){}
-  const lines=['CLIMBING THE COSMIC LADDER · STUDENT REPORT',`Student: ${name.trim()||'(no name entered)'}`,`Class code: ${S.code}`,`Sky: ${S.seed}`,`Date: ${new Date().toLocaleDateString('en-CA')}`];
+  const lines=['CLIMBING THE COSMIC LADDER · STUDENT REPORT',`Student: ${name.trim()||'(no name entered)'}`,`Class code: ${S.code}`,`Date: ${new Date().toLocaleDateString('en-CA')}`];
   for(const id of lessonIds()){const q=S.st.quiz[id];if(!q||!q.n){lines.push(`${LESSON_NAMES[id]} quiz: not attempted`);continue}
     const it=q.items||{},ans=Object.keys(it).length,first=Object.values(it).filter(x=>x.ok&&x.tries===1).length,extra=Object.entries(it).filter(([,x])=>x.tries>1).map(([k,x])=>`Q${+k+1} took ${x.tries} tries`);
     lines.push(`${LESSON_NAMES[id]} quiz: ${first} of ${q.n} right on first try${ans<q.n?` (${q.n-ans} unanswered)`:''}${extra.length?' · '+extra.join(', '):''}`)}
@@ -1231,8 +1231,10 @@ new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')kwText(
 kwWalk(document.body);
 
 function applyCode(code){const p=parseCode(code)||parseCode(DEFAULT_CODE);if(S.cur)closePanel();if(TUT)closeTut(true);
+  /* carry over progress saved under an older code that still had a sky name in front */
+  try{const raw=(code||'').trim().toUpperCase(),nk='redshift-hunt:v3:'+p.code,ok='redshift-hunt:v3:'+raw;if(raw&&raw!==p.code&&!localStorage.getItem(nk)&&localStorage.getItem(ok))localStorage.setItem(nk,localStorage.getItem(ok))}catch(e){}
   S.code=p.code;S.set={units:p.units,start:p.start,hand:p.hand,n1:p.n1,n2:p.n2,n3:p.n3,qc:p.qc,drag:p.drag};S.cls=p.seed;loadSt();
-  if(!S.st.sky){const old=['vars','hosts','far'].some(k=>Object.keys(S.st[k]).length);S.st.sky=old?p.seed:randSky();saveSt()}
+  if(!S.st.sky){const old=['vars','hosts','far'].some(k=>Object.keys(S.st[k]).length);S.st.sky=old?(p.seed||'ORION'):randSky();saveSt()}
   S.seed=S.st.sky;buildUniverse(S.seed);S.view=topLevel();
   const t=targets();centerOn(t.find(o=>!recOf(o))||t[0]);try{localStorage.setItem('redshift-hunt:v3:code',S.code)}catch(e){}
   renderAll();maybeLesson()}
@@ -1246,7 +1248,7 @@ applyCode(startCode||DEFAULT_CODE);
 (function(){
   const wel=document.getElementById('welcome'),cv=document.getElementById('wcv'),ctx=cv.getContext('2d'),btn=document.getElementById('startBtn');
   const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches,R=mulberry32(1929);
-  const prog=cnt('vars')+cnt('hosts')+cnt('far');btn.textContent=prog?'Continue climbing':'Start game';
+  const prog=cnt('vars')+cnt('hosts')+cnt('far');btn.textContent=prog?'Continue climbing':'Start game';const nb=document.getElementById('newGameBtn');nb.hidden=!prog;
   document.getElementById('welClass').textContent=`Class ${S.code}`;
   const spawn=z=>({x:(R()-.5)*7,y:(R()-.5)*4.2,z:z??(0.8+R()*1.6),rot:R()*Math.PI,q:.3+.6*R(),s:.6+R()*.9,arms:R()<.6});
   const gal=[];for(let i=0;i<90;i++)gal.push(spawn(1+R()*40));
@@ -1283,6 +1285,8 @@ applyCode(startCode||DEFAULT_CODE);
     if(!reduce)requestAnimationFrame(frame)}
   requestAnimationFrame(frame);if(reduce)window.addEventListener('resize',()=>requestAnimationFrame(frame));
   btn.onclick=()=>{startMusic();sfx('start');wel.hidden=true;maybeLesson();if(!TUT&&tutEl.hidden)sky.focus({preventScroll:true})};
+  nb.onclick=()=>{if(!nb.dataset.arm){nb.dataset.arm=1;nb.textContent='Click again to erase your progress';setTimeout(()=>{if(nb.isConnected){delete nb.dataset.arm;nb.textContent='Start new game'}},5000);return}
+    S.st=blankSt();saveSt();applyCode(S.code);btn.onclick();toast('New game started with a brand-new sky.')};
   setTimeout(()=>btn.focus({preventScroll:true}),50);
 })();
 </script>

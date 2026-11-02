@@ -28,11 +28,10 @@ Mistakes carry up the ladder, just as they do for real astronomers. A sloppy per
 
 The game has no server, so a teacher's settings reach students through a short **class code**. Everyone using the same code plays under the same settings. Each student gets their own randomly generated sky (and its own true H₀), so no two students' answers match. Starting over gives a brand-new sky.
 
-Example: `ORION-F1A53-10`
+Example: `F1A53-10`
 
 | Part | Meaning | Options |
 |---|---|---|
-| `ORION` | Class name. Just a label; it keeps each class's saved progress separate. | Up to 16 letters or numbers |
 | `F` | Brightness language | `F` flux and luminosity · `M` magnitudes |
 | `1` | Starting level | `1` full ladder · `2` period-luminosity relation given · `3` supernova luminosity given |
 | `A` | Which steps students calculate themselves | `A` none (the game fills in every equation) · `H` all of them · `X` plus two characters for a custom mix chosen with the checkboxes in ⚙ settings (for example `X04` means students only calculate the distance from the parallax angle) |
@@ -43,10 +42,10 @@ Example: `ORION-F1A53-10`
 | *(optional)* `E0` | Equation building | nothing added for on (the default) · `E0` off, so equations are simply shown |
 
 **Sharing a code with students.** Either:
-- add it to the end of the link: `https://alexsobotka.github.io/cosmic-ladder/#ORION-F1A53-10`, or
+- add it to the end of the link: `https://alexsobotka.github.io/cosmic-ladder/#F1A53-10`, or
 - have students open **Menu → Your class**, type the code, and click **Join class**.
 
-With no code, the game uses `ORION-F1A53-10`.
+With no code, the game uses `F1A53-10`. Older codes that start with a word like `ORION-` still work; the word is simply ignored.
 
 You never need to build a code by hand. Open the ⚙ settings, choose your options, and the game shows the matching code.
 
@@ -56,7 +55,7 @@ You never need to build a code by hand. Open the ⚙ settings, choose your optio
 
 The gear button is protected by a passcode. **The default passcode is `ladder`.** From the settings you can:
 
-- choose the class name and every option above, and copy the resulting class code
+- choose every option above and copy the resulting class code
 - tick exactly which calculation steps students must do themselves (period, parallax angle, distance from parallax, luminosity, and so on); checked steps show the equation with a blank answer that the game checks
 - set how often **quick-check questions** pop up (off, sometimes, often). These are short questions about the step a student just finished. Most ask *why* that measurement is needed ("Why do we need this star's pulsation period?"), so students think about the purpose of each step instead of just clicking through. Students must answer correctly to continue, and the report records how many they got right on the first try
 - turn **equation building** on or off. When it's on, students drag the pieces of each key equation into place before the numbers appear. Each equation is built in full the first time. After that, the game picks at random: about half of the objects ask for one equation, with only one or two boxes left blank
@@ -82,7 +81,7 @@ Change the word between the quotes, save, and upload the file again.
 
 Students open **Menu → Your class**, enter their name, and click **Copy report for your teacher**. They can also click **Export results for teacher** on the finish screen. The report is plain text they can paste into an LMS assignment. It includes:
 
-- their name, class code, sky and date
+- their name, class code and date
 - for each lesson quiz, how many questions they got right on the first try, and which ones took extra tries
 - how many objects they measured at each level, their period-luminosity relation and their average supernova luminosity
 - their H₀, and after finishing, the true H₀ and how far off they were
