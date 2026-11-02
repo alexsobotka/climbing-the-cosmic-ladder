@@ -1248,7 +1248,7 @@ applyCode(startCode||DEFAULT_CODE);
 (function(){
   const wel=document.getElementById('welcome'),cv=document.getElementById('wcv'),ctx=cv.getContext('2d'),btn=document.getElementById('startBtn');
   const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches,R=mulberry32(1929);
-  const prog=cnt('vars')+cnt('hosts')+cnt('far');btn.textContent=prog?'Continue climbing':'Start game';const nb=document.getElementById('newGameBtn');nb.hidden=!prog;
+  const prog=cnt('vars')+cnt('hosts')+cnt('far')+Object.keys(S.st.lessons||{}).length+Object.keys(S.st.quiz||{}).length+((S.st.qc||{}).n||0);btn.textContent=prog?'Continue climbing':'Start game';const nb=document.getElementById('newGameBtn');nb.hidden=!prog;
   document.getElementById('welClass').textContent=`Class ${S.code}`;
   const spawn=z=>({x:(R()-.5)*7,y:(R()-.5)*4.2,z:z??(0.8+R()*1.6),rot:R()*Math.PI,q:.3+.6*R(),s:.6+R()*.9,arms:R()<.6});
   const gal=[];for(let i=0;i<90;i++)gal.push(spawn(1+R()*40));
