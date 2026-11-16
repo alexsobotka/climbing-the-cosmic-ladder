@@ -10,7 +10,7 @@ The whole game is one self-contained file, `index.html`. There's nothing to inst
 
 ## What students do
 
-Each level opens with a short interactive lesson that ends in a few concept-check questions. Students measure each object one step at a time. Before a key equation appears, students build it by dragging its pieces (L, r, F, P, θ…) into place. Then the equation is shown filled in with their own numbers. Luminosity, distance, flux and pulsation period keep the same colors everywhere (green, pink, blue and purple), in equations, text and charts. The parallax angle θ is orange.
+Each level opens with a short interactive lesson that ends in a few concept-check questions. Students can't skip a lesson the first time through; the Skip button appears only when they revisit one. Students measure each object one step at a time. Before the parallax equations and L = 4πr²F appear, students build them by dragging the pieces (L, r, F, θ…) into place. Then the equation is shown filled in with their own numbers. Luminosity, distance, flux and pulsation period keep the same colors everywhere (green, pink, blue and purple), in equations, text and charts. The parallax angle θ is orange.
 
 | Level | Goal | What students measure |
 |---|---|---|
@@ -18,7 +18,7 @@ Each level opens with a short interactive lesson that ends in a few concept-chec
 | **2 · Supernovae** | Find out whether Type 1a supernovae all have the same luminosity | Clicking a ★ galaxy zooms in to a close-up where students hunt for the one star that is pulsing, then blink between last year's image and tonight's to spot the supernova. In these galaxies, which contain both a variable star and a supernova, students use their Level 1 relation to get the variable star's L, then its distance, then the supernova's luminosity, L_SN = 4πr²F_peak. |
 | **3 · Hubble diagram** | Measure the expansion of the universe | Each distant galaxy also opens with a zoom-in and a supernova hunt. Then students use their average L_SN and the supernova's peak flux to get the distance. They line up a template of spectral lines to get the galaxy's speed, then plot velocity against distance. |
 
-When a student reaches the Level 3 goal, the game reveals the true H₀ for that sky and tells them how close they got. From there they can export a report, start over, or keep exploring.
+When a student reaches the Level 3 goal, a pop-up asks whether they want to **check their answer** or **keep exploring**. Checking reveals the true H₀ for that sky and how close they got; from there they can export a report, start over, or keep exploring. Students who keep exploring can check later with the button in the Level 3 panel.
 
 Mistakes carry up the ladder, just as they do for real astronomers. A sloppy period-luminosity relation shifts the supernova luminosities, and that shifts H₀. That can lead to a good class discussion.
 
@@ -28,24 +28,25 @@ Mistakes carry up the ladder, just as they do for real astronomers. A sloppy per
 
 The game has no server, so a teacher's settings reach students through a short **class code**. Everyone using the same code plays under the same settings. Each student gets their own randomly generated sky (and its own true H₀), so no two students' answers match. Starting over gives a brand-new sky.
 
-Example: `F1A53-10`
+Example: `F1X0644-5Q2` (the default)
 
 | Part | Meaning | Options |
 |---|---|---|
 | `F` | Brightness language | `F` flux and luminosity · `M` magnitudes |
 | `1` | Starting level | `1` full ladder · `2` period-luminosity relation given · `3` supernova luminosity given |
-| `A` | Which steps students calculate themselves | `A` none (the game fills in every equation) · `H` all of them · `X` plus two characters for a custom mix chosen with the checkboxes in ⚙ settings (for example `X04` means students only calculate the distance from the parallax angle) |
-| `5` | Variable stars needed to unlock Level 2 | 3 to 9 |
-| `3` | ★ galaxies needed to unlock Level 3 | 2 to 9 |
-| `10` | Galaxies needed to finish Level 3 | 5 to 20 |
-| *(optional)* `Q0` / `Q2` | Quick-check questions | `Q0` off · nothing added for sometimes (the default) · `Q2` often |
+| `A` | Which steps students calculate themselves | `A` none (the game fills in every equation) · `H` all of them · `X` plus two characters for a custom mix chosen with the checkboxes in ⚙ settings. The default, `X06`, means students calculate the parallax angle and the distance from parallax themselves |
+| `4` | Variable stars needed to unlock Level 2 | 3 to 9 |
+| `4` | ★ galaxies needed to unlock Level 3 | 2 to 9 |
+| `5` | Galaxies needed to finish Level 3 | 5 to 20 |
+| *(optional)* `Q0` / `Q2` | Quick-check questions | `Q0` off · nothing added for sometimes · `Q2` often (the default) |
 | *(optional)* `E0` | Equation building | nothing added for on (the default) · `E0` off, so equations are simply shown |
+| *(optional)* `K` | How often students calculate the checked steps | nothing added for sometimes (the default: always on the first object of each level, then about half of the time) · `K` every object |
 
 **Sharing a code with students.** Either:
-- add it to the end of the link: `https://alexsobotka.github.io/cosmic-ladder/#F1A53-10`, or
+- add it to the end of the link: `https://alexsobotka.github.io/cosmic-ladder/#F1X0644-5Q2`, or
 - have students open **Menu → Your class**, type the code, and click **Join class**.
 
-With no code, the game uses `F1A53-10`. Older codes that start with a word like `ORION-` still work; the word is simply ignored.
+With no code, the game uses `F1X0644-5Q2`. Older codes that start with a word like `ORION-` still work; the word is simply ignored.
 
 You never need to build a code by hand. Open the ⚙ settings, choose your options, and the game shows the matching code.
 
@@ -56,9 +57,9 @@ You never need to build a code by hand. Open the ⚙ settings, choose your optio
 The gear button is protected by a passcode. **The default passcode is `ladder`.** From the settings you can:
 
 - choose every option above and copy the resulting class code
-- tick exactly which calculation steps students must do themselves (period, parallax angle, distance from parallax, luminosity, and so on); checked steps show the equation with a blank answer that the game checks
-- set how often **quick-check questions** pop up (off, sometimes, often). These are short questions about the step a student just finished. Most ask *why* that measurement is needed ("Why do we need this star's pulsation period?"), so students think about the purpose of each step instead of just clicking through. Students must answer correctly to continue, and the report records how many they got right on the first try
-- turn **equation building** on or off. When it's on, students drag the pieces of each key equation into place before the numbers appear. Each equation is built in full the first time. After that, the game picks at random: about half of the objects ask for one equation, with only one or two boxes left blank
+- tick exactly which calculation steps students must do themselves (period, parallax angle, distance from parallax, luminosity, and so on); checked steps show the equation with a blank answer that the game checks. By default the parallax angle and the distance from parallax are checked. Answers count as correct within 0.5% of the right value. Students do them on the first object of each level and then on about half of the others; you can switch to every object
+- set how often **quick-check questions** pop up (off, sometimes, often). "Often", the default, means nearly every object; "Sometimes" means more than half. These are short questions about the step a student just finished. In Level 2, quick checks come up more often and are always *why* questions. Most ask *why* that measurement is needed ("Why do we need this star's pulsation period?"), so students think about the purpose of each step instead of just clicking through. Students must answer correctly to continue, and the report records how many they got right on the first try
+- turn **equation building** on or off. When it's on, students drag the pieces of the parallax equations and of L = 4πr²F into place before the numbers appear. Equations that solve for distance, and the period-luminosity step in Level 2, are simply shown. Each equation is built in full the first time. After that, the game picks at random: about half of the objects ask for one equation, with only one or two boxes left blank
 - show the true H₀ line on the Hubble diagram
 - copy all of the current device's measurements as CSV
 - clear progress on the current device
